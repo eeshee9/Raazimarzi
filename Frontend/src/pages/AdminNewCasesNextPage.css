@@ -1,0 +1,393 @@
+/* ===== Base Styles ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: #f8f9fc;
+  color: #1e293b;
+}
+
+.admin-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: 240px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px;
+}
+
+.sidebar-top .brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  font-size: 0.95rem;
+  color: #475569;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-item img {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-item.active {
+  background: #f1f5ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.nav-item:hover {
+  background: #f1f5f9;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+}
+
+.logout {
+  background: transparent;
+  color: #ef4444;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.logout:hover {
+  background: #fee2e2;
+}
+
+/* ===== Main Area ===== */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fc;
+}
+
+/* ===== Topbar ===== */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar-left h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.top-icon {
+  font-size: 18px;
+  color: #475569;
+  cursor: pointer;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.profile img {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+}
+
+/* ===== Content Area ===== */
+.content-wrap {
+  display: flex;
+  gap: 20px;
+  padding: 24px 28px;
+}
+
+/* ===== Filters Card ===== */
+.filters-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 16px;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+.reset-link {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.filters-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.filter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.filter select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  font-size: 0.9rem;
+}
+
+/* ===== Case Card Section ===== */
+.case-card {
+  background: #fff;
+  flex: 2.4;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-container {
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+/* ===== Section Headers ===== */
+.case-section {
+  margin-bottom: 25px;
+}
+
+.section-header {
+  background: #f1f5ff;
+  color: #111827;
+  font-weight: 600;
+  padding: 6px 10px;
+  display: inline-block;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.case-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 20px;
+}
+
+.info-item .label {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.info-item .value {
+  font-weight: 600;
+  color: #111827;
+  margin-top: 2px;
+}
+
+/* ===== Right Panel ===== */
+.right-panel {
+  background: #fff;
+  flex: 1;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.party-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #f9fafb;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #2563eb;
+  margin-bottom: 10px;
+}
+
+.role-chip {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.party-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.party-body img {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+
+.party-info h4 {
+  font-size: 0.95rem;
+  margin-bottom: 3px;
+}
+
+.muted {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.party-footer {
+  background: #f1f5ff;
+  color: #2563eb;
+  text-align: center;
+  font-weight: 500;
+  border-radius: 8px;
+  margin-top: 10px;
+  padding: 5px;
+  font-size: 0.85rem;
+}
+
+/* ===== Approve / Discard Buttons ===== */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.action-buttons button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.action-buttons .approve {
+  background: #6366f1;
+  color: #fff;
+}
+
+.action-buttons .approve:hover {
+  background: #4f46e5;
+}
+
+.action-buttons .discard {
+  background: transparent;
+  color: #ef4444;
+  border: 2px solid #ef4444;
+}
+
+.action-buttons .discard:hover {
+  background: #fee2e2;
+}
+
+/* ===== Documents Section ===== */
+.documents-section {
+  background: #fff;
+  margin: 0 28px 28px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.documents-section h4 {
+  margin-bottom: 16px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.documents-row {
+  display: flex;
+  gap: 16px;
+}
+
+.doc-preview {
+  flex: 1;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  color: #9ca3af;
+  font-weight: 500;
+  border: 1px dashed #d1d5db;
+}
