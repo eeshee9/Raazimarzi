@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import HomeIcon from "../assets/icons/home.png";
+import Vector from "../assets/icons/Vector.png";
 import FileIcon from "../assets/icons/file.png";
 import MeetingIcon from "../assets/icons/meeting.png";
 import CaseIcon from "../assets/icons/newcase.png";
@@ -28,6 +29,10 @@ const FileNewCaseStep3 = () => {
             <img src={HomeIcon} alt="Home" />
             <span>Home</span>
           </div>
+           <div className="menu-item" onClick={() => navigate("/user/my-profile")}>
+                      <img src={Vector} alt="Profile" />
+                      <span>My Profile</span>
+                    </div>          
           <div className="menu-item active" onClick={() => navigate("/user/file-new-case/step3")}>
             <img src={FileIcon} alt="File New Case" />
             <span>File New Case</span>

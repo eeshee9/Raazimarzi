@@ -36,6 +36,10 @@ const CaseMeetings = () => {
                         <img src={HomeIcon} alt="Home" />
                         <span>Home</span>
                     </div>
+                     <div className="menu-item active" onClick={() => navigate("/user/my-profile")}>
+                                <img src={Vector} alt="Profile" />
+                                <span>My Profile</span>
+                              </div>                  
                     <div className="menu-item" onClick={() => navigate("/user/file-new-case/step1")}>
                         <img src={FileIcon} alt="File New Case" />
                         <span>File New Case</span>

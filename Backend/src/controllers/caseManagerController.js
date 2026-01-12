@@ -26,3 +26,4 @@ const assignMediator = async (req, res) => {
 };
 
 module.exports = { getAllCases, assignMediator };
+

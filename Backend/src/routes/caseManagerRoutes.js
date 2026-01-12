@@ -1,5 +1,5 @@
 const express = require("express");
-const { getAllCases, assignMediator } = require("../controllers/caseManagerController");
+const { getAllCases, assignMediator } = require("../src/controllers/caseManagerController");
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
