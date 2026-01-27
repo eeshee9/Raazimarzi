@@ -1,18 +1,25 @@
+// src/pages/Register.js
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { register } from "../services/authService";
+import { useNavigate, useLocation } from "react-router-dom";
+import api from "../api/axios"; // production-ready axios instance
 
-function Register() {
+const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
+    phone: "",
+    role: "user", // default role
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // 🔹 Check for redirect query
+  const redirectPath = new URLSearchParams(location.search).get("redirect");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -35,14 +42,27 @@ function Register() {
 
     try {
       setLoading(true);
-      await register(form);
-      alert("Registered successfully. Please login.");
-      navigate("/login");
+
+      // 🔹 POST to backend register route
+      const res = await api.post("/user/register", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+        role: form.role,
+      });
+
+      alert(res.data.message || "Registered successfully. Please login.");
+
+      // 🔹 Redirect after registration
+      if (redirectPath) {
+        navigate(redirectPath, { replace: true });
+      } else {
+        navigate("/login", { replace: true });
+      }
     } catch (err) {
       console.error("Registration error:", err);
-      setError(
-        err?.response?.data?.message || "Registration failed. Try again."
-      );
+      setError(err.response?.data?.message || "Registration failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -61,6 +81,7 @@ function Register() {
           placeholder="Full Name"
           value={form.name}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -69,6 +90,7 @@ function Register() {
           placeholder="Email Address"
           value={form.email}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -77,7 +99,23 @@ function Register() {
           placeholder="Password"
           value={form.password}
           onChange={handleChange}
+          required
         />
+
+        <input
+          type="text"
+          name="phone"
+          placeholder="Phone Number"
+          value={form.phone}
+          onChange={handleChange}
+        />
+
+        <select name="role" value={form.role} onChange={handleChange}>
+          <option value="user">User</option>
+          <option value="mediator">Mediator</option>
+          <option value="case-manager">Case Manager</option>
+          <option value="admin">Admin</option>
+        </select>
 
         <button type="submit" disabled={loading}>
           {loading ? "Registering..." : "Register"}
@@ -85,11 +123,13 @@ function Register() {
 
         <p className="auth-switch">
           Already have an account?{" "}
-          <span onClick={() => navigate("/login")}>Login</span>
+          <span onClick={() => navigate(`/login${redirectPath ? `?redirect=${redirectPath}` : ""}`)}>
+            Login
+          </span>
         </p>
       </form>
     </div>
   );
-}
+};
 
 export default Register;

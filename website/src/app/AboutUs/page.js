@@ -6,9 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import "@/styles/aboutUs.css";
-
-// ✅ Updated: app path under same domain
-const APP_PATH = "/app";
+import { APP_BASE_PATH } from "@/config/appConfig";
 
 export default function AboutUs() {
   const [activeTab, setActiveTab] = useState("Cases");
@@ -31,20 +29,35 @@ export default function AboutUs() {
     "How long does it take to resolve a dispute online?",
   ];
 
+  // Website → Application redirect (single source of truth)
+  const goToLogin = (redirectPath = "") => {
+    const redirectQuery = redirectPath ? `?redirect=${redirectPath}` : "";
+    router.push(`${APP_BASE_PATH}/login${redirectQuery}`);
+  };
+
   return (
     <>
       <Header />
 
-      {/* Hero Section */}
+      {/* HERO */}
       <section className="about-hero-exact">
-        <img src="/assets/icons/left-circle.png" alt="" className="about-circle left" />
-        <img src="/assets/icons/right-circle.png" alt="" className="about-circle right" />
+        <img
+          src="/assets/icons/left-circle.png"
+          alt=""
+          className="about-circle left"
+        />
+        <img
+          src="/assets/icons/right-circle.png"
+          alt=""
+          className="about-circle right"
+        />
 
         <div className="about-hero-content">
           <span className="about-pill">About Us</span>
 
           <h1>
-            Empowering <span className="highlight">Fair & Fast</span> Online <br />
+            Empowering <span className="highlight">Fair & Fast</span> Online
+            <br />
             Dispute Resolution
           </h1>
 
@@ -56,21 +69,19 @@ export default function AboutUs() {
           <div className="about-hero-buttons">
             <button
               className="btn-primary"
-              onClick={() =>
-                router.push(`${APP_PATH}/login?redirect=${APP_PATH}/user/file-new-case/step1`)
-              }
+              onClick={() => goToLogin("/user/file-new-case/step1")}
             >
               File A Case
             </button>
 
-            <Link href="/website/ContactUs" className="btn-dark">
+            <Link href="/ContactUs" className="btn-dark">
               Contact Us
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Our Story */}
+      {/* OUR STORY */}
       <section className="about-story-exact">
         <div className="about-story-box">
           <h2>Our Story</h2>
@@ -95,7 +106,8 @@ export default function AboutUs() {
                 ],
               },
               {
-                title: "What inspired the idea of an Online Dispute Resolution platform?",
+                title:
+                  "What inspired the idea of an Online Dispute Resolution platform?",
                 items: [
                   "The rising need for digital solutions in legal services.",
                   "Government push towards ODR and online justice systems.",
@@ -125,8 +137,8 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <div className="about-mv">
+      {/* MISSION & VISION */}
+      <section className="about-mv">
         <div className="mv-grid">
           <div className="mv-card">
             <div className="mv-image">
@@ -134,7 +146,8 @@ export default function AboutUs() {
             </div>
             <h4>Our Mission</h4>
             <p>
-              To simplify dispute resolution through technology, making justice accessible, affordable, and efficient.
+              To simplify dispute resolution through technology, making justice
+              accessible, affordable, and efficient.
             </p>
           </div>
 
@@ -144,13 +157,14 @@ export default function AboutUs() {
             </div>
             <h4>Our Vision</h4>
             <p>
-              Building India’s most trusted online ecosystem for resolving disputes without stress or delays.
+              Building India’s most trusted online ecosystem for resolving
+              disputes without stress or delays.
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* What We Do */}
+      {/* WHAT WE DO */}
       <section className="what-we-do-exact">
         <div className="what-we-do-container">
           <div className="what-we-do-image">
@@ -170,7 +184,10 @@ export default function AboutUs() {
                 <div key={item} className="what-we-do-item">
                   <div>
                     <h4>{item}</h4>
-                    <p>When one party fails to fulfil their contractual obligations...</p>
+                    <p>
+                      When one party fails to fulfil their contractual
+                      obligations...
+                    </p>
                   </div>
                   <span className="what-we-do-arrow">›</span>
                 </div>
@@ -182,7 +199,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* Our Value */}
+      {/* OUR VALUES */}
       <section className="our-value-exact">
         <div className="our-value-container">
           <h2>Our Value</h2>
@@ -208,60 +225,13 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* Meet Our Team */}
-      <section className="team-exact">
-        <div className="team-container">
-          <h2>Meet Our Team</h2>
-          <p className="team-sub">The story you should know</p>
-
-          <div className="team-grid-exact">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="team-card-exact">
-                <div className="team-image-exact" />
-                <div className="team-info-exact">
-                  <span>Founders</span>
-                  <h4>Mr. Jaideep Singh</h4>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="cd-why-exact">
-        <div className="cd-container">
-          <h2>Why Choose Us</h2>
-          <p className="cd-why-sub">
-            Resolve business, customer, or personal conflicts through a secure, transparent online platform.
-          </p>
-
-          <div className="cd-why-grid">
-            {[
-              ["fast.png", "Fast Resolution"],
-              ["legal.png", "Legally Compliant"],
-              ["secure.png", "Secure & Confidential"],
-              ["neutral.png", "Neutral Experts"],
-              ["24.png", "24/7 Access"],
-            ].map(([icon, title]) => (
-              <div key={title} className="cd-why-item">
-                <img src={`/assets/icons/${icon}`} alt={title} />
-                <h4>{title}</h4>
-                <p>
-                  Resolve business, customer, or personal conflicts through a secure.
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* FAQ */}
       <section className="faq-section">
         <div className="pd-container">
           <h2 className="faq-title">Frequently Asked Questions (FAQ)</h2>
           <p className="faq-subtitle">
-            Resolve business, customer, or personal conflicts through a secure, transparent online platform.
+            Resolve business, customer, or personal conflicts through a secure,
+            transparent online platform.
           </p>
 
           <div className="faq-container">
@@ -269,7 +239,9 @@ export default function AboutUs() {
               {tabs.map((tab) => (
                 <button
                   key={tab}
-                  className={`faq-tab ${activeTab === tab ? "active" : ""}`}
+                  className={`faq-tab ${
+                    activeTab === tab ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab(tab)}
                 >
                   {tab}

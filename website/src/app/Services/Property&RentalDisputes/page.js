@@ -6,11 +6,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "@/styles/property&rentalDispute.css";
 
+const APP_BASE_PATH = "/app";
+
 export default function PropertyRentalDispute() {
   const [activeTab, setActiveTab] = useState("Cases");
   const router = useRouter();
 
   const tabs = ["Cases", "Money", "Policies", "Resolve Cases", "Victory %", "Ordinary"];
+
   const questions = [
     "What should I do if I think the contract has been breached?",
     "How do I handle disputes with tenants or landlords?",
@@ -19,26 +22,10 @@ export default function PropertyRentalDispute() {
     "How long does it take to resolve a property or rental dispute?",
   ];
 
-  function AccordionItem({ title }) {
-    const [open, setOpen] = useState(false);
-    return (
-      <div className={`prd-accordion-item ${open ? "open" : ""}`}>
-        <div className="prd-accordion-header" onClick={() => setOpen(!open)}>
-          <div>
-            <h4>{title}</h4>
-            <p>Explanation of {title.toLowerCase()} and how we help resolve it.</p>
-          </div>
-          <span className="prd-accordion-arrow">›</span>
-        </div>
-        {open && (
-          <div className="prd-accordion-body">
-            Detailed guidance on {title.toLowerCase()} disputes and how our platform
-            handles them efficiently and legally.
-          </div>
-        )}
-      </div>
-    );
-  }
+  const goToLogin = (redirectPath = "") => {
+    const query = redirectPath ? `?redirect=${redirectPath}` : "";
+    window.location.href = `${APP_BASE_PATH}/login${query}`;
+  };
 
   return (
     <>
@@ -51,28 +38,36 @@ export default function PropertyRentalDispute() {
         <div className="hero-glow"></div>
 
         <div className="cd-hero-content">
-          <span className="cd-pill-exact">Property & Rental Dispute Resolution (ODR)</span>
+          <span className="cd-pill-exact">
+            Property & Rental Dispute Resolution (ODR)
+          </span>
 
           <h1>
-            <span className="highlight">Property</span> & <span className="highlight-light">Rental</span> Dispute <br />
+            <span className="highlight">Property</span> &{" "}
+            <span className="highlight-light">Rental</span> Dispute <br />
             Resolution (ODR)
           </h1>
 
           <p>
-            Fast, fair, and hassle-free Online Dispute Resolution for landlords, tenants,
-            property owners, builders, and housing societies.
+            Fast, fair, and hassle-free Online Dispute Resolution for landlords,
+            tenants, property owners, builders, and housing societies.
           </p>
 
           <div className="hero-buttons">
             <button
               className="btn-primary-exact"
-              onClick={() => router.push("/login?redirect=/user/file-new-case/step1")}
+              onClick={() =>
+                goToLogin("/user/file-new-case/step1")
+              }
             >
               File A Case
             </button>
+
             <button
               className="btn-dark-exact"
-              onClick={() => router.push("/login?redirect=/user/chats")}
+              onClick={() =>
+                goToLogin("/user/chats")
+              }
             >
               Talk To Expert
             </button>
@@ -109,7 +104,8 @@ export default function PropertyRentalDispute() {
           <div className="prd-diagonal-text">
             <h2>What Are Rental Disputes?</h2>
             <p>
-              Rental disputes are conflicts between landlords and tenants regarding rental properties.
+              Rental disputes are conflicts between landlords and tenants regarding
+              rental properties.
               <br /><br />
               Common issues include violations of rental agreements, rent disagreements,
               maintenance problems, deposits, eviction, or property conditions.
@@ -133,9 +129,11 @@ export default function PropertyRentalDispute() {
                 <li>Builder delaying possession</li>
               </ul>
             </div>
+
             <div className="prd-examples-icon">
               <img src="/assets/icons/house.png" alt="Property Icon" />
             </div>
+
             <div className="prd-examples-col">
               <h3>Examples of Rental Disputes</h3>
               <ul>
@@ -180,33 +178,6 @@ export default function PropertyRentalDispute() {
         </div>
       </section>
 
-      {/* WHY CHOOSE US */}
-      <section className="why-choose-section">
-        <div className="why-choose-container">
-          <h2 className="why-choose-title">Why Choose Us</h2>
-          <p className="why-choose-subtitle">
-            Resolve property and rental conflicts securely, transparently, and legally.
-          </p>
-          <div className="why-choose-grid">
-            {[
-              ["fast.png", "Fast Resolution"],
-              ["legal.png", "Legally Compliant"],
-              ["secure.png", "Secure & Confidential"],
-              ["neutral.png", "Neutral Experts"],
-              ["24.png", "24/7 Access"],
-            ].map(([icon, title]) => (
-              <div className="why-choose-item" key={title}>
-                <div className="why-icon-circle">
-                  <img src={`/assets/icons/${icon}`} alt={title} />
-                </div>
-                <h4>{title}</h4>
-                <p>Resolve disputes quickly and legally through our secure platform.</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="contract-cta">
         <div className="contract-cta-box">
@@ -220,13 +191,18 @@ export default function PropertyRentalDispute() {
             <div className="contract-cta-buttons">
               <button
                 className="cta-primary"
-                onClick={() => router.push("/login?redirect=/user/file-new-case/step1")}
+                onClick={() =>
+                  goToLogin("/user/file-new-case/step1")
+                }
               >
                 Start Property Resolution
               </button>
+
               <button
                 className="cta-secondary"
-                onClick={() => router.push("/login?redirect=/user/chats")}
+                onClick={() =>
+                  goToLogin("/user/chats")
+                }
               >
                 Consult a Legal Expert
               </button>
@@ -234,7 +210,10 @@ export default function PropertyRentalDispute() {
           </div>
 
           <div className="contract-cta-image">
-            <img src="/assets/images/property.png" alt="Property Resolution" />
+            <img
+              src="/assets/images/property.png"
+              alt="Property Resolution"
+            />
           </div>
         </div>
       </section>

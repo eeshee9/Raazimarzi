@@ -1,5 +1,8 @@
-import React, { useState, useContext } from "react";
+// src/pages/FileNewCaseStep1.js
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { CaseContext } from "../context/caseContext";
+
 import HomeIcon from "../assets/icons/home.png";
 import Vector from "../assets/icons/Vector.png";
 import FileIcon from "../assets/icons/file.png";
@@ -10,13 +13,13 @@ import ChatIcon from "../assets/icons/chat.png";
 import PaymentIcon from "../assets/icons/payment.png";
 import SupportIcon from "../assets/icons/support.png";
 import LogoutIcon from "../assets/icons/logout.png";
+
 import "./FileNewCase.css";
 import { FaCog, FaBell } from "react-icons/fa";
-import { CaseContext } from "../context/caseContext";
 
 const FileNewCaseStep1 = () => {
   const navigate = useNavigate();
-  const { setCaseData } = useContext(CaseContext);
+  const { caseData, setCaseData } = useContext(CaseContext);
 
   const Required = () => <span style={{ color: "red" }}> *</span>;
 
@@ -48,6 +51,13 @@ const FileNewCaseStep1 = () => {
     },
   });
 
+  // ✅ Pre-fill Step1 if data exists in context/localStorage
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem("caseData"));
+    if (caseData && Object.keys(caseData).length) setFormData(caseData);
+    else if (storedData) setFormData(storedData);
+  }, [caseData]);
+
   const handleChange = (e, section, field) => {
     if (section) {
       setFormData({
@@ -58,29 +68,32 @@ const FileNewCaseStep1 = () => {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     }
   };
-const handleNext = () => {
-  // Mandatory field validation
-  if (
-    !formData.caseType.trim() ||
-    !formData.caseTitle.trim() ||
-    !formData.petitioner.fullName.trim() ||
-    !formData.petitioner.gender.trim() ||
-    !formData.petitioner.dob ||
-    !formData.petitioner.mobile.trim() ||
-    !formData.petitioner.email.trim() ||
-    !formData.defendant.fullName.trim() ||
-    !formData.defendant.mobile.trim() ||
-    !formData.defendant.email.trim()
-  ) {
-    alert("Please fill all mandatory (*) fields");
-    return;
-  }
 
-  setCaseData(formData);
-  localStorage.setItem("caseData", JSON.stringify(formData));
-  navigate("/user/file-new-case/step2");
-};
+  const handleNext = () => {
+    // Mandatory field validation
+    if (
+      !formData.caseType.trim() ||
+      !formData.caseTitle.trim() ||
+      !formData.petitioner.fullName.trim() ||
+      !formData.petitioner.gender.trim() ||
+      !formData.petitioner.dob ||
+      !formData.petitioner.mobile.trim() ||
+      !formData.petitioner.email.trim() ||
+      !formData.defendant.fullName.trim() ||
+      !formData.defendant.mobile.trim() ||
+      !formData.defendant.email.trim()
+    ) {
+      alert("Please fill all mandatory (*) fields");
+      return;
+    }
 
+    // Save Step1 data in context and localStorage
+    setCaseData(formData);
+    localStorage.setItem("caseData", JSON.stringify(formData));
+
+    // Navigate to Step2
+    navigate("/user/file-new-case/step2");
+  };
 
   return (
     <div className="dashboard-container">
@@ -88,51 +101,51 @@ const handleNext = () => {
       <aside className="sidebar">
         <h2 className="sidebar-title">Dashboard</h2>
         <nav className="menu">
-                 <div className="menu-item active" onClick={() => navigate("/user/dashboard")}>
-                   <img src={HomeIcon} alt="Home" />
-                   <span>Home</span>
-                 </div>
-       
-                 <div className="menu-item" onClick={() => navigate("/user/my-profile")}>
-                   <img src={Vector} alt="Profile" />
-                   <span>My Profile</span>
-                 </div>
-       
-                 <div className="menu-item" onClick={() => navigate("/user/file-new-case/step1")}>
-                   <img src={FileIcon} alt="File New Case" />
-                   <span>File New Case</span>
-                 </div>
-       
-                 <div className="menu-item" onClick={() => navigate("/user/my-cases")}>
-                   <img src={CaseIcon} alt="My Cases" />
-                   <span>My Cases</span>
-                 </div>
-       
-                 <div className="menu-item" onClick={() => navigate("/user/case-meetings")}>
-                   <img src={MeetingIcon} alt="Case Meetings" />
-                   <span>Case Meetings</span>
-                 </div>
-       
-                 <div className="menu-item">
-                   <img src={DocsIcon} alt="Documents" />
-                   <span>Documents</span>
-                 </div>
-       
-                 <div className="menu-item" onClick={() => navigate("/user/chats")}>
-                   <img src={ChatIcon} alt="Chats" />
-                   <span>Chats</span>
-                 </div>
-       
-                 <div className="menu-item">
-                   <img src={PaymentIcon} alt="Payment" />
-                   <span>Payment</span>
-                 </div>
-       
-                 <div className="menu-item">
-                   <img src={SupportIcon} alt="Support" />
-                   <span>Support</span>
-                 </div>
-               </nav>
+          <div className="menu-item" onClick={() => navigate("/user/dashboard")}>
+            <img src={HomeIcon} alt="Home" />
+            <span>Home</span>
+          </div>
+
+          <div className="menu-item" onClick={() => navigate("/user/my-profile")}>
+            <img src={Vector} alt="Profile" />
+            <span>My Profile</span>
+          </div>
+
+          <div className="menu-item active">
+            <img src={FileIcon} alt="File New Case" />
+            <span>File New Case</span>
+          </div>
+
+          <div className="menu-item" onClick={() => navigate("/user/my-cases")}>
+            <img src={CaseIcon} alt="My Cases" />
+            <span>My Cases</span>
+          </div>
+
+          <div className="menu-item" onClick={() => navigate("/user/case-meetings")}>
+            <img src={MeetingIcon} alt="Case Meetings" />
+            <span>Case Meetings</span>
+          </div>
+
+          <div className="menu-item">
+            <img src={DocsIcon} alt="Documents" />
+            <span>Documents</span>
+          </div>
+
+          <div className="menu-item">
+            <img src={ChatIcon} alt="Chats" />
+            <span>Chats</span>
+          </div>
+
+          <div className="menu-item">
+            <img src={PaymentIcon} alt="Payment" />
+            <span>Payment</span>
+          </div>
+
+          <div className="menu-item">
+            <img src={SupportIcon} alt="Support" />
+            <span>Support</span>
+          </div>
+        </nav>
 
         <div className="logout">
           <div className="menu-item">
@@ -142,7 +155,7 @@ const handleNext = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Section */}
       <section className="main-section">
         <header className="navbar">
           <div></div>

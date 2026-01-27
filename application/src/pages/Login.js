@@ -4,10 +4,12 @@ import "./Login.css";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import loginBg from "../assets/icons/rec.png";
 import google from "../assets/icons/google.png";
-import linkdin from "../assets/icons/linkdin.png";
+import linkedin from "../assets/icons/linkdin.png";
 import phone from "../assets/icons/phone.png";
 import fb from "../assets/icons/fb.png";
-import api from "../api/axios"; // 
+import axios from "axios";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,10 +20,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔹 Read redirect query
   const redirectPath = new URLSearchParams(location.search).get("redirect");
 
-  // 🔹 Redirect helper wrapped in useCallback for ESLint
   const redirectByRole = useCallback(
     (role) => {
       if (redirectPath) {
@@ -46,27 +46,40 @@ const Login = () => {
     [navigate, redirectPath]
   );
 
-  // 🔹 Auto redirect if already logged in
+  // Auto-login
   useEffect(() => {
+    const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    if (role) redirectByRole(role);
+    if (token && role) redirectByRole(role);
   }, [redirectByRole]);
 
-  // 🔹 PASSWORD LOGIN
+  /* ================= LOGIN ================= */
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await api.post("/user/login", { email, password }); // ✅ Uses axiosInstance (production-ready)
+      const res = await axios.post(`${API_URL}/users/login`, {
+        email,
+        password,
+      });
 
+      // ✅ Save auth info
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("email", res.data.email);
 
       redirectByRole(res.data.role);
     } catch (err) {
-      alert(err.response?.data?.message || "Invalid email or password");
+      const message = err.response?.data?.message;
+
+      // 🔐 Password reset flow
+      if (err.response?.status === 403) {
+        navigate(`/forgotpassword?email=${email}`);
+        return;
+      }
+
+      alert(message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -75,20 +88,18 @@ const Login = () => {
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        {/* LEFT IMAGE */}
         <div className="login-image">
           <img src={loginBg} alt="Login" />
         </div>
 
-        {/* RIGHT FORM */}
         <div className="login-form">
           <div className="logo">
-            <img src="/logo.png" alt="Raazimarzi" />
+            <img src="/assets/images/logo.png" alt="RaaziMarzi" />
             <span>ODR Platform</span>
           </div>
 
-          <h2>Welcome to Raazimarzi</h2>
-          <p className="subtitle">Sign in to resolving your disputes online.</p>
+          <h2>Welcome to RaaziMarzi</h2>
+          <p className="subtitle">Sign in to resolve your disputes online.</p>
 
           <form onSubmit={handleLogin}>
             <div className="input-group">
@@ -127,18 +138,10 @@ const Login = () => {
             </p>
 
             <div className="social-row">
-              <span>
-                <img src={google} alt="Google" />
-              </span>
-              <span>
-                <img src={linkdin} alt="LinkedIn" />
-              </span>
-              <span>
-                <img src={phone} alt="Phone" />
-              </span>
-              <span>
-                <img src={fb} alt="Facebook" />
-              </span>
+              <span><img src={google} alt="Google" /></span>
+              <span><img src={linkedin} alt="LinkedIn" /></span>
+              <span><img src={phone} alt="Phone" /></span>
+              <span><img src={fb} alt="Facebook" /></span>
             </div>
           </form>
         </div>

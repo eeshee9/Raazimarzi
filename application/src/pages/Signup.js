@@ -1,13 +1,13 @@
 // src/pages/Signup.js
 import React, { useState } from "react";
 import "./Signup.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import signupBg from "../assets/icons/rec.png";
 import google from "../assets/icons/google.png";
 import linkdin from "../assets/icons/linkdin.png";
 import phone from "../assets/icons/phone.png";
 import fb from "../assets/icons/fb.png";
-import api from "../api/axios"; 
+import api from "../api/axios";
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -25,6 +25,10 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 🔹 Read redirect query from website
+  const redirectPath = new URLSearchParams(location.search).get("redirect");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -51,18 +55,30 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post("/otp/verify-otp", {
+      const res = await api.post("/otp/verify-otp", {
         email: form.email,
         otp,
         type: "signup",
         name: form.name,
         phone: form.phone,
         role: form.role,
-        // password is UI only; backend handles hashing
       });
 
-      alert("Signup successful! You can now login.");
-      navigate("/login");
+      // Store token and role if backend sends it
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("role", res.data.role);
+        localStorage.setItem("email", res.data.email);
+      }
+
+      alert("Signup successful!");
+
+      // 🔹 Redirect
+      if (redirectPath) {
+        navigate(redirectPath, { replace: true });
+      } else {
+        navigate("/login", { replace: true });
+      }
     } catch (err) {
       setMessage(err.response?.data?.message || "OTP verification failed");
     } finally {
@@ -136,21 +152,6 @@ const Signup = () => {
                 />
               </div>
 
-              <div className="social-row">
-                <span>
-                  <img src={google} alt="Google" />
-                </span>
-                <span>
-                  <img src={linkdin} alt="LinkedIn" />
-                </span>
-                <span>
-                  <img src={phone} alt="Phone" />
-                </span>
-                <span>
-                  <img src={fb} alt="Facebook" />
-                </span>
-              </div>
-
               <div className="input-group">
                 <select name="role" value={form.role} onChange={handleChange}>
                   <option value="user">User</option>
@@ -165,7 +166,10 @@ const Signup = () => {
               </button>
 
               <p className="bottom-text">
-                Already have an account? <a href="/login">Sign in</a>
+                Already have an account?{" "}
+                <Link to={`/login${redirectPath ? `?redirect=${redirectPath}` : ""}`}>
+                  Sign in
+                </Link>
               </p>
             </form>
           )}
@@ -195,6 +199,21 @@ const Signup = () => {
           )}
 
           {message && <p className="message">{message}</p>}
+
+          <div className="social-row">
+            <span>
+              <img src={google} alt="Google" />
+            </span>
+            <span>
+              <img src={linkdin} alt="LinkedIn" />
+            </span>
+            <span>
+              <img src={phone} alt="Phone" />
+            </span>
+            <span>
+              <img src={fb} alt="Facebook" />
+            </span>
+          </div>
         </div>
       </div>
     </div>

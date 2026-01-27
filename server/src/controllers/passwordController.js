@@ -1,32 +1,59 @@
 import User from "../models/userModel.js";
 
+/* ================= RESET PASSWORD ================= */
 export const resetPassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
 
     if (!email || !newPassword) {
-      return res.status(400).json({ message: "Email and new password required" });
+      return res.status(400).json({
+        success: false,
+        message: "Email and new password are required",
+      });
+    }
+
+    // Basic password validation
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long",
+      });
     }
 
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
+    // OTP verification check
     if (!user.passwordResetAllowed) {
-      return res.status(403).json({ message: "OTP verification required" });
+      return res.status(403).json({
+        success: false,
+        message: "OTP verification required before resetting password",
+      });
     }
 
-    // ✅ plain password only
+    // Set new password (hashed by pre-save hook)
     user.password = newPassword;
 
-    // 🔐 lock reset
+    // Lock password reset immediately
     user.passwordResetAllowed = false;
 
-    await user.save(); // password hashed automatically
+    await user.save();
 
-    res.json({ message: "Password reset successful" });
+    return res.json({
+      success: true,
+      message: "Password reset successful. Please login with your new password.",
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("❌ Reset Password Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while resetting password",
+    });
   }
 };

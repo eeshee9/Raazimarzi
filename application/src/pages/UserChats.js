@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios"; // ✅ production-ready
+import api from "../api/axios"; // Axios instance for API requests
 
 import HomeIcon from "../assets/icons/home.png";
 import Vector from "../assets/icons/Vector.png";
@@ -16,59 +16,56 @@ import SupportIcon from "../assets/icons/support.png";
 import LogoutIcon from "../assets/icons/logout.png";
 
 import "./UserChats.css";
-import { FaCog, FaBell, FaPaperPlane, FaSearch } from "react-icons/fa";
+import { FaCog, FaBell, FaPaperPlane } from "react-icons/fa";
 
 const Chats = () => {
   const navigate = useNavigate();
-  const [selectedChat, setSelectedChat] = useState(null);
+
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [chatList, setChatList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch chats on load
+  // ✅ Admin email for chat
+  const adminEmail = "expert@yourapp.com";
+
+  // 🔹 Fetch chat history with admin
   useEffect(() => {
-    const fetchChats = async () => {
+    const fetchMessages = async () => {
       try {
-        const res = await api.get("/api/chats/my-chats"); // ✅ uses axios instance
-        setChatList(res.data.chats || []);
-        if (res.data.chats && res.data.chats.length > 0) {
-          setSelectedChat(res.data.chats[0].chatWith);
-          setMessages(res.data.chats[0].messages || []);
-        }
+        const res = await api.get(`/api/chats/with/${adminEmail}`);
+        setMessages(res.data.messages || []);
       } catch (error) {
-        console.error("❌ Failed to fetch chats:", error);
+        console.error("❌ Failed to fetch chat with admin:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchChats();
+    fetchMessages();
   }, []);
 
+  // 🔹 Send message to admin
   const handleSend = async () => {
-    if (!message.trim() || !selectedChat) return;
+    if (!message.trim()) return;
 
     try {
       const res = await api.post("/api/chats/send-message", {
-        chatWith: selectedChat,
+        chatWith: adminEmail,
         message,
       });
 
-      // Update messages locally
-      setMessages(res.data.messages || [...messages, { sender: "You", text: message }]);
+      setMessages(res.data.messages || [
+        ...messages,
+        { sender: "You", text: message },
+      ]);
+
       setMessage("");
     } catch (error) {
       console.error("❌ Failed to send message:", error);
     }
   };
 
-  const handleSelectChat = (chat) => {
-    setSelectedChat(chat.chatWith);
-    setMessages(chat.messages || []);
-  };
-
-  if (loading) return <p style={{ padding: 20 }}>Loading chats...</p>;
+  if (loading) return <p style={{ padding: 20 }}>Loading chat...</p>;
 
   return (
     <div className="dashboard-container">
@@ -96,7 +93,7 @@ const Chats = () => {
             <img src={MeetingIcon} alt="Case Meetings" />
             <span>Case Meetings</span>
           </div>
-          <div className="menu-item" onClick={() => navigate("/user/documents")}>
+          <div className="menu-item">
             <img src={DocsIcon} alt="Documents" />
             <span>Documents</span>
           </div>
@@ -113,6 +110,7 @@ const Chats = () => {
             <span>Support</span>
           </div>
         </nav>
+
         <div className="logout">
           <div className="menu-item">
             <img src={LogoutIcon} alt="Logout" />
@@ -123,7 +121,6 @@ const Chats = () => {
 
       {/* Main Section */}
       <section className="main-section">
-        {/* Navbar */}
         <header className="navbar">
           <div></div>
           <div className="nav-icons">
@@ -136,59 +133,33 @@ const Chats = () => {
           </div>
         </header>
 
-        {/* Chat Section */}
-        <div className="chat-container">
-          {/* Left Sidebar - Chats */}
-          <div className="chat-list">
-            <div className="chat-list-header">
-              <h3>My Chats</h3>
-              <div className="search-box">
-                <FaSearch className="search-icon" />
-                <input type="text" placeholder="Search chat..." />
-              </div>
-            </div>
+        {/* Chat Box */}
+        <div className="chat-container-single">
+          <div className="chat-header">
+            <img src="https://i.pravatar.cc/40" alt="Admin" />
+            <h3>Expert Support</h3>
+          </div>
 
-            {chatList.map((chat) => (
-              <div
-                key={chat._id}
-                className={`chat-item ${selectedChat === chat.chatWith ? "active" : ""}`}
-                onClick={() => handleSelectChat(chat)}
-              >
-                <img src={chat.userAvatar || "https://i.pravatar.cc/40"} alt={chat.chatWith} />
-                <div>
-                  <h4>{chat.chatWith}</h4>
-                  <p>{chat.lastMessage || "No messages yet."}</p>
-                </div>
+          <div className="chat-messages">
+            {messages.length === 0 && <p>No messages yet.</p>}
+            {messages.map((msg, index) => (
+              <div key={index} className={`message ${msg.sender === "You" ? "sent" : "received"}`}>
+                <p>{msg.text}</p>
               </div>
             ))}
           </div>
 
-          {/* Right Chat Box */}
-          <div className="chat-box">
-            <div className="chat-header">
-              <img src="https://i.pravatar.cc/40" alt={selectedChat} />
-              <h3>{selectedChat || "Select a chat"}</h3>
-            </div>
-
-            <div className="chat-messages">
-              {messages.map((msg, index) => (
-                <div key={index} className={`message ${msg.sender === "You" ? "sent" : "received"}`}>
-                  <p>{msg.text}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="chat-input">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type a message..."
-              />
-              <button onClick={handleSend}>
-                <FaPaperPlane />
-              </button>
-            </div>
+          <div className="chat-input">
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type a message..."
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            />
+            <button onClick={handleSend}>
+              <FaPaperPlane />
+            </button>
           </div>
         </div>
       </section>

@@ -1,3 +1,4 @@
+// src/pages/ForgotPassword.js
 import React, { useState } from "react";
 import axios from "axios";
 import "./ForgotPassword.css";
@@ -18,6 +19,11 @@ const ForgotPassword = () => {
   /* ================= STEP 1: SEND OTP ================= */
   const sendOtp = async (e) => {
     e.preventDefault();
+    if (!email.trim()) {
+      setMessage("Please enter your email");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
 
@@ -27,10 +33,10 @@ const ForgotPassword = () => {
         type: "forgot-password",
       });
 
-      setMessage("OTP sent to your email");
+      setMessage("✅ OTP sent to your email");
       setStep(2);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Failed to send OTP");
+      setMessage(err.response?.data?.message || "❌ Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -39,6 +45,11 @@ const ForgotPassword = () => {
   /* ================= STEP 2: VERIFY OTP ================= */
   const verifyOtp = async (e) => {
     e.preventDefault();
+    if (!otp.trim()) {
+      setMessage("Please enter OTP");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
 
@@ -49,10 +60,10 @@ const ForgotPassword = () => {
         type: "forgot-password",
       });
 
-      setMessage("OTP verified. Set new password.");
+      setMessage("✅ OTP verified. Set your new password.");
       setStep(3);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Invalid or expired OTP");
+      setMessage(err.response?.data?.message || "❌ Invalid or expired OTP");
     } finally {
       setLoading(false);
     }
@@ -63,12 +74,12 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (newPassword.length < 6) {
-      setMessage("Password must be at least 6 characters");
+      setMessage("❌ Password must be at least 6 characters");
       return;
     }
 
     if (newPassword !== confirm) {
-      setMessage("Passwords do not match");
+      setMessage("❌ Passwords do not match");
       return;
     }
 
@@ -81,10 +92,10 @@ const ForgotPassword = () => {
         newPassword,
       });
 
-      alert("Password reset successful! Please login.");
+      alert("✅ Password reset successful! Please login.");
       navigate("/login");
     } catch (err) {
-      setMessage(err.response?.data?.message || "Error resetting password");
+      setMessage(err.response?.data?.message || "❌ Error resetting password");
     } finally {
       setLoading(false);
     }
@@ -100,10 +111,15 @@ const ForgotPassword = () => {
         <div className="login-form">
           <h2>Forgot Password</h2>
 
+          {/* Step Indicator */}
+          <div className="step-indicator">
+            <span className={step === 1 ? "active" : ""}>1. Enter Email</span>
+            <span className={step === 2 ? "active" : ""}>2. Verify OTP</span>
+            <span className={step === 3 ? "active" : ""}>3. Reset Password</span>
+          </div>
+
           {message && (
-            <p className={message.includes("OTP") || message.includes("verified") ? "success" : "error"}>
-              {message}
-            </p>
+            <p className={message.includes("✅") ? "success" : "error"}>{message}</p>
           )}
 
           {/* STEP 1 */}
@@ -136,6 +152,9 @@ const ForgotPassword = () => {
               <button disabled={loading}>
                 {loading ? "Verifying..." : "Verify OTP"}
               </button>
+              <p className="resend-text">
+                Didn't receive OTP? <span onClick={sendOtp}>Resend</span>
+              </p>
             </form>
           )}
 
@@ -163,7 +182,7 @@ const ForgotPassword = () => {
           )}
 
           <p className="bottom-text">
-            <a href="/login">Back to Login</a>
+            <a href="/login">← Back to Login</a>
           </p>
         </div>
       </div>

@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import "../styles/header.css";
+import "@/styles/header.css";
+
+const APP_BASE_PATH = "/app";
 
 export default function Header() {
   const pathname = usePathname();
@@ -15,14 +17,10 @@ export default function Header() {
 
   const servicesRef = useRef(null);
 
-  // ✅ APP URL FROM ENV (PRODUCTION SAFE)
-  const APP_URL =
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-
   const isActive = (path) => pathname === path;
   const isServiceActive = pathname.startsWith("/Services");
 
-  /*SCROLL */ 
+  /* SCROLL EFFECT */
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -43,7 +41,7 @@ export default function Header() {
     };
   }, []);
 
-  /* LOCK SCROLL ON MOBILE */
+  /* LOCK BODY SCROLL ON MOBILE */
   useEffect(() => {
     document.body.style.overflow = mobileMenu ? "hidden" : "auto";
     return () => {
@@ -51,9 +49,13 @@ export default function Header() {
     };
   }, [mobileMenu]);
 
+  const goToLogin = () => {
+    window.location.href = `${APP_BASE_PATH}/login`;
+  };
+
   return (
     <>
-      {/*  HEADER  */}
+      {/* HEADER */}
       <header className={`header ${scrolled ? "scrolled" : ""}`}>
         <div className="container">
           {/* LOGO */}
@@ -86,31 +88,19 @@ export default function Header() {
                 Services <span className="arrow">⌄</span>
               </span>
 
-              <div
-                className={`dropdown-menu ${
-                  servicesOpen ? "open" : ""
-                }`}
-              >
+              <div className={`dropdown-menu ${servicesOpen ? "open" : ""}`}>
                 <div className="dropdown-item">
                   <span>Commercial Dispute ➜</span>
                   <div className="sub-menu">
                     <Link
                       href="/Services/ContractDisputes"
-                      className={
-                        isActive("/Services/ContractDisputes")
-                          ? "active"
-                          : ""
-                      }
+                      className={isActive("/Services/ContractDisputes") ? "active" : ""}
                     >
                       Contract Dispute
                     </Link>
                     <Link
                       href="/Services/PartnershipDisputes"
-                      className={
-                        isActive("/Services/PartnershipDisputes")
-                          ? "active"
-                          : ""
-                      }
+                      className={isActive("/Services/PartnershipDisputes") ? "active" : ""}
                     >
                       Partnership Dispute
                     </Link>
@@ -122,21 +112,13 @@ export default function Header() {
                   <div className="sub-menu">
                     <Link
                       href="/Services/Property&RentalDisputes"
-                      className={
-                        isActive("/Services/Property&RentalDisputes")
-                          ? "active"
-                          : ""
-                      }
+                      className={isActive("/Services/Property&RentalDisputes") ? "active" : ""}
                     >
                       Property & Rental Dispute
                     </Link>
                     <Link
                       href="/Services/ConsumerDisputes"
-                      className={
-                        isActive("/Services/ConsumerDisputes")
-                          ? "active"
-                          : ""
-                      }
+                      className={isActive("/Services/ConsumerDisputes") ? "active" : ""}
                     >
                       Consumer Dispute
                     </Link>
@@ -145,38 +127,26 @@ export default function Header() {
               </div>
             </div>
 
-            <Link
-              href="/AboutUs"
-              className={isActive("/AboutUs") ? "active" : ""}
-            >
+            <Link href="/AboutUs" className={isActive("/AboutUs") ? "active" : ""}>
               About Us
             </Link>
 
-            <Link
-              href="/solutions"
-              className={isActive("/solutions") ? "active" : ""}
-            >
+            <Link href="/solutions" className={isActive("/solutions") ? "active" : ""}>
               Solutions
             </Link>
 
-            <Link
-              href="/case-journey"
-              className={isActive("/case-journey") ? "active" : ""}
-            >
+            <Link href="/case-journey" className={isActive("/case-journey") ? "active" : ""}>
               Case Journey
             </Link>
 
-            <Link
-              href="/ContactUs"
-              className={isActive("/ContactUs") ? "active" : ""}
-            >
+            <Link href="/ContactUs" className={isActive("/ContactUs") ? "active" : ""}>
               Contact Us
             </Link>
           </nav>
 
           {/* REQUEST DEMO */}
           <div className="demo-btn">
-            <Link href={`${APP_URL}/login`}></Link>
+            <button onClick={goToLogin}>Request Demo</button>
           </div>
 
           {/* MOBILE ICON */}
@@ -190,7 +160,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/*  MOBILE MENU  */}
+      {/* MOBILE MENU */}
       <div className={`mobile-menu-overlay ${mobileMenu ? "show" : ""}`}>
         <div className="mobile-menu">
           <button
@@ -211,18 +181,12 @@ export default function Header() {
             </div>
 
             <div className="mobile-sub-links">
-              <Link href="/Services/ContractDisputes">
-                Contract Disputes
-              </Link>
-              <Link href="/Services/PartnershipDisputes">
-                Partnership Disputes
-              </Link>
+              <Link href="/Services/ContractDisputes">Contract Disputes</Link>
+              <Link href="/Services/PartnershipDisputes">Partnership Disputes</Link>
               <Link href="/Services/Property&RentalDisputes">
                 Property & Rental Dispute
               </Link>
-              <Link href="/Services/ConsumerDisputes">
-                Consumer Disputes
-              </Link>
+              <Link href="/Services/ConsumerDisputes">Consumer Disputes</Link>
             </div>
           </div>
 
@@ -236,9 +200,9 @@ export default function Header() {
             Contact Us
           </Link>
 
-          <Link href={`${APP_URL}/login`} className="mobile-demo-btn">
+          <button onClick={goToLogin} className="mobile-demo-btn">
             Request Demo
-          </Link>
+          </button>
         </div>
       </div>
     </>

@@ -1,27 +1,60 @@
 "use client";
+
 import React from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "@/styles/consumerDisputes.css";
-
-// ✅ Define base paths
-const WEBSITE_PATH = "/website";
-const APP_PATH = "/app";
+import { APP_BASE_PATH } from "@/config/appConfig";
 
 export default function ConsumerDisputePage() {
-
   const router = useRouter();
 
   const consumerTypes = [
-    { title: "Defective or Faulty Products", desc: "Product not working, damaged, or poor quality.", icon: "/assets/icons/defective.png" },
-    { title: "Poor or Incomplete Services", desc: "Service not delivered as promised (e.g., repair, installation, travel service, etc.).", icon: "/assets/icons/services.png" },
-    { title: "Overcharging or Hidden Fees", desc: "Customer charged extra without clear reason.", icon: "/assets/icons/overcharge.png" },
-    { title: "Wrong or Delayed Delivery", desc: "Item delivered late, wrong item, or not delivered.", icon: "/assets/icons/delivery.png" },
-    { title: "Misleading Advertisements", desc: "False claims about products or services.", icon: "/assets/icons/ads.png" },
-    { title: "Warranty or Guarantee Issues", desc: "Company refusing repair or replacement even within warranty.", icon: "/assets/icons/warranty.png" },
-    { title: "Refund / Return Problems", desc: "Refund not given, return denied, or replacement delayed.", icon: "/assets/icons/refund.png" },
-    { title: "Online Shopping Disputes", desc: "Fake products, damaged delivery, order cancellation issues.", icon: "/assets/icons/online.png" },
+    {
+      title: "Defective or Faulty Products",
+      desc: "Product not working, damaged, or poor quality.",
+      icon: "/assets/icons/defective.png",
+    },
+    {
+      title: "Poor or Incomplete Services",
+      desc:
+        "Service not delivered as promised (e.g., repair, installation, travel service, etc.).",
+      icon: "/assets/icons/services.png",
+    },
+    {
+      title: "Overcharging or Hidden Fees",
+      desc: "Customer charged extra without clear reason.",
+      icon: "/assets/icons/overcharge.png",
+    },
+    {
+      title: "Wrong or Delayed Delivery",
+      desc: "Item delivered late, wrong item, or not delivered.",
+      icon: "/assets/icons/delivery.png",
+    },
+    {
+      title: "Misleading Advertisements",
+      desc: "False claims about products or services.",
+      icon: "/assets/icons/ads.png",
+    },
+    {
+      title: "Warranty or Guarantee Issues",
+      desc:
+        "Company refusing repair or replacement even within warranty.",
+      icon: "/assets/icons/warranty.png",
+    },
+    {
+      title: "Refund / Return Problems",
+      desc:
+        "Refund not given, return denied, or replacement delayed.",
+      icon: "/assets/icons/refund.png",
+    },
+    {
+      title: "Online Shopping Disputes",
+      desc:
+        "Fake products, damaged delivery, order cancellation issues.",
+      icon: "/assets/icons/online.png",
+    },
   ];
 
   const rights = [
@@ -40,14 +73,27 @@ export default function ConsumerDisputePage() {
     "Are the decisions legally binding?",
   ];
 
+  const goToLogin = (redirectPath = "") => {
+    const redirectQuery = redirectPath ? `?redirect=${redirectPath}` : "";
+    router.push(`${APP_BASE_PATH}/login${redirectQuery}`);
+  };
+
   return (
     <>
       <Header />
 
       {/* HERO */}
       <section className="cd-hero-exact">
-        <img src="/assets/icons/left-circle.png" alt="" className="figma-circle left" />
-        <img src="/assets/icons/right-circle.png" alt="" className="figma-circle right" />
+        <img
+          src="/assets/icons/left-circle.png"
+          alt=""
+          className="figma-circle left"
+        />
+        <img
+          src="/assets/icons/right-circle.png"
+          alt=""
+          className="figma-circle right"
+        />
         <div className="hero-glow"></div>
 
         <div className="cd-hero-content">
@@ -68,7 +114,7 @@ export default function ConsumerDisputePage() {
             <button
               className="btn-primary-exact"
               onClick={() =>
-                router.push(`${APP_PATH}/login?redirect=${APP_PATH}/user/file-new-case/step1`)
+                goToLogin("/user/file-new-case/step1")
               }
             >
               File A Case
@@ -76,9 +122,7 @@ export default function ConsumerDisputePage() {
 
             <button
               className="btn-dark-exact"
-              onClick={() =>
-                router.push(`${APP_PATH}/login`)
-              }
+              onClick={() => goToLogin()}
             >
               Talk To Expert
             </button>
@@ -89,7 +133,10 @@ export default function ConsumerDisputePage() {
       {/* WHAT ARE CONSUMER DISPUTES */}
       <section className="info-section">
         <div className="info-grid">
-          <img src="/assets/images/consumer.png" alt="Consumer Dispute" />
+          <img
+            src="/assets/images/consumer.png"
+            alt="Consumer Dispute"
+          />
           <div>
             <h2>What Are Consumer Disputes?</h2>
             <p>
@@ -131,13 +178,6 @@ export default function ConsumerDisputePage() {
         <p className="subtitle">We Help You Recover Money From</p>
 
         <div className="flow-container">
-          <svg className="flow-svg" viewBox="0 0 1200 200" preserveAspectRatio="none">
-            <path d="M150 100 C250 40, 350 40, 450 100" />
-            <path d="M450 100 C550 160, 650 160, 750 100" />
-            <path d="M750 100 C850 40, 950 40, 1050 100" />
-            <path d="M1050 100 C1150 160, 1250 160, 1350 100" />
-          </svg>
-
           <div className="flow-items">
             {[
               "Individual consumers",
@@ -158,45 +198,16 @@ export default function ConsumerDisputePage() {
       {/* RIGHTS */}
       <section className="rights-section">
         <h2>Consumer Rights Awareness</h2>
-        <p className="rights-subtitle">Inform users about basic rights:</p>
+        <p className="rights-subtitle">
+          Inform users about basic rights:
+        </p>
 
         <div className="rights-cards">
           {rights.map((title, i) => (
             <div className="rights-card" key={i}>
-              <div className="arc"></div>
               <p>{title}</p>
-              <div className="wave"></div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* WHY CHOOSE */}
-      <section className="why-choose-section">
-        <div className="why-choose-container">
-          <h2 className="why-choose-title">Why Choose Us</h2>
-
-          <p className="why-choose-subtitle">
-            Resolve conflicts through a secure, transparent online platform.
-          </p>
-
-          <div className="why-choose-grid">
-            {[
-              ["fast.png", "Fast Resolution", "Get disputes resolved faster than traditional court procedures."],
-              ["secure.png", "Secure Platform", "Your data and communication remain encrypted and protected."],
-              ["legal.png", "Legally Compliant", "We follow all legal standards and compliance requirements."],
-              ["neutral.png", "Neutral Experts", "Work with unbiased mediators and legal professionals."],
-              ["24.png", "24/7 Support", "Access assistance and case updates anytime, anywhere."],
-            ].map(([icon, title, desc]) => (
-              <div key={title} className="why-choose-item">
-                <div className="why-icon-circle">
-                  <img src={`/assets/icons/${icon}`} alt={title} />
-                </div>
-                <h4>{title}</h4>
-                <p>{desc}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -211,15 +222,22 @@ export default function ConsumerDisputePage() {
 
           <div className="faq-box">
             <div className="faq-tabs">
-              {["Cases","Money","Policies","Resolve Cases","Victory %","Ordinary"].map((tab, i) => (
-                <button key={i} className={`faq-tab ${i===0 ? "active" : ""}`}>
+              {[
+                "Cases",
+                "Money",
+                "Policies",
+                "Resolve Cases",
+                "Victory %",
+                "Ordinary",
+              ].map((tab) => (
+                <button key={tab} className="faq-tab">
                   {tab}
                 </button>
               ))}
             </div>
 
             <div className="faq-list">
-              {faqQuestions.map((q,i)=>(
+              {faqQuestions.map((q, i) => (
                 <div key={i} className="faq-item">
                   <span>{q}</span>
                   <span className="faq-arrow">›</span>
@@ -234,18 +252,21 @@ export default function ConsumerDisputePage() {
       <section className="contract-cta">
         <div className="contract-cta-box">
           <div className="contract-cta-content">
-            <h2>Resolve Consumer Complaints Without Court Stress</h2>
+            <h2>
+              Resolve Consumer Complaints Without Court Stress
+            </h2>
 
             <p>
-              Don’t let unresolved complaints go unheard. Resolve consumer disputes
-              through a secure and legally compliant online process.
+              Don’t let unresolved complaints go unheard. Resolve consumer
+              disputes through a secure and legally compliant online
+              process.
             </p>
 
             <div className="contract-cta-buttons">
               <button
                 className="cta-primary"
                 onClick={() =>
-                  router.push(`${APP_PATH}/login?redirect=${APP_PATH}/user/file-new-case/step1`)
+                  goToLogin("/user/file-new-case/step1")
                 }
               >
                 File A Case
@@ -253,9 +274,7 @@ export default function ConsumerDisputePage() {
 
               <button
                 className="cta-secondary"
-                onClick={() =>
-                  router.push(`${APP_PATH}/login`)
-                }
+                onClick={() => goToLogin()}
               >
                 Talk To Expert
               </button>
@@ -263,7 +282,10 @@ export default function ConsumerDisputePage() {
           </div>
 
           <div className="contract-cta-image">
-            <img src="/assets/images/consumer-ct.png" alt="Contract Resolution" />
+            <img
+              src="/assets/images/consumer-ct.png"
+              alt="Consumer Resolution"
+            />
           </div>
         </div>
       </section>

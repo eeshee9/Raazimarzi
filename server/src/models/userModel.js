@@ -5,13 +5,19 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
 
-    email: { type: String, required: true, unique: true, index: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
 
     phone: { type: String },
 
     password: {
       type: String,
-      required: false,
+      required: true,
+      select: false,
     },
 
     role: {
@@ -20,13 +26,15 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    // 🔐 Forgot password flow
-    passwordResetAllowed: {
+    verified: {
       type: Boolean,
-      default: false,
+      default: true,
     },
 
-    verified: {
+    /* 🔐 Forgot Password */
+    passwordResetOTP: String,
+    passwordResetOTPExpiry: Date,
+    passwordResetAllowed: {
       type: Boolean,
       default: false,
     },

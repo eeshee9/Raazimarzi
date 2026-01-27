@@ -20,6 +20,7 @@ const contactSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
+      match: [/^\+?[0-9]{7,15}$/, "Please provide a valid phone number"],
     },
     message: {
       type: String,
@@ -34,8 +35,10 @@ const contactSchema = new mongoose.Schema(
       default: "new",
     },
   },
-  { 
-    timestamps: true 
-  }
+  { timestamps: true }
 );
+
+// Optional index for faster admin queries
+contactSchema.index({ status: 1, createdAt: -1 });
+
 export default mongoose.model("Contact", contactSchema);

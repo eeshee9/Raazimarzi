@@ -4,22 +4,19 @@ import { useState, useEffect } from "react";
 import "@/styles/home.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { APP_BASE_PATH } from "@/config/appConfig";
 
 export default function HomePage() {
   const [animate, setAnimate] = useState(false);
   const [activeFaqTab, setActiveFaqTab] = useState("Cases");
-
-  // Updated: point to /app for the application path
-  const APP_PATH = "/app";
 
   useEffect(() => {
     setAnimate(true);
   }, []);
 
   const goToLogin = (redirectPath = "") => {
-    // Updated to use relative path instead of localhost
     const redirectQuery = redirectPath ? `?redirect=${redirectPath}` : "";
-    window.location.href = `${APP_PATH}/login${redirectQuery}`;
+    window.location.href = `${APP_BASE_PATH}/login${redirectQuery}`;
   };
 
   const faqTabs = [
@@ -79,7 +76,7 @@ export default function HomePage() {
         <div className="hero-visual">
           <span className={`raazi ${animate ? "show" : ""}`}>RAAZI</span>
           <img
-            src="/assets/images/statuee.png"
+            src="/assets/images/statue.png"
             className={`statue ${animate ? "drop" : ""}`}
             alt="Justice Statue"
           />
@@ -159,7 +156,10 @@ export default function HomePage() {
           </div>
 
           <div className="why-item">
-            <img src="/assets/icons/confidential.png" alt="Confidential & secure" />
+            <img
+              src="/assets/icons/confidential.png"
+              alt="Confidential & secure"
+            />
             <p>Confidential & secure</p>
           </div>
 
@@ -180,24 +180,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Remaining sections unchanged */}
-      {/* Make sure any button linking to app uses goToLogin() */}
+      {/* CTA */}
       <section className="contract-cta">
         <div className="contract-cta-box">
           <div className="contract-cta-content">
             <h2>Resolve Disputes Online. Faster. Smarter. Peacefully.</h2>
-            <p>Settle legal disputes without long court processes. RaaziMerzi connects you with expert mediators and lawyers for secure, transparent online resolution.</p>
+            <p>
+              Settle legal disputes without long court processes. RaaziMerzi
+              connects you with expert mediators and lawyers for secure,
+              transparent online resolution.
+            </p>
             <div className="contract-cta-buttons">
-              <button className="cta-primary" onClick={() => goToLogin("/user/file-new-case/step1")}>
+              <button
+                className="cta-primary"
+                onClick={() => goToLogin("/user/file-new-case/step1")}
+              >
                 File A Case
               </button>
-              <button className="cta-secondary" onClick={() => goToLogin()}>
+              <button
+                className="cta-secondary"
+                onClick={() => goToLogin()}
+              >
                 Talk To Expert
               </button>
             </div>
           </div>
           <div className="contract-cta-image">
-            <img src="/assets/images/cta-home.png" alt="Contract Resolution" />
+            <img
+              src="/assets/images/cta-home.png"
+              alt="Contract Resolution"
+            />
           </div>
         </div>
       </section>

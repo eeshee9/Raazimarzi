@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { APP_BASE_PATH } from "@/config/appConfig";
 import "@/styles/partnershipDisputes.css";
 
 export default function PartnershipDisputes() {
@@ -27,17 +28,28 @@ export default function PartnershipDisputes() {
     "What evidence is needed for a partnership dispute?",
   ];
 
-  const APP_PATH = "/app"; // ✅ centralized base path
+  const goToLogin = (redirectPath = "") => {
+    const redirectQuery = redirectPath
+      ? `?redirect=${redirectPath}`
+      : "";
+    router.push(`${APP_BASE_PATH}/login${redirectQuery}`);
+  };
 
   function AccordionItem({ title }) {
     const [open, setOpen] = useState(false);
 
     return (
       <div className={`pd-accordion-item ${open ? "open" : ""}`}>
-        <div className="pd-accordion-header" onClick={() => setOpen(!open)}>
+        <div
+          className="pd-accordion-header"
+          onClick={() => setOpen(!open)}
+        >
           <div>
             <h4>{title}</h4>
-            <p>When one party fails to fulfill their partnership obligations...</p>
+            <p>
+              When one party fails to fulfill their partnership
+              obligations...
+            </p>
           </div>
           <span className="pd-accordion-arrow">›</span>
         </div>
@@ -58,35 +70,47 @@ export default function PartnershipDisputes() {
 
       {/* HERO */}
       <section className="cd-hero-exact">
-        <img src="/assets/icons/left-circle.png" alt="" className="figma-circle left" />
-        <img src="/assets/icons/right-circle.png" alt="" className="figma-circle right" />
+        <img
+          src="/assets/icons/left-circle.png"
+          alt=""
+          className="figma-circle left"
+        />
+        <img
+          src="/assets/icons/right-circle.png"
+          alt=""
+          className="figma-circle right"
+        />
         <div className="hero-glow"></div>
 
         <div className="cd-hero-content">
           <span className="cd-pill-exact">Partnership Disputes</span>
 
           <h1>
-            Resolve <span className="highlight">Partnership</span> Disputes <br />
-            <span className="highlight-light">Quickly</span> & Professionally
+            Resolve <span className="highlight">Partnership</span> Disputes
+            <br />
+            <span className="highlight-light">Quickly</span> &
+            Professionally
           </h1>
 
           <p>
-            Streamline conflict resolution between business partners with our efficient Online Dispute Resolution platform.
+            Streamline conflict resolution between business partners with our
+            efficient Online Dispute Resolution platform.
           </p>
 
           <div className="hero-buttons">
             <button
               className="btn-primary-exact"
               onClick={() =>
-                router.push(`${APP_PATH}/login?redirect=${APP_PATH}/user/file-new-case/step1`)
+                goToLogin("/user/file-new-case/step1")
               }
             >
               File A Case
             </button>
+
             <button
               className="btn-dark-exact"
               onClick={() =>
-                router.push(`${APP_PATH}/login?redirect=${APP_PATH}/user/chats`)
+                goToLogin("/user/chats")
               }
             >
               Talk To Expert
@@ -270,29 +294,31 @@ export default function PartnershipDisputes() {
           </div>
         </div>
       </section>
-
+      
       {/* CTA */}
       <section className="contract-cta">
         <div className="contract-cta-box">
           <div className="contract-cta-content">
             <h2>Protect Your Business. Preserve Relationships.</h2>
             <p>
-              Handle partnership conflicts professionally with structured online dispute resolution guided by experienced legal experts.
+              Handle partnership conflicts professionally with structured
+              online dispute resolution guided by experienced legal experts.
             </p>
 
             <div className="contract-cta-buttons">
               <button
                 className="cta-primary"
                 onClick={() =>
-                  router.push(`${APP_PATH}/login?redirect=${APP_PATH}/user/file-new-case/step1`)
+                  goToLogin("/user/file-new-case/step1")
                 }
               >
                 File A Case
               </button>
+
               <button
                 className="cta-secondary"
                 onClick={() =>
-                  router.push(`${APP_PATH}/login?redirect=${APP_PATH}/user/chats`)
+                  goToLogin("/user/chats")
                 }
               >
                 Talk To Expert
@@ -301,7 +327,10 @@ export default function PartnershipDisputes() {
           </div>
 
           <div className="contract-cta-image">
-            <img src="/assets/images/relationships.png" alt="Business relationship protection" />
+            <img
+              src="/assets/images/relationships.png"
+              alt="Business relationship protection"
+            />
           </div>
         </div>
       </section>

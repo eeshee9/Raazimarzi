@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios"; // ✅ Use production-ready axios
+import api from "../api/axios";
 
 import HomeIcon from "../assets/icons/home.png";
 import Vector from "../assets/icons/Vector.png";
@@ -25,24 +25,41 @@ const UserMyCases = () => {
   const [raisedCases, setRaisedCases] = useState([]);
   const [opponentCases, setOpponentCases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({ fullName: "", avatar: "" });
 
+  // 🔹 Check login and fetch user info
   useEffect(() => {
-    const fetchCases = async () => {
+    const fetchUserAndCases = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      setLoading(true);
       try {
-        const res = await api.get("/api/cases/my-cases"); // ✅ Use axios instance
+        // Fetch user info
+        const userRes = await api.get("/api/user/me");
+        setUser({
+          fullName: userRes.data.fullName,
+          avatar: userRes.data.avatar || "https://i.pravatar.cc/40",
+        });
+
+        // Fetch user cases
+        const res = await api.get("/api/cases/my-cases");
         setRaisedCases(res.data.raisedCases || []);
         setOpponentCases(res.data.opponentCases || []);
-      } catch (error) {
-        console.error("❌ Failed to fetch cases:", error);
+      } catch (err) {
+        console.error("❌ Failed to fetch data:", err);
+        // If unauthorized, redirect to login
+        if (err.response?.status === 401) navigate("/login");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCases();
-  }, []);
-
-  const handleReset = () => setSearch("");
+    fetchUserAndCases();
+  }, [navigate]);
 
   const filteredRaisedCases = raisedCases.filter((c) =>
     c.caseId?.toLowerCase().includes(search.toLowerCase())
@@ -52,6 +69,11 @@ const UserMyCases = () => {
     c.caseId?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   if (loading) return <p style={{ padding: 20 }}>Loading cases...</p>;
 
   return (
@@ -60,7 +82,7 @@ const UserMyCases = () => {
       <aside className="sidebar">
         <h2 className="sidebar-title">Dashboard</h2>
         <nav className="menu">
-          <div className="menu-item active" onClick={() => navigate("/user/dashboard")}>
+          <div className="menu-item" onClick={() => navigate("/user/dashboard")}>
             <img src={HomeIcon} alt="Home" />
             <span>Home</span>
           </div>
@@ -72,7 +94,7 @@ const UserMyCases = () => {
             <img src={FileIcon} alt="File New Case" />
             <span>File New Case</span>
           </div>
-          <div className="menu-item" onClick={() => navigate("/user/my-cases")}>
+          <div className="menu-item active" onClick={() => navigate("/user/my-cases")}>
             <img src={CaseIcon} alt="My Cases" />
             <span>My Cases</span>
           </div>
@@ -80,7 +102,7 @@ const UserMyCases = () => {
             <img src={MeetingIcon} alt="Case Meetings" />
             <span>Case Meetings</span>
           </div>
-          <div className="menu-item">
+          <div className="menu-item" onClick={() => navigate("/user/documents")}>
             <img src={DocsIcon} alt="Documents" />
             <span>Documents</span>
           </div>
@@ -88,17 +110,17 @@ const UserMyCases = () => {
             <img src={ChatIcon} alt="Chats" />
             <span>Chats</span>
           </div>
-          <div className="menu-item">
+          <div className="menu-item" onClick={() => navigate("/user/payment")}>
             <img src={PaymentIcon} alt="Payment" />
             <span>Payment</span>
           </div>
-          <div className="menu-item">
+          <div className="menu-item" onClick={() => navigate("/user/support")}>
             <img src={SupportIcon} alt="Support" />
             <span>Support</span>
           </div>
         </nav>
 
-        <div className="logout">
+        <div className="logout" onClick={handleLogout}>
           <div className="menu-item">
             <img src={LogoutIcon} alt="Logout" />
             <span>Log out</span>
@@ -114,12 +136,13 @@ const UserMyCases = () => {
             <FaCog className="icon" />
             <FaBell className="icon" />
             <div className="profile">
-              <img src="https://i.pravatar.cc/40" alt="profile" />
-              <span>Rohan Singhania</span>
+              <img src={user.avatar} alt="profile" />
+              <span>{user.fullName}</span>
             </div>
           </div>
         </header>
 
+        {/* Search */}
         <div className="search-bar">
           <input
             type="text"
@@ -127,12 +150,12 @@ const UserMyCases = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <button className="reset-btn" onClick={handleReset}>
+          <button className="reset-btn" onClick={() => setSearch("")}>
             Reset
           </button>
         </div>
 
-        {/* Tables */}
+        {/* My Raised Cases */}
         <div className="table-section">
           <h3>My Raised Cases</h3>
           <table className="cases-table">
@@ -169,6 +192,7 @@ const UserMyCases = () => {
           </table>
         </div>
 
+        {/* Opponent Cases */}
         <div className="table-section">
           <h3>Opponent Parties Raised Cases</h3>
           <table className="cases-table">

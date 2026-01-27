@@ -1,4 +1,5 @@
-import React, { useState, useContext } from "react";
+// src/pages/FileNewCaseStep2.js
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CaseContext } from "../context/caseContext";
@@ -18,17 +19,12 @@ import { FaCog, FaBell } from "react-icons/fa";
 
 const FileNewCaseStep2 = () => {
   const navigate = useNavigate();
-
-  // ✅ Get data from context
   const { caseData } = useContext(CaseContext);
 
-  // ✅ Fallback to localStorage
   const storedCaseData = JSON.parse(localStorage.getItem("caseData"));
-  const effectiveCaseData = caseData && Object.keys(caseData).length
-    ? caseData
-    : storedCaseData;
+  const effectiveCaseData =
+    caseData && Object.keys(caseData).length ? caseData : storedCaseData;
 
-    
   const [formData, setFormData] = useState({
     caseSummary: "",
     documentTitle: "",
@@ -40,6 +36,13 @@ const FileNewCaseStep2 = () => {
     declaration: false,
   });
 
+  // Pre-fill previous Step2 if available
+  useEffect(() => {
+    if (effectiveCaseData?.step2) {
+      setFormData(effectiveCaseData.step2);
+    }
+  }, [effectiveCaseData]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -49,7 +52,7 @@ const FileNewCaseStep2 = () => {
   };
 
   const handleSubmit = async () => {
-    // ✅ Step-1 validation
+    // Step1 validation
     if (
       !effectiveCaseData ||
       !effectiveCaseData.caseTitle?.trim() ||
@@ -60,7 +63,7 @@ const FileNewCaseStep2 = () => {
       return;
     }
 
-    // ✅ Declaration is mandatory
+    // Declaration mandatory
     if (!formData.declaration) {
       alert("Please accept the declaration");
       return;
@@ -69,18 +72,10 @@ const FileNewCaseStep2 = () => {
     try {
       const token = localStorage.getItem("token");
 
+      // Merge Step1 + Step2 data
       const finalData = {
         ...effectiveCaseData,
-        caseFacts: {
-          caseSummary: formData.caseSummary || "",
-          documentTitle: formData.documentTitle || "",
-          documentType: formData.documentType || "",
-          witnessDetails: formData.witnessDetails || "",
-          place: formData.place || "",
-          date: formData.date || "",
-          digitalSignature: formData.digitalSignature || "",
-          declaration: true,
-        },
+        step2: formData,
       };
 
       console.log("📤 Sending case data:", finalData);
@@ -98,9 +93,11 @@ const FileNewCaseStep2 = () => {
       alert("✅ Case filed successfully!");
       localStorage.removeItem("caseData");
       navigate("/user/my-cases");
-
     } catch (error) {
-      console.error("❌ Error submitting case:", error.response?.data || error.message);
+      console.error(
+        "❌ Error submitting case:",
+        error.response?.data || error.message
+      );
       alert(error.response?.data?.message || "Error submitting case");
     }
   };
@@ -191,16 +188,46 @@ const FileNewCaseStep2 = () => {
           />
 
           <div className="form-grid">
-            <input name="documentTitle" placeholder="Document Title" onChange={handleChange} />
-            <input name="documentType" placeholder="Document Type" onChange={handleChange} />
-            <input name="witnessDetails" placeholder="Witness Details" onChange={handleChange} />
+            <input
+              name="documentTitle"
+              placeholder="Document Title"
+              value={formData.documentTitle}
+              onChange={handleChange}
+            />
+            <input
+              name="documentType"
+              placeholder="Document Type"
+              value={formData.documentType}
+              onChange={handleChange}
+            />
+            <input
+              name="witnessDetails"
+              placeholder="Witness Details"
+              value={formData.witnessDetails}
+              onChange={handleChange}
+            />
           </div>
 
           <h4>Verification & Affidavit</h4>
           <div className="form-grid">
-            <input name="place" placeholder="Place" onChange={handleChange} />
-            <input name="date" type="date" onChange={handleChange} />
-            <input name="digitalSignature" placeholder="Digital Signature" onChange={handleChange} />
+            <input
+              name="place"
+              placeholder="Place"
+              value={formData.place}
+              onChange={handleChange}
+            />
+            <input
+              name="date"
+              type="date"
+              value={formData.date}
+              onChange={handleChange}
+            />
+            <input
+              name="digitalSignature"
+              placeholder="Digital Signature"
+              value={formData.digitalSignature}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="declaration">
@@ -214,7 +241,10 @@ const FileNewCaseStep2 = () => {
           </div>
 
           <div className="button-group">
-            <button className="prev-btn" onClick={() => navigate("/user/file-new-case/step1")}>
+            <button
+              className="prev-btn"
+              onClick={() => navigate("/user/file-new-case/step1")}
+            >
               ← Back
             </button>
             <button className="next-btn" onClick={handleSubmit}>
