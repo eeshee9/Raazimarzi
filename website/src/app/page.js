@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import "@/styles/home.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { APP_BASE_PATH } from "@/config/appConfig";
+import { APP_BASE_PATH } from "@/config/next.config.js";
 
 export default function HomePage() {
   const [animate, setAnimate] = useState(false);
