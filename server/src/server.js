@@ -6,6 +6,7 @@ import express from "express";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { testSMTP } from "./services/mail.service.js"; 
 
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
@@ -80,7 +81,8 @@ app.get("/api/health", (req, res) => {
   res.json({ 
     status: "OK",
     database: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    emailConfigured: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS) // ✅ Add this
   });
 });
 
@@ -155,17 +157,39 @@ io.on("connection", (socket) => {
 // ===== Start Server =====
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`\n🚀 Server running in ${process.env.NODE_ENV || 'development'} mode`);
   console.log(`🌐 Server + Socket.IO: http://localhost:${PORT}`);
   console.log(`📡 API Base URL: http://localhost:${PORT}/api`);
+  
+  // ✅ Email Configuration Check
+  console.log(`\n📧 Email Configuration:`);
+  console.log(`   Host: ${process.env.EMAIL_HOST || 'smtp.zoho.in'}`);
+  console.log(`   Port: ${process.env.EMAIL_PORT || '465'}`);
+  console.log(`   User: ${process.env.EMAIL_USER || '❌ NOT SET'}`);
+  console.log(`   Pass: ${process.env.EMAIL_PASS ? '✅ Set (***' + process.env.EMAIL_PASS.slice(-4) + ')' : '❌ NOT SET'}`);
+  console.log(`   From: ${process.env.EMAIL_FROM_NAME || 'RaaziMarzi'}`);
+  
+  // ✅ Test SMTP Connection
+  console.log(`\n🔍 Testing SMTP connection...`);
+  const smtpReady = await testSMTP();
+  
+  if (smtpReady) {
+    console.log(`✅ Email service is ready!`);
+  } else {
+    console.error(`⚠️  WARNING: Email service is NOT working!`);
+    console.error(`   - Check your .env file`);
+    console.error(`   - Verify EMAIL_USER and EMAIL_PASS are correct`);
+    console.error(`   - Ensure you're using Zoho App Password (not regular password)`);
+  }
+  
   console.log(`\n📝 Available Routes:`);
   console.log(`   POST /api/auth/signup - User registration`);
   console.log(`   POST /api/auth/login - User login`);
   console.log(`   GET  /api/auth/me - Get current user`);
-  console.log(`   POST /api/auth/forgot-password - Send OTP`);
-  console.log(`   POST /api/auth/verify-otp - Verify OTP`);
-  console.log(`   POST /api/auth/reset-password - Reset password`);
+  console.log(`   POST /api/otp/send-otp - Send OTP`);
+  console.log(`   POST /api/otp/verify-otp - Verify OTP`);
+  console.log(`   POST /api/password/reset - Reset password`);
   console.log(`\n✨ Ready to accept connections!\n`);
 });
 

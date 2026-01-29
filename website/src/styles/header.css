@@ -293,3 +293,45 @@
     padding: 12px 20px;
   }
 }
+
+
+/* Desktop login button */
+.login-btn {
+  background-color: #7b8afc; /* Purple-ish like the "File A Case" */
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px #5f6edc; /* subtle shadow */
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* space between icon and text */
+}
+
+.login-btn:hover {
+  background-color: #6a7bf0;
+  box-shadow: 0 2px #5f6edc;
+  transform: translateY(2px);
+}
+
+.login-btn:active {
+  box-shadow: 0 0 #5f6edc;
+  transform: translateY(4px);
+}
+
+/* Icon inside the button */
+.login-btn .login-icon {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-demo-btn.login-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px 0;
+  font-size: 16px;
+}

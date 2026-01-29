@@ -66,14 +66,12 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validation
     if (!email || !password) {
       return res.status(400).json({ 
         message: "Email and password are required" 
       });
     }
 
-    // Find user (explicitly select password since it's set to select: false in model)
     const user = await User.findOne({ email }).select("+password");
     
     if (!user) {
@@ -82,14 +80,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if user is verified (if you're using email verification)
-    if (!user.verified) {
-      return res.status(403).json({ 
-        message: "Please verify your email before logging in" 
-      });
-    }
-
-    // Verify password
     const isPasswordMatch = await user.matchPassword(password);
     
     if (!isPasswordMatch) {
@@ -98,7 +88,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate token
     const token = generateToken(user);
 
     console.log("✅ User logged in successfully:", email);

@@ -1,77 +1,176 @@
 import nodemailer from "nodemailer";
 
-// ✅ Create transporter (Zoho-safe)
-const transporter = nodemailer.createTransport({
-  host: "smtp.zoho.in",
-  port: 465,
-  secure: true, // MUST be true for Zoho
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // MUST be Zoho App Password
-  },
-});
+const validateEmailEnv = () => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error("❌ EMAIL CONFIG ERROR:");
+    console.error("   EMAIL_USER or EMAIL_PASS is missing in .env");
+    return false;
+  }
+  return true;
+};
 
-// ✅ Manual SMTP test (call explicitly)
+let transporter = null;
+
+const getTransporter = () => {
+  if (!transporter) {
+    if (!validateEmailEnv()) {
+      throw new Error("Email credentials not configured");
+    }
+
+    console.log("📧 Initializing Zoho SMTP transporter...");
+
+    transporter = nodemailer.createTransport({
+      host: "smtp.zoho.in",
+      port: 465,
+      secure: true, // SSL
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS, // Zoho App Password
+      },
+      logger: true,
+      debug: true,
+    });
+  }
+
+  return transporter;
+};
+
+
 export const testSMTP = async () => {
   try {
-    await transporter.verify();
-    console.log("✅ SMTP server is ready");
+    console.log("\n🔍 Verifying SMTP credentials...");
+    console.log("   User:", process.env.EMAIL_USER);
+    console.log(
+      "   Pass:",
+      process.env.EMAIL_PASS
+        ? "✅ Set (***" + process.env.EMAIL_PASS.slice(-4) + ")"
+        : "❌ NOT SET"
+    );
+
+    const smtp = getTransporter();
+    await smtp.verify();
+
+    console.log("✅ Zoho SMTP authentication successful!");
     return true;
   } catch (error) {
-    console.error("❌ SMTP verification failed:", error.message);
+    console.error("\n❌ SMTP verification failed!");
+    console.error("   Message:", error.message);
+    console.error("   Code:", error.code || "N/A");
+
+    if (error.code === "EAUTH") {
+      console.error("💡 AUTH FIX:");
+      console.error("   - Use Zoho App Password (not email password)");
+      console.error("   - Remove spaces from password");
+      console.error("   - Regenerate App Password if needed");
+    }
+
     return false;
   }
 };
 
-// ✅ Send OTP Email
+/**
+ * 📩 Send OTP Email
+ */
 export const sendOtpMail = async ({ email, otp, type }) => {
-  const subject =
-    type === "signup"
-      ? "Your Signup OTP - RaaziMarzi"
-      : "Your Password Reset OTP - RaaziMarzi";
+  try {
+    const smtp = getTransporter();
 
-  await transporter.sendMail({
-    from: `"${process.env.EMAIL_FROM_NAME || "RaaziMarzi"}" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject,
-    html: `
+    const subject =
+      type === "signup"
+        ? "Your Signup OTP - RaaziMarzi"
+        : "Your Password Reset OTP - RaaziMarzi";
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+    .box { max-width:600px; margin:auto; background:#fff; border-radius:10px; overflow:hidden; }
+    .header { background:#667eea; color:#fff; padding:30px; text-align:center; }
+    .content { padding:30px; color:#333; }
+    .otp { font-size:32px; letter-spacing:6px; font-weight:bold; color:#667eea; text-align:center; margin:20px 0; }
+    .footer { background:#f8f9fa; padding:15px; font-size:12px; color:#777; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="header">
       <h2>${subject}</h2>
-      <p>Your OTP:</p>
-      <h1>${otp}</h1>
-      <p>Valid for 5 minutes.</p>
-    `,
-  });
+    </div>
+    <div class="content">
+      <p>Hello,</p>
+      <p>Your One-Time Password (OTP) is:</p>
+      <div class="otp">${otp}</div>
+      <p>This OTP is valid for <strong>5 minutes</strong>.</p>
+      <p>If you didn’t request this, please ignore this email.</p>
+    </div>
+    <div class="footer">
+      © ${new Date().getFullYear()} RaaziMarzi. Do not reply.
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+    const info = await smtp.sendMail({
+      from: `"${process.env.EMAIL_FROM_NAME || "RaaziMarzi"}" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject,
+      html,
+      text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+    });
+
+    console.log("✅ OTP email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("❌ OTP send failed:", error.message);
+    throw error;
+  }
 };
 
-// Contact mail
+/**
+ * 📬 Contact Mail
+ */
 export const sendContactMail = async ({ name, email, phone, message }) => {
-  await transporter.sendMail({
-    from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_USER}>`,
-    to: process.env.ADMIN_EMAIL,
+  const smtp = getTransporter();
+
+  await smtp.sendMail({
+    from: `"RaaziMarzi" <${process.env.EMAIL_USER}>`,
+    to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
     subject: "New Contact Request - RaaziMarzi",
     html: `
+      <h3>New Contact Request</h3>
       <p><b>Name:</b> ${name}</p>
       <p><b>Email:</b> ${email}</p>
       <p><b>Phone:</b> ${phone || "N/A"}</p>
-      <p>${message}</p>
+      <p><b>Message:</b><br/>${message}</p>
     `,
   });
+
+  console.log("✅ Contact mail sent");
 };
 
-// Demo mail
+
 export const sendDemoMail = async ({ name, email, phone, company, message }) => {
-  await transporter.sendMail({
-    from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_USER}>`,
-    to: process.env.ADMIN_EMAIL,
+  const smtp = getTransporter();
+
+  await smtp.sendMail({
+    from: `"RaaziMarzi" <${process.env.EMAIL_USER}>`,
+    to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
     subject: "New Demo Request - RaaziMarzi",
     html: `
+      <h3>New Demo Request</h3>
       <p><b>Name:</b> ${name}</p>
       <p><b>Email:</b> ${email}</p>
       <p><b>Phone:</b> ${phone}</p>
       <p><b>Company:</b> ${company}</p>
-      <p>${message}</p>
+      <p><b>Message:</b><br/>${message}</p>
     `,
   });
+
+  console.log("✅ Demo mail sent");
 };
 
-export default transporter;
+export default getTransporter;

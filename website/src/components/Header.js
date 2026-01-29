@@ -198,13 +198,15 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* REQUEST DEMO BUTTON */}
+       
+          {/* ✅ LOGIN BUTTON (DESKTOP) */}
           <div className="demo-btn">
             <button
+              className="login-btn"
               onClick={() => navigateToApp("/login")}
-              aria-label="Request demo - Go to login page"
+              aria-label="Login to your account"
             >
-              Request Demo
+               👤 Login
             </button>
           </div>
 
@@ -316,12 +318,12 @@ export default function Header() {
             Contact Us
           </Link>
 
+        
           <button
+            className="mobile-demo-btn login-btn"
             onClick={() => navigateToApp("/login")}
-            className="mobile-demo-btn"
-            aria-label="Request demo - Go to login"
           >
-            Request Demo
+            👤 Login
           </button>
         </div>
       </div>

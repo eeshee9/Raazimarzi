@@ -2,25 +2,18 @@ import mongoose from "mongoose";
 
 const otpSchema = new mongoose.Schema(
   {
-    email: {
+    email: { type: String, required: true },
+    otp: { type: String, required: true },
+    type: {
       type: String,
-      required: true,
-      index: true,
-    },
-    otpHash: {
-      type: String,
+      enum: ["signup", "password_reset"],
       required: true,
     },
-    expiresAt: {
-      type: Date,
-      required: true,
-      index: { expires: 0 }, 
-    },
+    expiresAt: { type: Date, required: true },
   },
   { timestamps: true }
 );
 
-// Create index for faster queries
-otpSchema.index({ email: 1, expiresAt: 1 });
+otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Otp", otpSchema);

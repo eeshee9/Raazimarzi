@@ -1,4 +1,3 @@
-// src/pages/Login.js
 import React, { useState, useEffect, useCallback } from "react";
 import "./Login.css";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -9,7 +8,7 @@ import phone from "../assets/icons/phone.png";
 import fb from "../assets/icons/fb.png";
 import axios from "axios";
 
-// ✅ FIXED: Use correct API URL
+// API URL
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 const Login = () => {
@@ -24,6 +23,7 @@ const Login = () => {
 
   const redirectPath = new URLSearchParams(location.search).get("redirect");
 
+  /* ================= REDIRECT BY ROLE ================= */
   const redirectByRole = useCallback(
     (role) => {
       if (redirectPath) {
@@ -48,10 +48,11 @@ const Login = () => {
     [navigate, redirectPath]
   );
 
-  // Auto-login if already authenticated
+  /* ================= AUTO LOGIN ================= */
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
+
     if (token && role) {
       redirectByRole(role);
     }
@@ -64,50 +65,36 @@ const Login = () => {
     setError("");
 
     try {
-      // ✅ FIXED: Changed from /users/login to /auth/login
       const res = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
       });
 
-      // ✅ FIXED: Handle the new response structure
-      if (res.data.success && res.data.token) {
-        // Save auth info
+      if (res.data?.success && res.data?.token) {
+        // Save auth data
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", res.data.user.role);
         localStorage.setItem("email", res.data.user.email);
         localStorage.setItem("userId", res.data.user.id);
         localStorage.setItem("userName", res.data.user.name);
-
-        // Also save full user object for easy access
         localStorage.setItem("user", JSON.stringify(res.data.user));
 
-        // Redirect based on role
+        // Redirect user
         redirectByRole(res.data.user.role);
       } else {
-        setError(res.data.message || "Login failed");
+        setError("Login failed. Please try again.");
       }
     } catch (err) {
       console.error("Login error:", err);
-      
-      const message = err.response?.data?.message || "Invalid email or password";
-      
-      // Handle specific error cases
-      if (err.response?.status === 403) {
-        // Account not verified or password reset required
-        setError(message);
-        // Optionally redirect to forgot password
-        if (message.includes("verify")) {
-          setTimeout(() => {
-            navigate(`/forgotpassword?email=${email}`);
-          }, 2000);
-        }
-      } else if (err.response?.status === 401) {
+
+      if (err.response?.status === 401) {
         setError("Invalid email or password");
+      } else if (err.response?.status === 400) {
+        setError(err.response.data.message);
       } else if (err.response?.status === 500) {
         setError("Server error. Please try again later.");
       } else {
-        setError(message);
+        setError("Login failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -128,18 +115,22 @@ const Login = () => {
           </div>
 
           <h2>Welcome to RaaziMarzi</h2>
-          <p className="subtitle">Sign in to resolve your disputes online.</p>
+          <p className="subtitle">
+            Sign in to resolve your disputes online.
+          </p>
 
-          {/* ✅ ADDED: Error message display */}
           {error && (
-            <div className="error-message" style={{
-              backgroundColor: '#fee',
-              color: '#c33',
-              padding: '12px',
-              borderRadius: '6px',
-              marginBottom: '16px',
-              border: '1px solid #fcc'
-            }}>
+            <div
+              className="error-message"
+              style={{
+                backgroundColor: "#fee",
+                color: "#c33",
+                padding: "12px",
+                borderRadius: "6px",
+                marginBottom: "16px",
+                border: "1px solid #fcc",
+              }}
+            >
               {error}
             </div>
           )}
@@ -165,9 +156,9 @@ const Login = () => {
                 required
                 disabled={loading}
               />
-              <span 
+              <span
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
               >
                 {showPassword ? "🙈" : "👁️"}
               </span>
@@ -182,17 +173,29 @@ const Login = () => {
             </button>
 
             <p className="bottom-text">
-              Don't have an account?{" "}
-              <Link to={`/signup${redirectPath ? `?redirect=${redirectPath}` : ""}`}>
+              Don&apos;t have an account?{" "}
+              <Link
+                to={`/signup${
+                  redirectPath ? `?redirect=${redirectPath}` : ""
+                }`}
+              >
                 Sign Up
               </Link>
             </p>
 
             <div className="social-row">
-              <span><img src={google} alt="Google" /></span>
-              <span><img src={linkedin} alt="LinkedIn" /></span>
-              <span><img src={phone} alt="Phone" /></span>
-              <span><img src={fb} alt="Facebook" /></span>
+              <span>
+                <img src={google} alt="Google" />
+              </span>
+              <span>
+                <img src={linkedin} alt="LinkedIn" />
+              </span>
+              <span>
+                <img src={phone} alt="Phone" />
+              </span>
+              <span>
+                <img src={fb} alt="Facebook" />
+              </span>
             </div>
           </form>
         </div>
