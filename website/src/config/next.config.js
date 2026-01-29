@@ -1,19 +1,15 @@
-
-export const APP_BASE_PATH =
-  process.env.NEXT_PUBLIC_APP_PATH || "/app";
-
-export const API_BASE_PATH =
-  process.env.NEXT_PUBLIC_API_PATH || "/api";
-
-  // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // ❌ REMOVE basePath and assetPrefix - they're causing conflicts
+  // The React app will handle /app routes
+  output: "standalone",
+  
+  // Add rewrites to handle routing
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`, // proxy to backend
+        destination: 'https://raazimarzi.com/api/:path*', // Proxy to backend
       },
     ];
   },

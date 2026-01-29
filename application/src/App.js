@@ -34,14 +34,16 @@ import { CaseProvider } from "./context/caseContext";
 
 function App() {
   return (
-    <Router>
+    // ✅ Add basename="/app" to handle /app subdirectory
+    <Router basename="/app">
       {/* Wrap all routes inside CaseProvider */}
       <CaseProvider>
         <Routes>
+          {/* Root path now maps to /app/login */}
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-           <Route path="/forgotpassword" element={<ForgotPassword />} />
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
 
           {/* User Routes */}
           <Route path="/user/dashboard" element={<UserDashboard />} />

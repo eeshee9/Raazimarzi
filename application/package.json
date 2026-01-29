@@ -2,6 +2,7 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://raazimarzi.com/app",
   "dependencies": {
     "@tailwindcss/cli": "^4.1.11",
     "@testing-library/dom": "^10.4.1",
