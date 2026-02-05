@@ -66,7 +66,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-
 /* =========================
    FORGOT PASSWORD (SEND OTP)
 ========================= */

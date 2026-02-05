@@ -31,32 +31,6 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
 
-        // ✅ NEW: Profile fields
-    avatar: {
-      type: String,
-      default: "https://i.pravatar.cc/150", // Default avatar
-    },
-
-    dob: { type: String }, // Date of birth
-
-    gender: {
-      type: String,
-      enum: ["Male", "Female", "Other", ""],
-      default: "",
-    },
-
-    address: { type: String },
-    city: { type: String },
-    state: { type: String },
-    country: { type: String, default: "India" },
-    pincode: { type: String },
-
-    // ✅ Profile completion tracking
-    profileCompleted: {
-      type: Boolean,
-      default: false,
-    },
-
     /* 🔐 Forgot Password */
     passwordResetOTP: String,
     passwordResetOTPExpiry: Date,
@@ -67,7 +41,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 
 /* 🔐 HASH PASSWORD */
 userSchema.pre("save", async function (next) {

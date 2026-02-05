@@ -7,7 +7,7 @@ import google from "../assets/icons/google.png";
 import linkdin from "../assets/icons/linkdin.png";
 import phone from "../assets/icons/phone.png";
 import fb from "../assets/icons/fb.png";
-import api from "../api/axios"; 
+import api from "../api/axios"; // ✅ ONLY THIS
 
 const Signup = () => {
   const [form, setForm] = useState({
