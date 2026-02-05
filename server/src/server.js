@@ -54,12 +54,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ===== Routes =====
-// Auth routes (NEW - This was missing!)
-app.use("/api/auth", authRoutes);
 
-// Existing routes
+app.use("/api/auth", authRoutes);
 app.use("/api/mediator", mediatorRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/dashboard", dashboardRoutes);
