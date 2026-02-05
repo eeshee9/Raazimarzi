@@ -3,7 +3,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CaseContext } from "../context/caseContext";
-
+import Vector from "../assets/icons/Vector.png";
 import HomeIcon from "../assets/icons/home.png";
 import FileIcon from "../assets/icons/file.png";
 import MeetingIcon from "../assets/icons/meeting.png";
@@ -23,7 +23,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const FileNewCaseStep2 = () => {
   const navigate = useNavigate();
   const { caseData } = useContext(CaseContext);
-
+ const [isCollapsed, setIsCollapsed] = useState(false);
   const storedCaseData = JSON.parse(localStorage.getItem("caseData"));
   const effectiveCaseData =
     caseData && Object.keys(caseData).length ? caseData : storedCaseData;
@@ -94,7 +94,7 @@ const FileNewCaseStep2 = () => {
       console.log("📤 Sending case data:", finalData);
 
       const response = await axios.post(
-        `${API_URL}/api/cases/file`,
+        `${API_URL}/cases/file`,
         finalData,
         {
           headers: {
@@ -127,57 +127,71 @@ const FileNewCaseStep2 = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <aside className="sidebar">
-        <h2 className="sidebar-title">Dashboard</h2>
+      <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
+        <div className="sidebar-header">
+          <button
+            className="collapse-btn"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            {isCollapsed ? ">" : "<"}
+          </button>
+        </div>
+
         <nav className="menu">
           <div className="menu-item" onClick={() => navigate("/user/dashboard")}>
             <img src={HomeIcon} alt="Home" />
-            <span>Home</span>
+            {!isCollapsed && <span>Home</span>}
+          </div>
+
+          <div className="menu-item" onClick={() => navigate("/user/my-profile")}>
+            <img src={Vector} alt="Profile" />
+            {!isCollapsed && <span>My Profile</span>}
           </div>
 
           <div className="menu-item active">
             <img src={FileIcon} alt="File New Case" />
-            <span>File New Case</span>
+            {!isCollapsed && <span>File New Case</span>}
           </div>
 
           <div className="menu-item" onClick={() => navigate("/user/my-cases")}>
             <img src={CaseIcon} alt="My Cases" />
-            <span>My Cases</span>
+            {!isCollapsed && <span>My Cases</span>}
           </div>
 
           <div className="menu-item" onClick={() => navigate("/user/case-meetings")}>
             <img src={MeetingIcon} alt="Case Meetings" />
-            <span>Case Meetings</span>
+            {!isCollapsed && <span>Case Meetings</span>}
           </div>
 
           <div className="menu-item">
             <img src={DocsIcon} alt="Documents" />
-            <span>Documents</span>
+            {!isCollapsed && <span>Documents</span>}
           </div>
 
           <div className="menu-item">
             <img src={ChatIcon} alt="Chats" />
-            <span>Chats</span>
+            {!isCollapsed && <span>Chats</span>}
           </div>
 
           <div className="menu-item">
             <img src={PaymentIcon} alt="Payment" />
-            <span>Payment</span>
+            {!isCollapsed && <span>Payment</span>}
           </div>
 
           <div className="menu-item">
             <img src={SupportIcon} alt="Support" />
-            <span>Support</span>
+            {!isCollapsed && <span>Support</span>}
           </div>
         </nav>
 
         <div className="logout">
           <div className="menu-item">
             <img src={LogoutIcon} alt="Logout" />
-            <span>Log out</span>
+            {!isCollapsed && <span>Log out</span>}
           </div>
         </div>
       </aside>
+
 
       {/* Main Section */}
       <section className="main-section">

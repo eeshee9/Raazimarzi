@@ -20,7 +20,7 @@ import { FaCog, FaBell } from "react-icons/fa";
 
 const UserMyCases = () => {
   const navigate = useNavigate();
-
+ const [collapsed, setCollapsed] = useState(false);
   const [search, setSearch] = useState("");
   const [raisedCases, setRaisedCases] = useState([]);
   const [opponentCases, setOpponentCases] = useState([]);
@@ -39,14 +39,14 @@ const UserMyCases = () => {
       setLoading(true);
       try {
         // Fetch user info
-        const userRes = await api.get("/api/user/me");
+        const userRes = await api.get("/user/me");
         setUser({
           fullName: userRes.data.fullName,
           avatar: userRes.data.avatar || "https://i.pravatar.cc/40",
         });
 
         // Fetch user cases
-        const res = await api.get("/api/cases/my-cases");
+        const res = await api.get("/cases/my-cases");
         setRaisedCases(res.data.raisedCases || []);
         setOpponentCases(res.data.opponentCases || []);
       } catch (err) {
@@ -77,56 +77,74 @@ const UserMyCases = () => {
   if (loading) return <p style={{ padding: 20 }}>Loading cases...</p>;
 
   return (
-    <div className="dashboard-container">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <h2 className="sidebar-title">Dashboard</h2>
-        <nav className="menu">
-          <div className="menu-item" onClick={() => navigate("/user/dashboard")}>
-            <img src={HomeIcon} alt="Home" />
-            <span>Home</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/user/my-profile")}>
-            <img src={Vector} alt="Profile" />
-            <span>My Profile</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/user/file-new-case/step1")}>
-            <img src={FileIcon} alt="File New Case" />
-            <span>File New Case</span>
-          </div>
-          <div className="menu-item active" onClick={() => navigate("/user/my-cases")}>
-            <img src={CaseIcon} alt="My Cases" />
-            <span>My Cases</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/user/case-meetings")}>
-            <img src={MeetingIcon} alt="Case Meetings" />
-            <span>Case Meetings</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/user/documents")}>
-            <img src={DocsIcon} alt="Documents" />
-            <span>Documents</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/user/chats")}>
-            <img src={ChatIcon} alt="Chats" />
-            <span>Chats</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/user/payment")}>
-            <img src={PaymentIcon} alt="Payment" />
-            <span>Payment</span>
-          </div>
-          <div className="menu-item" onClick={() => navigate("/user/support")}>
-            <img src={SupportIcon} alt="Support" />
-            <span>Support</span>
-          </div>
-        </nav>
-
-        <div className="logout" onClick={handleLogout}>
-          <div className="menu-item">
-            <img src={LogoutIcon} alt="Logout" />
-            <span>Log out</span>
-          </div>
-        </div>
-      </aside>
+        <div className="dashboard-container">
+          {/* Sidebar */}
+          <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+            <div className="sidebar-header">
+              
+              <button
+                className="collapse-btn"
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                {collapsed ? ">" : "<"}
+              </button>
+            </div>
+    
+            <nav className="menu">
+              <div className="menu-item" onClick={() => navigate("/user/dashboard")}>
+                <img src={HomeIcon} alt="Home" />
+                {!collapsed && <span>Home</span>}
+              </div>
+    
+              <div className="menu-item" onClick={() => navigate("/user/my-profile")}>
+                <img src={Vector} alt="Profile" />
+                {!collapsed && <span>My Profile</span>}
+              </div>
+    
+              <div className="menu-item" onClick={() => navigate("/user/file-new-case/step1")}>
+                <img src={FileIcon} alt="File New Case" />
+                {!collapsed && <span>File New Case</span>}
+              </div>
+    
+              <div className="menu-item active" onClick={() => navigate("/user/my-cases")}>
+                <img src={CaseIcon} alt="My Cases" />
+                {!collapsed && <span>My Cases</span>}
+              </div>
+    
+              <div className="menu-item" onClick={() => navigate("/user/case-meetings")}>
+                <img src={MeetingIcon} alt="Case Meetings" />
+                {!collapsed && <span>Case Meetings</span>}
+              </div>
+    
+              <div className="menu-item">
+                <img src={DocsIcon} alt="Documents" />
+                {!collapsed && <span>Documents</span>}
+              </div>
+    
+              <div className="menu-item" onClick={() => navigate("/user/chats")}>
+                <img src={ChatIcon} alt="Chats" />
+                {!collapsed && <span>Chats</span>}
+              </div>
+    
+              <div className="menu-item">
+                <img src={PaymentIcon} alt="Payment" />
+                {!collapsed && <span>Payment</span>}
+              </div>
+    
+              <div className="menu-item">
+                <img src={SupportIcon} alt="Support" />
+                {!collapsed && <span>Support</span>}
+              </div>
+            </nav>
+    
+            <div className="logout">
+              <div className="menu-item">
+                <img src={LogoutIcon} alt="Logout" />
+                {!collapsed && <span>Log out</span>}
+              </div>
+            </div>
+          </aside>
+    
 
       {/* Main Section */}
       <section className="main-section">

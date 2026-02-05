@@ -21,6 +21,7 @@ const FileNewCaseStep1 = () => {
   const navigate = useNavigate();
   const { caseData, setCaseData } = useContext(CaseContext);
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const Required = () => <span style={{ color: "red" }}> *</span>;
 
   const [formData, setFormData] = useState({
@@ -166,64 +167,73 @@ const FileNewCaseStep1 = () => {
   };
 
   return (
-    <div className="dashboard-container">
+     <div className="dashboard-container">
       {/* Sidebar */}
-      <aside className="sidebar">
-        <h2 className="sidebar-title">Dashboard</h2>
+      <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
+        <div className="sidebar-header">
+          <button
+            className="collapse-btn"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            {isCollapsed ? ">" : "<"}
+          </button>
+        </div>
+
         <nav className="menu">
           <div className="menu-item" onClick={() => navigate("/user/dashboard")}>
             <img src={HomeIcon} alt="Home" />
-            <span>Home</span>
+            {!isCollapsed && <span>Home</span>}
           </div>
 
           <div className="menu-item" onClick={() => navigate("/user/my-profile")}>
             <img src={Vector} alt="Profile" />
-            <span>My Profile</span>
+            {!isCollapsed && <span>My Profile</span>}
           </div>
 
           <div className="menu-item active">
             <img src={FileIcon} alt="File New Case" />
-            <span>File New Case</span>
+            {!isCollapsed && <span>File New Case</span>}
           </div>
 
           <div className="menu-item" onClick={() => navigate("/user/my-cases")}>
             <img src={CaseIcon} alt="My Cases" />
-            <span>My Cases</span>
+            {!isCollapsed && <span>My Cases</span>}
           </div>
 
           <div className="menu-item" onClick={() => navigate("/user/case-meetings")}>
             <img src={MeetingIcon} alt="Case Meetings" />
-            <span>Case Meetings</span>
+            {!isCollapsed && <span>Case Meetings</span>}
           </div>
 
           <div className="menu-item">
             <img src={DocsIcon} alt="Documents" />
-            <span>Documents</span>
+            {!isCollapsed && <span>Documents</span>}
           </div>
 
           <div className="menu-item">
             <img src={ChatIcon} alt="Chats" />
-            <span>Chats</span>
+            {!isCollapsed && <span>Chats</span>}
           </div>
 
           <div className="menu-item">
             <img src={PaymentIcon} alt="Payment" />
-            <span>Payment</span>
+            {!isCollapsed && <span>Payment</span>}
           </div>
 
           <div className="menu-item">
             <img src={SupportIcon} alt="Support" />
-            <span>Support</span>
+            {!isCollapsed && <span>Support</span>}
           </div>
         </nav>
 
         <div className="logout">
           <div className="menu-item">
             <img src={LogoutIcon} alt="Logout" />
-            <span>Log out</span>
+            {!isCollapsed && <span>Log out</span>}
           </div>
         </div>
       </aside>
+
 
       {/* Main Section */}
       <section className="main-section">

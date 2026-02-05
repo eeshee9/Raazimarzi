@@ -23,7 +23,6 @@ const FileNewCaseStep3 = () => {
     <div className="dashboard-container">
       {/* Sidebar */}
       <aside className="sidebar">
-        <h2 className="sidebar-title">Dashboard</h2>
         <nav className="menu">
           <div className="menu-item" onClick={() => navigate("/user/dashboard")}>
             <img src={HomeIcon} alt="Home" />

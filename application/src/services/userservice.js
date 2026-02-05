@@ -1,19 +1,19 @@
-import API from "../api/axios";
+import api from "../api/axios";
 
-// Get all cases
+// Get my cases
 export const getMyCases = async () => {
-  const res = await API.get("/party1/cases");
+  const res = await api.get("/cases/my-cases");
   return res.data;
 };
 
 // Create case
 export const createCase = async (caseData) => {
-  const res = await API.post("/party1/cases", caseData);
+  const res = await api.post("/cases/file", caseData);
   return res.data;
 };
 
 // Get case by ID
 export const getCaseById = async (id) => {
-  const res = await API.get(`/party1/cases/${id}`);
+  const res = await api.get(`/cases/${id}`);
   return res.data;
 };
