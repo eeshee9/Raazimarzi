@@ -1,12 +1,10 @@
+// src/components/UserNavbar.js
 import React from "react";
+import { useUser } from "../context/userContext";
 import { FaCog, FaBell } from "react-icons/fa";
-import { useAuth } from "../context/authContext";
-import "./Navbar.css";
 
-const Navbar = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) return null;
+const UserNavbar = () => {
+  const { user, loading } = useUser();
 
   return (
     <header className="navbar">
@@ -14,20 +12,17 @@ const Navbar = () => {
       <div className="nav-icons">
         <FaCog className="icon" />
         <FaBell className="icon" />
-
-        {user && (
-          <div className="profile">
-            <img
-              src={user.avatar || "https://i.pravatar.cc/40"}
-              alt="profile"
-              className="profile-img"
-            />
-            <span>{user.name}</span>
-          </div>
-        )}
+        <div className="profile">
+          <img
+            src={user?.avatar || "https://i.pravatar.cc/40"}
+            alt="profile"
+            className="profile-img"
+          />
+          <span>{loading ? "Loading..." : user?.name || "User"}</span>
+        </div>
       </div>
     </header>
   );
 };
 
-export default Navbar;
+export default UserNavbar;
