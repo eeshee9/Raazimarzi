@@ -81,7 +81,7 @@ app.get("/api/health", (req, res) => {
     status: "OK",
     database: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
     uptime: process.uptime(),
-    emailConfigured: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS) // ✅ Add this
+    emailConfigured: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS) 
   });
 });
 
