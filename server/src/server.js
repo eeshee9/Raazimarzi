@@ -8,6 +8,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { testSMTP } from "./services/mail.service.js"; 
 
+
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
 import mediatorRoutes from "./routes/mediatorRoutes.js";
