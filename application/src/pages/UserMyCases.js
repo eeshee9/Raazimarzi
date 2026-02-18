@@ -165,7 +165,7 @@ const UserMyCasesContent = () => {
 
   useEffect(() => {
     fetchData();
-  }, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [navigate]); 
 
   // ─── Search filter ──────────────────────────────────────────────────────────
   const filterCases = (list) =>
@@ -180,7 +180,7 @@ const UserMyCasesContent = () => {
   const filteredRaised   = filterCases(raisedCases);
   const filteredOpponent = filterCases(opponentCases);
 
-  // ─── Logout ─────────────────────────────────────────────────────────────────
+  // ─── Logout ───
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to logout?")) return;
     setIsLoggingOut(true);

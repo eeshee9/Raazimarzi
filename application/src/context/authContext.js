@@ -1,42 +1,37 @@
 // src/context/AuthContext.js
-import React, { createContext, useState, useEffect, useCallback } from "react";
-import { 
-  getCurrentUser, 
-  logout as logoutService,
-  getStoredUser,
-  isAuthenticated
-} from "../services/authService";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
+import authService from "../services/authService";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    initializeAuth();
-  }, []);
-
+  /* ================= INITIALIZE AUTH ================= */
   const initializeAuth = useCallback(async () => {
     try {
-      // First check if there's a stored user
-      const storedUser = getStoredUser();
-      
-      if (storedUser && isAuthenticated()) {
+      const storedUser = authService.getStoredUser();
+
+      if (storedUser && authService.isAuthenticated()) {
         setUser(storedUser);
         setIsAuth(true);
-        
-        // Optionally fetch fresh user data from server
+
+        // Try to refresh user from backend
         try {
-          const freshUser = await getCurrentUser();
+          const freshUser = await authService.getCurrentUser();
           if (freshUser) {
             setUser(freshUser);
           }
-        } catch (error) {
-          // If fetching fresh data fails, keep using stored data
-          console.warn("Could not fetch fresh user data:", error);
+        } catch (err) {
+          console.warn("Could not fetch fresh user data");
         }
       }
     } catch (error) {
@@ -48,31 +43,36 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Login function
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  /* ================= LOGIN ================= */
   const loginUser = useCallback((userData) => {
     setUser(userData);
     setIsAuth(true);
   }, []);
 
-  // Logout function
+  /* ================= LOGOUT ================= */
   const logoutUser = useCallback(() => {
-    logoutService();
+    authService.logout();
     setUser(null);
     setIsAuth(false);
   }, []);
 
-  // Refresh user data
+  /* ================= REFRESH USER ================= */
   const refreshUser = useCallback(async () => {
     try {
-      const freshUser = await getCurrentUser();
+      const freshUser = await authService.getCurrentUser();
+
       if (freshUser) {
         setUser(freshUser);
         setIsAuth(true);
         return freshUser;
-      } else {
-        logoutUser();
-        return null;
       }
+
+      logoutUser();
+      return null;
     } catch (error) {
       console.error("Error refreshing user:", error);
       logoutUser();
@@ -80,15 +80,16 @@ export const AuthProvider = ({ children }) => {
     }
   }, [logoutUser]);
 
-  // Check if user has a specific role
-  const hasRole = useCallback((role) => {
-    return user?.role === role;
-  }, [user]);
+  /* ================= ROLE HELPERS ================= */
+  const hasRole = useCallback(
+    (role) => user?.role === role,
+    [user]
+  );
 
-  // Check if user has any of the specified roles
-  const hasAnyRole = useCallback((roles) => {
-    return roles.includes(user?.role);
-  }, [user]);
+  const hasAnyRole = useCallback(
+    (roles = []) => roles.includes(user?.role),
+    [user]
+  );
 
   const value = {
     user,
@@ -101,15 +102,23 @@ export const AuthProvider = ({ children }) => {
     hasAnyRole,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-// Custom hook to use auth context
+/* ================= CUSTOM HOOK ================= */
 export const useAuth = () => {
-  const context = React.useContext(AuthContext);
+  const context = useContext(AuthContext);
+
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error(
+      "useAuth must be used within an AuthProvider"
+    );
   }
+
   return context;
 };
 
