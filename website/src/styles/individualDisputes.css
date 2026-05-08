@@ -158,17 +158,15 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
 /* =========================================================
    HERO
    FIX: removed max-width:100% + padding override from .id-hero-wrap
-        — those conflicted with .id-container's 1220px constraint.
-        The container already handles width/padding.
+  
 ========================================================= */
 
 .id-hero {
   background: rgba(247, 248, 255, 1);
+  padding: 120px 0 80px; 
   width: 100%;
-  padding: 72px 0 80px;
   overflow: hidden;
 }
-
 /* FIX: only layout rules here — width is controlled by .id-container */
 .id-hero-wrap {
   display: grid;

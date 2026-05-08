@@ -250,7 +250,8 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
   min-height: 348px;
   background: linear-gradient(180deg, #dfe4ff 0%, #ffffff 100%);
   border-radius: 16px;
-  padding: 40px 60px 48px;
+  padding: 80px 60px 48px;
+  margin-top: 60px;
   gap: 16px;
   display: flex;
   flex-direction: column;

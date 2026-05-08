@@ -5,12 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { APP_BASE_PATH } from "@/config/appConfig";
-import "@/styles/header.css"; // ← Make sure header.css is placed at src/styles/header.css
+import "@/styles/header.css";
 
-/* ─── Auth hook – replace with your real auth ─── */
-// import { useAuth } from "@/hooks/useAuth";
-
-/* ─── Full UJM category tree (kept from original) ─── */
+/* ─── Full UJM category tree ─── */
 const SERVICE_TREE = [
   {
     id: "individual",
@@ -44,7 +41,7 @@ const SERVICE_TREE = [
       },
       {
         label: "Neighbour & Community",
-        href: "/Services/NeighbourCommunity",
+        href: "/Services/NeighborDisputes",
         items: [
           "Noise Complaints",
           "Parking Issues",
@@ -211,45 +208,8 @@ const SERVICE_TREE = [
   },
 ];
 
-/* ─── Figma nav structure ─── */
+/* ─── Nav structure ─── */
 const NAV_ITEMS = [
-  {
-    id: "product",
-    label: "Product",
-    dropdown: {
-      sections: [
-        {
-          title: "Product",
-          items: [
-            {
-              icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              ),
-              label: "User",
-              desc: "Manage disputes and track cases",
-              href: "/app/user",
-            },
-            {
-              icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              ),
-              label: "Mediator",
-              desc: "Review and resolve disputes",
-              href: "/app/mediator",
-            },
-          ],
-        },
-      ],
-    },
-  },
   {
     id: "solutions",
     label: "Solutions",
@@ -282,7 +242,6 @@ const NAV_ITEMS = [
               ? "Handle product and service issues"
               : "Manage business and contract disputes",
             href: cat.href,
-            /* keep sub-menu data for mega panel */
             subTree: cat,
           })),
         },
@@ -385,22 +344,302 @@ function SolutionsMega({ subTree, onClose }) {
   );
 }
 
+/* ══════════════════════════════════════
+   MOBILE MENU — 3-level slide panel
+══════════════════════════════════════ */
+function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
+  // panel: "main" | "solutions" | "solutions-sub"
+  const [panel, setPanel] = useState("main");
+  const [activeCat, setActiveCat] = useState(null); // SERVICE_TREE item
+  const [expandedCatId, setExpandedCatId] = useState(null); // for 3rd panel accordion
+
+  // Reset panel when menu closes
+  useEffect(() => {
+    if (!open) {
+      setTimeout(() => {
+        setPanel("main");
+        setActiveCat(null);
+        setExpandedCatId(null);
+      }, 300);
+    }
+  }, [open]);
+
+  const goBack = () => {
+    if (panel === "solutions-sub") setPanel("solutions");
+    else if (panel === "solutions") setPanel("main");
+  };
+
+  const handleCatClick = (cat) => {
+    setActiveCat(cat);
+    setExpandedCatId(null);
+    setPanel("solutions-sub");
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`hdr-mob-overlay ${open ? "hdr-mob-overlay--show" : ""}`}
+        onClick={onClose}
+      />
+
+      {/* Panel container */}
+      <div className={`hdr-mob-panel-wrap ${open ? "hdr-mob-panel-wrap--open" : ""}`}>
+
+        {/* ── PANEL 1: Main menu ── */}
+        <div className={`hdr-mob-panel hdr-mob-panel--main ${panel === "main" ? "hdr-mob-panel--active" : panel !== "main" ? "hdr-mob-panel--left" : ""}`}>
+          <div className="hdr-mob-panel__top">
+            <Link href="/" onClick={onClose}>
+              <Image src="/assets/images/logo.png" alt="RaaziMarzi Logo" width={130} height={32} />
+            </Link>
+            <button className="hdr-mob-panel__close" onClick={onClose} aria-label="Close menu">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <nav className="hdr-mob-panel__nav">
+            {/* Solutions row — opens panel 2 */}
+            <div className="hdr-mob-panel__row" onClick={() => setPanel("solutions")}>
+              <span className="hdr-mob-panel__row-label">Solutions</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M5 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {/* Resources row — opens panel 2 equivalent (simple links) */}
+            <div className="hdr-mob-panel__row" onClick={() => setPanel("resources")}>
+              <span className="hdr-mob-panel__row-label">Resources</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M5 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {/* Static links */}
+            <Link href="/pricing" className="hdr-mob-panel__row hdr-mob-panel__row--link" onClick={onClose}>
+              <span className="hdr-mob-panel__row-label">Pricing</span>
+            </Link>
+          </nav>
+
+          {/* CTA buttons */}
+          <div className="hdr-mob-panel__cta">
+            <button
+              className="hdr-mob-panel__btn hdr-mob-panel__btn--outline"
+              onClick={() => { onClose(); navigateToApp("/login"); }}
+            >
+              Log In
+            </button>
+            <button
+              className="hdr-mob-panel__btn hdr-mob-panel__btn--filled"
+              onClick={() => { onClose(); navigateToApp(isLoggedIn ? "/dashboard" : "/login"); }}
+            >
+              {isLoggedIn ? "My Dashboard" : "File a Case"}
+            </button>
+          </div>
+        </div>
+
+        {/* ── PANEL 2: Solutions ── */}
+        <div className={`hdr-mob-panel hdr-mob-panel--solutions ${panel === "solutions" ? "hdr-mob-panel--active" : panel === "solutions-sub" ? "hdr-mob-panel--left" : ""}`}>
+          <div className="hdr-mob-panel__top hdr-mob-panel__top--inner">
+            <button className="hdr-mob-panel__back" onClick={goBack} aria-label="Go back">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <span className="hdr-mob-panel__title">Solutions</span>
+            <button className="hdr-mob-panel__close" onClick={onClose} aria-label="Close menu">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <nav className="hdr-mob-panel__nav">
+            {SERVICE_TREE.map((cat) => (
+              <div
+                key={cat.id}
+                className="hdr-mob-panel__card-row"
+                onClick={() => handleCatClick(cat)}
+              >
+                <span className="hdr-mob-panel__card-icon">
+                  {cat.id === "individual" ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  ) : cat.id === "consumer" ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                  )}
+                </span>
+                <span className="hdr-mob-panel__card-text">
+                  <span className="hdr-mob-panel__card-label">{cat.label}</span>
+                  <span className="hdr-mob-panel__card-desc">
+                    {cat.id === "individual" ? "Resolve personal conflicts easily" : cat.id === "consumer" ? "Handle product and service issues" : "Manage business and contract disputes"}
+                  </span>
+                </span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="hdr-mob-panel__card-arrow">
+                  <path d="M5 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* ── PANEL 2b: Resources ── */}
+        <div className={`hdr-mob-panel hdr-mob-panel--resources ${panel === "resources" ? "hdr-mob-panel--active" : ""}`}>
+          <div className="hdr-mob-panel__top hdr-mob-panel__top--inner">
+            <button className="hdr-mob-panel__back" onClick={goBack} aria-label="Go back">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <span className="hdr-mob-panel__title">Resources</span>
+            <button className="hdr-mob-panel__close" onClick={onClose} aria-label="Close menu">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <nav className="hdr-mob-panel__nav">
+            {[
+              { label: "Blog", desc: "Latest updates in legal-tech trends.", href: "/blog" },
+              { label: "Help Center", desc: "Documentation and direct support.", href: "/help" },
+              { label: "FAQs", desc: "Quick answers to common questions.", href: "/faq" },
+            ].map((r) => (
+              <Link key={r.label} href={r.href} className="hdr-mob-panel__card-row" onClick={onClose}>
+                <span className="hdr-mob-panel__card-text">
+                  <span className="hdr-mob-panel__card-label">{r.label}</span>
+                  <span className="hdr-mob-panel__card-desc">{r.desc}</span>
+                </span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* ── PANEL 3: Category sub-items ── */}
+        <div className={`hdr-mob-panel hdr-mob-panel--sub ${panel === "solutions-sub" ? "hdr-mob-panel--active" : ""}`}>
+          <div className="hdr-mob-panel__top hdr-mob-panel__top--inner">
+            <button className="hdr-mob-panel__back" onClick={goBack} aria-label="Go back">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <span className="hdr-mob-panel__title">Solutions</span>
+            <button className="hdr-mob-panel__close" onClick={onClose} aria-label="Close menu">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          {activeCat && (
+            <>
+              {/* Category header card */}
+              <div className="hdr-mob-panel__cat-header">
+                <span className="hdr-mob-panel__card-icon">
+                  {activeCat.id === "individual" ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  ) : activeCat.id === "consumer" ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                  )}
+                </span>
+                <span className="hdr-mob-panel__card-text">
+                  <span className="hdr-mob-panel__card-label">{activeCat.label}</span>
+                  <span className="hdr-mob-panel__card-desc">
+                    {activeCat.id === "individual" ? "Resolve personal conflicts easily" : activeCat.id === "consumer" ? "Handle product and service issues" : "Manage business and contract disputes"}
+                  </span>
+                </span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M5 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+
+              {/* Sub-categories accordion */}
+              <nav className="hdr-mob-panel__nav hdr-mob-panel__nav--sub">
+                {activeCat.sub.map((sub) => {
+                  const isExpanded = expandedCatId === sub.label;
+                  return (
+                    <div key={sub.label} className="hdr-mob-panel__accordion">
+                      <div
+                        className={`hdr-mob-panel__acc-row ${isExpanded ? "hdr-mob-panel__acc-row--open" : ""}`}
+                        onClick={() => setExpandedCatId(isExpanded ? null : sub.label)}
+                      >
+                        <Link
+                          href={sub.href}
+                          className="hdr-mob-panel__acc-label"
+                          onClick={(e) => { e.stopPropagation(); onClose(); }}
+                        >
+                          {sub.label}
+                        </Link>
+                        {sub.items?.length > 0 && (
+                          <svg
+                            width="14" height="14" viewBox="0 0 14 14" fill="none"
+                            className={`hdr-mob-panel__acc-chevron ${isExpanded ? "hdr-mob-panel__acc-chevron--up" : ""}`}
+                          >
+                            <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </div>
+                      {isExpanded && sub.items?.length > 0 && (
+                        <div className="hdr-mob-panel__acc-items">
+                          {sub.items.map((item) => (
+                            <Link
+                              key={item}
+                              href={`${sub.href}#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                              className="hdr-mob-panel__acc-item"
+                              onClick={onClose}
+                            >
+                              {item}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </nav>
+            </>
+          )}
+        </div>
+
+      </div>
+    </>
+  );
+}
+
+/* ══════════════════════════════════════
+   MAIN HEADER
+══════════════════════════════════════ */
 export default function Header() {
   const pathname = usePathname();
-
-  /* ── replace with real auth ── */
-  const isLoggedIn = false; // TODO: useAuth().isLoggedIn
-  /* ──────────────────────────── */
+  const isLoggedIn = false; // TODO: replace with real auth
 
   const [scrolled, setScrolled] = useState(false);
-  const [openNav, setOpenNav] = useState(null);      // nav item id
-  const [activeSolution, setActiveSolution] = useState(null); // solutions subTree
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const [mobileExpMain, setMobileExpMain] = useState(null);
-  const [mobileExpSub, setMobileExpSub] = useState(null);
+  const [openNav, setOpenNav] = useState(null);
+  const [activeSolution, setActiveSolution] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const dropdownRef = useRef(null);
-  const mobileMenuRef = useRef(null);
 
   const navigateToApp = useCallback((path = "/login") => {
     try { window.location.href = `${APP_BASE_PATH}${path}`; }
@@ -428,9 +667,9 @@ export default function Header() {
 
   /* body scroll lock */
   useEffect(() => {
-    document.body.style.overflow = mobileMenu ? "hidden" : "";
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [mobileMenu]);
+  }, [mobileOpen]);
 
   /* escape key */
   useEffect(() => {
@@ -438,7 +677,7 @@ export default function Header() {
       if (e.key === "Escape") {
         setOpenNav(null);
         setActiveSolution(null);
-        setMobileMenu(false);
+        setMobileOpen(false);
       }
     };
     document.addEventListener("keydown", h);
@@ -448,9 +687,7 @@ export default function Header() {
   const closeAll = () => {
     setOpenNav(null);
     setActiveSolution(null);
-    setMobileMenu(false);
-    setMobileExpMain(null);
-    setMobileExpSub(null);
+    setMobileOpen(false);
   };
 
   const toggleNav = (id) => {
@@ -465,11 +702,22 @@ export default function Header() {
 
           {/* LOGO */}
           <Link href="/" className="hdr__logo" aria-label="RaaziMarzi home">
+            {/* Full logo — shown at top */}
             <Image
               src="/assets/images/logo.png"
               alt="RaaziMarzi Logo"
               width={160} height={40}
               priority sizes="160px"
+              className="hdr__logo-full"
+            />
+            {/* Icon only — shown when scrolled (pill) */}
+            <Image
+              src="/assets/icons/Brand.png"
+              alt="RaaziMarzi Icon"
+              width={44} height={44}
+              priority sizes="36px"
+              className="hdr__logo-icon"
+              unoptimized
             />
           </Link>
 
@@ -478,7 +726,6 @@ export default function Header() {
             {NAV_ITEMS.map((item) => {
               const isOpen = openNav === item.id;
               const hasDropdown = !!item.dropdown;
-              // Solutions nav item uses /Services/* routes
               const isActive = item.id === "solutions"
                 ? pathname.startsWith("/Services")
                 : item.href
@@ -495,7 +742,6 @@ export default function Header() {
                       {item.label}
                     </Link>
                   ) : item.href && hasDropdown ? (
-                    /* Has both href AND dropdown — label navigates, arrow toggles */
                     <div className={`hdr__nav-btn-wrap ${isOpen ? "hdr__nav-btn--open" : ""} ${isActive ? "hdr__nav-btn--active" : ""}`}>
                       <Link href={item.href} className="hdr__nav-btn-label" onClick={closeAll}>
                         {item.label}
@@ -517,7 +763,6 @@ export default function Header() {
                       </span>
                     </div>
                   ) : (
-                    /* Dropdown only — no direct href */
                     <button
                       className={`hdr__nav-btn ${isOpen ? "hdr__nav-btn--open" : ""} ${isActive ? "hdr__nav-btn--active" : ""}`}
                       onClick={() => toggleNav(item.id)}
@@ -579,16 +824,21 @@ export default function Header() {
             })}
           </nav>
 
-          {/* CTA BUTTON */}
+          {/* CTA BUTTONS */}
           <div className="hdr__cta">
             {isLoggedIn ? (
-              <button className="hdr__btn" onClick={() => navigateToApp("/dashboard")}>
+              <button className="hdr__btn hdr__btn--filled" onClick={() => navigateToApp("/dashboard")}>
                 My Dashboard
               </button>
             ) : (
-              <button className="hdr__btn" onClick={() => navigateToApp("/login")}>
-                Get Started
-              </button>
+              <>
+                <button className="hdr__btn hdr__btn--outline" onClick={() => navigateToApp("/login")}>
+                  Log In
+                </button>
+                <button className="hdr__btn hdr__btn--filled" onClick={() => navigateToApp("/login")}>
+                  File a Case
+                </button>
+              </>
             )}
           </div>
 
@@ -596,108 +846,21 @@ export default function Header() {
           <button
             className="hdr__hamburger"
             aria-label="Open menu"
-            aria-expanded={mobileMenu}
-            onClick={() => setMobileMenu(true)}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen(true)}
           >
             <span /><span /><span />
           </button>
         </div>
       </header>
 
-      {/* ══════════ MOBILE MENU ══════════ */}
-      <div
-        className={`hdr-mob-overlay ${mobileMenu ? "hdr-mob-overlay--show" : ""}`}
-        onClick={() => setMobileMenu(false)}
-        role="dialog" aria-modal="true"
-      >
-        <div className="hdr-mob" ref={mobileMenuRef} onClick={(e) => e.stopPropagation()}>
-
-          <div className="hdr-mob__top">
-            <Link href="/" onClick={closeAll}>
-              <Image src="/assets/images/logo.png" alt="RaaziMarzi Logo" width={130} height={32} />
-            </Link>
-            <button className="hdr-mob__close" aria-label="Close menu" onClick={() => setMobileMenu(false)}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M1 1l16 16M17 1L1 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Services accordion (keeps full SERVICE_TREE) */}
-          <div className={`hdr-mob__box ${mobileExpMain ? "hdr-mob__box--open" : ""}`}>
-            <div className="hdr-mob__box-row">
-              <Link href="/Services" className="hdr-mob__box-link" onClick={closeAll}>Services</Link>
-              <button
-                className="hdr-mob__toggle"
-                aria-expanded={!!mobileExpMain}
-                onClick={() => setMobileExpMain((p) => (p ? null : SERVICE_TREE[0].id))}
-              >
-                {mobileExpMain ? "⌃" : "⌄"}
-              </button>
-            </div>
-
-            {mobileExpMain && (
-              <div className="hdr-mob__acc">
-                {SERVICE_TREE.map((cat) => (
-                  <div key={cat.id} className="hdr-mob__acc-group">
-                    <div
-                      className={`hdr-mob__acc-main ${mobileExpMain === cat.id ? "hdr-mob__acc-main--open" : ""}`}
-                      onClick={() => setMobileExpMain((p) => (p === cat.id ? null : cat.id))}
-                    >
-                      <Link href={cat.href} onClick={closeAll} className="hdr-mob__acc-main-link">{cat.label}</Link>
-                      <span>{mobileExpMain === cat.id ? "⌃" : "⌄"}</span>
-                    </div>
-
-                    {mobileExpMain === cat.id && (
-                      <div className="hdr-mob__acc-subs">
-                        {cat.sub.map((sub) => (
-                          <div key={sub.label} className="hdr-mob__acc-sub-group">
-                            <div
-                              className={`hdr-mob__acc-sub-hdr ${mobileExpSub === sub.label ? "hdr-mob__acc-sub-hdr--open" : ""}`}
-                              onClick={() => setMobileExpSub((p) => (p === sub.label ? null : sub.label))}
-                            >
-                              <Link href={sub.href} onClick={closeAll} className="hdr-mob__acc-sub-link">{sub.label}</Link>
-                              {sub.items?.length > 0 && <span>{mobileExpSub === sub.label ? "⌃" : "⌄"}</span>}
-                            </div>
-
-                            {mobileExpSub === sub.label && sub.items?.length > 0 && (
-                              <div className="hdr-mob__acc-items">
-                                {sub.items.map((item) => (
-                                  <Link
-                                    key={item}
-                                    href={`${sub.href}#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                                    onClick={closeAll}
-                                    className="hdr-mob__acc-item"
-                                  >
-                                    {item}
-                                  </Link>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <Link href="/AboutUs"      className="hdr-mob__box" onClick={closeAll}>About Us</Link>
-          <Link href="/solutions"    className="hdr-mob__box" onClick={closeAll}>Solutions</Link>
-          <Link href="/case-journey" className="hdr-mob__box" onClick={closeAll}>Case Journey</Link>
-          <Link href="/pricing"      className="hdr-mob__box" onClick={closeAll}>Pricing</Link>
-          <Link href="/ContactUs"    className="hdr-mob__box" onClick={closeAll}>Contact Us</Link>
-
-          <button
-            className="hdr__btn hdr-mob__btn"
-            onClick={() => isLoggedIn ? navigateToApp("/dashboard") : navigateToApp("/login")}
-          >
-            {isLoggedIn ? "My Dashboard" : "Get Started"}
-          </button>
-        </div>
-      </div>
+      {/* MOBILE MENU */}
+      <MobileMenu
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        isLoggedIn={isLoggedIn}
+        navigateToApp={navigateToApp}
+      />
     </>
   );
 }

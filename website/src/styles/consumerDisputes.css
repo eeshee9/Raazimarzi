@@ -152,7 +152,7 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
 .cd-hero {
   background: rgba(247, 248, 255, 1);
   width: 100%;
-  padding: 72px 0 80px;
+  padding: 120px 0 80px;
   overflow: hidden;
 }
 
