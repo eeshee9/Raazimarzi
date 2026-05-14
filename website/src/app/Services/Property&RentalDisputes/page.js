@@ -526,7 +526,6 @@ export default function PropertyDisputes() {
                 <section ref={whyRef} className={`id-why${whyVisible ? " why-animate" : ""}`}>
                     <div className="id-container">
                         <div className="id-section-head center">
-                            <p className="id-tag">WHY CHOOSE US</p>
                             <h2>Why Choose RaaziMarzi</h2>
                             <p className="id-section-sub">
                                 A faster, secure, and reliable way to resolve property disputes without lengthy court procedures.

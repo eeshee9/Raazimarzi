@@ -17,37 +17,37 @@ const SERVICE_TREE = [
       {
         label: "Property & Rental Disputes",
         href: "/Services/Property&RentalDisputes",
-        items: [
-          "Rent / Loan Disputes",
-          "Security Deposit Disputes",
-          "Lease Violations",
-          "Maintenance Issues",
-          "Boundary Disputes",
-          "Illegal Possession",
-        ],
+        // items: [
+        //   "Rent / Loan Disputes",
+        //   "Security Deposit Disputes",
+        //   "Lease Violations",
+        //   "Maintenance Issues",
+        //   "Boundary Disputes",
+        //   "Illegal Possession",
+        // ],
       },
       {
         label: "Family Disputes",
         href: "/Services/FamilyDisputes",
-        items: [
-          "Divorce",
-          "Maintenance / Alimony",
-          "Property Division in Family",
-          "Guardianship Disputes",
-          "Domestic Violence & Protection Cases",
-          "Dowry",
-          "Child Custody",
-        ],
+        // items: [
+        //   "Divorce",
+        //   "Maintenance / Alimony",
+        //   "Property Division in Family",
+        //   "Guardianship Disputes",
+        //   "Domestic Violence & Protection Cases",
+        //   "Dowry",
+        //   "Child Custody",
+        // ],
       },
       {
         label: "Neighbour & Community",
         href: "/Services/NeighborDisputes",
-        items: [
-          "Noise Complaints",
-          "Parking Issues",
-          "Privacy and Safety",
-          "Maintenance",
-        ],
+        // items: [
+        //   "Noise Complaints",
+        //   "Parking Issues",
+        //   "Privacy and Safety",
+        //   "Maintenance",
+        // ],
       },
     ],
   },
@@ -59,23 +59,24 @@ const SERVICE_TREE = [
       {
         label: "Product Complaints",
         href: "/Services/ProductComplaints",
-        items: ["Defective Product Complaint", "Warranty Disputes", "Product Not as Described"],
+        // items: ["Defective Product Complaint", "Warranty Disputes", "Product Not as Described"],
       },
-      {
-        label: "Service Complaints",
-        href: "/Services/ServiceComplaints",
-        items: ["Poor Service Quality", "Incomplete Service", "Service Delay", "False Promises"],
-      },
-      {
-        label: "Delivery Issues",
-        href: "/Services/DeliveryIssues",
-        items: ["Product Not Delivered", "Late Delivery", "Wrong Product Delivered"],
-      },
-      {
-        label: "Refund & Billing Disputes",
-        href: "/Services/RefundBillingDisputes",
-        items: ["Refund Not Received", "Overcharging Complaints", "Hidden Charges Disputes"],
-      },
+      // ── NOT YET DEVELOPED ──
+      // {
+      //   label: "Service Complaints",
+      //   href: "/Services/ServiceComplaints",
+      //   items: ["Poor Service Quality", "Incomplete Service", "Service Delay", "False Promises"],
+      // },
+      // {
+      //   label: "Delivery Issues",
+      //   href: "/Services/DeliveryIssues",
+      //   items: ["Product Not Delivered", "Late Delivery", "Wrong Product Delivered"],
+      // },
+      // {
+      //   label: "Refund & Billing Disputes",
+      //   href: "/Services/RefundBillingDisputes",
+      //   items: ["Refund Not Received", "Overcharging Complaints", "Hidden Charges Disputes"],
+      // },
     ],
   },
   {
@@ -83,127 +84,129 @@ const SERVICE_TREE = [
     label: "Commercial Disputes",
     href: "/Services/CommercialDisputes",
     sub: [
-      {
-        label: "Trade & Business Disputes",
-        href: "/Services/TradeBusinessDisputes",
-        items: [
-          "Trade Document Disputes",
-          "Document & Transfer Disputes",
-          "Cargo & Goods Transport Disputes",
-          "Sale of Goods Disputes",
-          "Trading Agency Disputes",
-        ],
-      },
-      {
-        label: "Finance & Banking Disputes",
-        href: "/Services/FinanceBankingDisputes",
-        items: [
-          "Investment Agreement Disputes",
-          "Insurance & Life Insurance Claim Disputes",
-          "Financial Services Disputes",
-          "Outsourcing & BPO Disputes",
-          "Unpaid Invoices & Money Recovery",
-          "Business Loan & Credit Disputes",
-          "Cheque Bounce Disputes",
-        ],
-      },
+      // ── NOT YET DEVELOPED ──
+      // {
+      //   label: "Trade & Business Disputes",
+      //   href: "/Services/TradeBusinessDisputes",
+      //   items: [
+      //     "Trade Document Disputes",
+      //     "Document & Transfer Disputes",
+      //     "Cargo & Goods Transport Disputes",
+      //     "Sale of Goods Disputes",
+      //     "Trading Agency Disputes",
+      //   ],
+      // },
+      // {
+      //   label: "Finance & Banking Disputes",
+      //   href: "/Services/FinanceBankingDisputes",
+      //   items: [
+      //     "Investment Agreement Disputes",
+      //     "Insurance & Life Insurance Claim Disputes",
+      //     "Financial Services Disputes",
+      //     "Outsourcing & BPO Disputes",
+      //     "Unpaid Invoices & Money Recovery",
+      //     "Business Loan & Credit Disputes",
+      //     "Cheque Bounce Disputes",
+      //   ],
+      // },
       {
         label: "Corporate & Business Agreement Disputes",
-        href: "/Services/CorporateBusinessDisputes",
-        items: [
-          "Joint Venture Disputes",
-          "Shareholder & Investor Disputes",
-          "Business Partnership Disputes",
-          "Management & Consultancy Agreement Disputes",
-          "Distribution & Licensing Agreement Disputes",
-          "Agency Contract Disputes",
-          "Board & Management Conflicts",
-          "Mergers & Acquisition Disputes",
-        ],
+        href: "/Services/ContractDisputes",
+        // items: [
+        //   "Joint Venture Disputes",
+        //   "Shareholder & Investor Disputes",
+        //   "Business Partnership Disputes",
+        //   "Management & Consultancy Agreement Disputes",
+        //   "Distribution & Licensing Agreement Disputes",
+        //   "Agency Contract Disputes",
+        //   "Board & Management Conflicts",
+        //   "Mergers & Acquisition Disputes",
+        // ],
       },
-      {
-        label: "Construction & Infrastructure",
-        href: "/Services/ConstructionInfrastructure",
-        items: [
-          "Construction Contract Disputes",
-          "Infrastructure Project Disputes",
-          "Tender & Procurement Disputes",
-          "Contractor Payment Disputes",
-          "Construction Defect & Quality Disputes",
-          "Project Delay & Penalty Disputes",
-        ],
-      },
-      {
-        label: "Commercial Property Disputes",
-        href: "/Services/CommercialPropertyDisputes",
-        items: [
-          "Commercial Property Lease Disputes",
-          "Office Rent Disputes",
-          "Warehouse & Industrial Rental Disputes",
-          "Commercial Property Ownership Disputes",
-          "Commercial Property Development Disputes",
-        ],
-      },
-      {
-        label: "Intellectual Property Disputes",
-        href: "/Services/IntellectualPropertyDisputes",
-        items: [
-          "Trademark & Brand Disputes",
-          "Copyright Infringement Disputes",
-          "Patent Dispute Resolution",
-          "Industrial Design Disputes",
-          "Domain Name Disputes",
-          "Trade Secret & Confidentiality Disputes",
-        ],
-      },
-      {
-        label: "Technology & Digital Disputes",
-        href: "/Services/TechnologyDigitalDisputes",
-        items: [
-          "Technology Development Agreement Disputes",
-          "Software & SaaS Licensing Disputes",
-          "IT Services Agreement Disputes",
-          "Digital Platform & App Disputes",
-          "E-Commerce Platform Disputes",
-        ],
-      },
-      {
-        label: "Franchise & Distribution Disputes",
-        href: "/Services/FranchiseDistributionDisputes",
-        items: [
-          "Franchise Agreement Disputes",
-          "Franchise Royalty & Fee Disputes",
-          "Franchise Territory Violation Disputes",
-          "Franchise Termination Disputes",
-          "Distribution Network Disputes",
-          "Dealer/Ship Agreement Disputes",
-        ],
-      },
-      {
-        label: "Employment & Workforce Disputes",
-        href: "/Services/EmploymentWorkforceDisputes",
-        items: [
-          "Employment Contract Disputes",
-          "Wrongful Termination Disputes",
-          "Salary & Severance Disputes",
-          "Non-Compete Agreement Disputes",
-          "Employee Confidentiality Disputes",
-          "Contractor & Freelancer Disputes",
-          "Workplace Harassment",
-        ],
-      },
-      {
-        label: "Contract & Agreement Disputes",
-        href: "/Services/ContractAgreementDisputes",
-        items: [
-          "Breach of Contract",
-          "Service Agreement Disputes",
-          "Vendor & Supplier Contract Disputes",
-          "Contract Non-Performance Disputes",
-          "Payment Default Disputes",
-          "Contract Cancellation Disputes",
-        ],
-      },
+      // ── NOT YET DEVELOPED ──
+      // {
+      //   label: "Construction & Infrastructure",
+      //   href: "/Services/ConstructionInfrastructure",
+      //   items: [
+      //     "Construction Contract Disputes",
+      //     "Infrastructure Project Disputes",
+      //     "Tender & Procurement Disputes",
+      //     "Contractor Payment Disputes",
+      //     "Construction Defect & Quality Disputes",
+      //     "Project Delay & Penalty Disputes",
+      //   ],
+      // },
+      // {
+      //   label: "Commercial Property Disputes",
+      //   href: "/Services/CommercialPropertyDisputes",
+      //   items: [
+      //     "Commercial Property Lease Disputes",
+      //     "Office Rent Disputes",
+      //     "Warehouse & Industrial Rental Disputes",
+      //     "Commercial Property Ownership Disputes",
+      //     "Commercial Property Development Disputes",
+      //   ],
+      // },
+      // {
+      //   label: "Intellectual Property Disputes",
+      //   href: "/Services/IntellectualPropertyDisputes",
+      //   items: [
+      //     "Trademark & Brand Disputes",
+      //     "Copyright Infringement Disputes",
+      //     "Patent Dispute Resolution",
+      //     "Industrial Design Disputes",
+      //     "Domain Name Disputes",
+      //     "Trade Secret & Confidentiality Disputes",
+      //   ],
+      // },
+      // {
+      //   label: "Technology & Digital Disputes",
+      //   href: "/Services/TechnologyDigitalDisputes",
+      //   items: [
+      //     "Technology Development Agreement Disputes",
+      //     "Software & SaaS Licensing Disputes",
+      //     "IT Services Agreement Disputes",
+      //     "Digital Platform & App Disputes",
+      //     "E-Commerce Platform Disputes",
+      //   ],
+      // },
+      // {
+      //   label: "Franchise & Distribution Disputes",
+      //   href: "/Services/FranchiseDistributionDisputes",
+      //   items: [
+      //     "Franchise Agreement Disputes",
+      //     "Franchise Royalty & Fee Disputes",
+      //     "Franchise Territory Violation Disputes",
+      //     "Franchise Termination Disputes",
+      //     "Distribution Network Disputes",
+      //     "Dealer/Ship Agreement Disputes",
+      //   ],
+      // },
+      // {
+      //   label: "Employment & Workforce Disputes",
+      //   href: "/Services/EmploymentWorkforceDisputes",
+      //   items: [
+      //     "Employment Contract Disputes",
+      //     "Wrongful Termination Disputes",
+      //     "Salary & Severance Disputes",
+      //     "Non-Compete Agreement Disputes",
+      //     "Employee Confidentiality Disputes",
+      //     "Contractor & Freelancer Disputes",
+      //     "Workplace Harassment",
+      //   ],
+      // },
+      // {
+      //   label: "Contract & Agreement Disputes",
+      //   href: "/Services/ContractAgreementDisputes",
+      //   items: [
+      //     "Breach of Contract",
+      //     "Service Agreement Disputes",
+      //     "Vendor & Supplier Contract Disputes",
+      //     "Contract Non-Performance Disputes",
+      //     "Payment Default Disputes",
+      //     "Contract Cancellation Disputes",
+      //   ],
+      // },
     ],
   },
 ];
@@ -704,7 +707,7 @@ export default function Header() {
           <Link href="/" className="hdr__logo" aria-label="RaaziMarzi home">
             {/* Full logo — shown at top */}
             <Image
-              src="/assets/images/logo.png"
+              src="/assets/icons/Logo.png"
               alt="RaaziMarzi Logo"
               width={160} height={40}
               priority sizes="160px"

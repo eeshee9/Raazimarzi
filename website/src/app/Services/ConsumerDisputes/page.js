@@ -283,7 +283,6 @@ export default function ConsumerDisputes() {
         <section ref={whyRef} className={`cd-why${whyIn ? " why-animate" : ""}`}>
           <div className="cd-container">
             <div className="cd-section-head center">
-              <p className="cd-tag">WHY CHOOSE US</p>
               <h2>Why Choose RaaziMarzi</h2>
               <p className="cd-section-sub">
                 A faster, secure, and reliable way to resolve disputes without lengthy court procedures.

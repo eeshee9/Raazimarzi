@@ -92,8 +92,8 @@
 /* Full logo: visible at top, hidden when scrolled */
 .hdr__logo-full {
   display: block;
-  height: 42px !important;
-  width: 150px !important;
+  height: 41px !important;
+  width: 140px !important;
   transition: opacity 0.2s;
 }
 
