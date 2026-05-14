@@ -703,26 +703,31 @@ export default function Header() {
       <header className={`hdr ${scrolled ? "hdr--scrolled" : "hdr--top"}`}>
         <div className="hdr__inner">
 
-          {/* LOGO */}
-          <Link href="/" className="hdr__logo" aria-label="RaaziMarzi home">
-            {/* Full logo — shown at top */}
-            <Image
-              src="/assets/icons/Logo.png"
-              alt="RaaziMarzi Logo"
-              width={160} height={40}
-              priority sizes="160px"
-              className="hdr__logo-full"
-            />
-            {/* Icon only — shown when scrolled (pill) */}
-            <Image
-              src="/assets/icons/Brand.png"
-              alt="RaaziMarzi Icon"
-              width={44} height={44}
-              priority sizes="36px"
-              className="hdr__logo-icon"
-              unoptimized
-            />
-          </Link>
+{/* LOGO */}
+<Link href="/" className="hdr__logo" aria-label="RaaziMarzi home">
+
+  {/* Full logo with text — shown at top */}
+  <Image
+    src="/assets/icons/Logo.png"
+    alt="RaaziMarzi Logo"
+    width={160} height={40}
+    priority
+    sizes="160px"
+    className="hdr__logo-full"
+  />
+
+  {/* Symbol/icon only — shown when scrolled */}
+  <Image
+    src="/assets/icons/Brand.png"
+    alt="RaaziMarzi Icon"
+    width={54} height={44}
+    priority
+    sizes="54px"
+    className="hdr__logo-icon"
+    unoptimized
+  />
+
+</Link>
 
           {/* DESKTOP NAV */}
           <nav className="hdr__nav" aria-label="Main navigation" ref={dropdownRef}>

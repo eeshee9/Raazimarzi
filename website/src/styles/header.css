@@ -89,19 +89,19 @@
   flex-shrink: 0;
 }
 
-/* Full logo: visible at top, hidden when scrolled */
 .hdr__logo-full {
   display: block;
-  height: 41px !important;
-  width: 140px !important;
+  height: 41px;
+  width: 160px;
+  object-fit: contain;
   transition: opacity 0.2s;
 }
 
-/* Icon only: hidden at top, visible when scrolled */
 .hdr__logo-icon {
   display: none;
-  height: 36px !important;
-  width: 100px !important;
+  height: 44px;
+  width: 54px;
+  object-fit: contain;
 }
 
 .hdr--scrolled .hdr__logo-full {
@@ -111,7 +111,6 @@
 .hdr--scrolled .hdr__logo-icon {
   display: block;
 }
-
 /* ═══════════════════════════════════
    DESKTOP NAV
 ═══════════════════════════════════ */
