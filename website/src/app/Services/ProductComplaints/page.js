@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { APP_BASE_PATH } from "@/config/appConfig";
-import "@/styles/productComplaint.css";
+import "@/styles/productComplaints.css";
 
 
 /* ── Data ── */
