@@ -162,40 +162,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════
-          HOW IT WORKS
-      ══════════════════════════════════════════════ */}
-      <section className="hiw-section">
-        <div className="hiw-header">
-          <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
-          <h2 className="hiw-title">How It Works</h2>
-          <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
-        </div>
-        <div className="hiw-stage">
-          <svg className="hiw-wave" viewBox="0 0 1440 260" preserveAspectRatio="none">
-            <path className="hiw-wave-shadow" d="M0,160 C200,260 300,260 500,160 C700,60 800,60 1000,160 C1200,260 1300,260 1440,160" />
-            <path className="hiw-wave-dotted" d="M0,160 C200,260 300,260 500,160 C700,60 800,60 1000,160 C1200,260 1300,260 1440,160" />
-          </svg>
-          <div className="hiw-dot hiw-dot-1"><img src="/assets/icons/1.png" alt="" /></div>
-          <div className="hiw-dot hiw-dot-2"><img src="/assets/icons/2.png" alt="" /></div>
-          <div className="hiw-dot hiw-dot-3"><img src="/assets/icons/3.png" alt="" /></div>
-          <div className="hiw-step hiw-step-1">
-            <div className="hiw-ghost">1</div>
-            <h4>Submit Your Case</h4>
-            <p>Provide your dispute details and upload necessary documents securely.</p>
+       {/* ── HOW IT WORKS ── */}
+        <section ref={hiwRef} className={`hiw-section${hiwIn ? " hiw-animate" : ""}`}>
+          <div className="hiw-header">
+            <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
+            <h2 className="hiw-title">How It Works</h2>
+            <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
           </div>
-          <div className="hiw-step hiw-step-2">
-            <div className="hiw-ghost">2</div>
-            <h4>Mediation &amp; Discussion</h4>
-            <p>The other party is notified and a mediator facilitates discussion between both sides.</p>
+
+          <div className="hiw-stage">
+            <img src="/assets/icons/line.png" className="hiw-wave-img" alt="" aria-hidden="true" />
+
+            <div className="hiw-dot hiw-dot-1"><img src="/assets/icons/1.png" alt="" /></div>
+            <div className="hiw-dot hiw-dot-2"><img src="/assets/icons/2.png" alt="" /></div>
+            <div className="hiw-dot hiw-dot-3"><img src="/assets/icons/3.png" alt="" /></div>
+
+            <div className="hiw-step hiw-step-1">
+              <div className="hiw-step-heading">
+                <h4>Submit Your Case</h4>
+                <span className="hiw-ghost" aria-hidden="true">1</span>
+              </div>
+              <p>Provide your dispute details and upload necessary documents securely.</p>
+            </div>
+
+            <div className="hiw-step hiw-step-2">
+              <div className="hiw-step-heading">
+                <h4>Mediation &amp; Discussion</h4>
+                <span className="hiw-ghost" aria-hidden="true">2</span>
+              </div>
+              <p>The other party is notified and a mediator facilitates discussion between both sides.</p>
+            </div>
+
+            <div className="hiw-step hiw-step-3">
+              <div className="hiw-step-heading">
+                <h4>Resolution</h4>
+                <span className="hiw-ghost" aria-hidden="true">3</span>
+              </div>
+              <p>Reach a fair agreement or get a final decision through arbitration.</p>
+            </div>
           </div>
-          <div className="hiw-step hiw-step-3">
-            <div className="hiw-ghost">3</div>
-            <h4>Resolution</h4>
-            <p>Reach a fair agreement or get a final decision through arbitration.</p>
-          </div>
-        </div>
-      </section>
+        </section>
 
       {/* ══════════════════════════════════════════════
           OUR LEGAL EXPERTISE
