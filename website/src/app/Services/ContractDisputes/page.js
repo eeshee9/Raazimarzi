@@ -167,21 +167,21 @@ export default function ContractDispute() {
   const [openFaq, setOpenFaq] = useState(0);
   const [testimonialIdx, setTestimonialIdx] = useState(0);
 
-  const [hiwVisible, setHiwVisible]       = useState(false);
-  const [whyVisible, setWhyVisible]       = useState(false);
+  const [hiwVisible, setHiwVisible] = useState(false);
+  const [whyVisible, setWhyVisible] = useState(false);
   const [causesVisible, setCausesVisible] = useState(false);
-  const [typesVisible, setTypesVisible]   = useState(false);
+  const [typesVisible, setTypesVisible] = useState(false);
   const [resolveVisible, setResolveVisible] = useState(false);
-  const [heroVisible, setHeroVisible]     = useState(false);
-  const [whatVisible, setWhatVisible]     = useState(false);
+  const [heroVisible, setHeroVisible] = useState(false);
+  const [whatVisible, setWhatVisible] = useState(false);
 
-  const hiwRef    = useRef(null);
-  const whyRef    = useRef(null);
+  const hiwRef = useRef(null);
+  const whyRef = useRef(null);
   const causesRef = useRef(null);
-  const typesRef  = useRef(null);
+  const typesRef = useRef(null);
   const resolveRef = useRef(null);
-  const heroRef   = useRef(null);
-  const whatRef   = useRef(null);
+  const heroRef = useRef(null);
+  const whatRef = useRef(null);
 
   const navigateToApp = useCallback((path = "/login", queryParams = {}) => {
     try {
@@ -205,12 +205,12 @@ export default function ContractDispute() {
   };
 
   /* eslint-disable react-hooks/exhaustive-deps */
-  useEffect(() => makeObs(setHeroVisible,    0.20)(heroRef),    []);
-  useEffect(() => makeObs(setWhatVisible,    0.15)(whatRef),    []);
-  useEffect(() => makeObs(setHiwVisible,     0.15)(hiwRef),     []);
-  useEffect(() => makeObs(setWhyVisible,     0.15)(whyRef),     []);
-  useEffect(() => makeObs(setCausesVisible,  0.10)(causesRef),  []);
-  useEffect(() => makeObs(setTypesVisible,   0.05)(typesRef),   []);
+  useEffect(() => makeObs(setHeroVisible, 0.20)(heroRef), []);
+  useEffect(() => makeObs(setWhatVisible, 0.15)(whatRef), []);
+  useEffect(() => makeObs(setHiwVisible, 0.15)(hiwRef), []);
+  useEffect(() => makeObs(setWhyVisible, 0.15)(whyRef), []);
+  useEffect(() => makeObs(setCausesVisible, 0.10)(causesRef), []);
+  useEffect(() => makeObs(setTypesVisible, 0.05)(typesRef), []);
   useEffect(() => makeObs(setResolveVisible, 0.10)(resolveRef), []);
   /* eslint-enable */
 
@@ -243,7 +243,7 @@ export default function ContractDispute() {
               we&apos;re committed to protecting your interests and helping you achieve peace of mind.
             </p>
             <div className="cad-hero-btns">
-              <button className="cad-hero-btn-primary"   onClick={() => navigateToApp("/user/file-new-case/step1")}>File a Case</button>
+              <button className="cad-hero-btn-primary" onClick={() => navigateToApp("/user/file-new-case/step1")}>File a Case</button>
               <button className="cad-hero-btn-secondary" onClick={() => navigateToApp("/user/file-new-case/step1")}>Learn More</button>
             </div>
           </div>
@@ -291,10 +291,10 @@ export default function ContractDispute() {
             </div>
             <div className="cad-causes-cards">
               {[
-                { title: "Communication Gaps",            desc: "Poor communication between contracting parties often leads to misunderstandings about terms, responsibilities, and expectations." },
-                { title: "Lack of Proper Documentation",  desc: "Verbal or loosely written agreements create ambiguity and make it difficult to enforce terms or resolve disagreements legally." },
-                { title: "Delays & Missed Commitments",   desc: "Failure to meet deadlines or agreed timelines can disrupt both parties causing loss and trust leading to disputes." },
-                { title: "Misaligned Expectations",       desc: "Differences in interpretation of contract clauses, deliverables, or standards often lead to conflicts between parties." },
+                { title: "Communication Gaps", desc: "Poor communication between contracting parties often leads to misunderstandings about terms, responsibilities, and expectations." },
+                { title: "Lack of Proper Documentation", desc: "Verbal or loosely written agreements create ambiguity and make it difficult to enforce terms or resolve disagreements legally." },
+                { title: "Delays & Missed Commitments", desc: "Failure to meet deadlines or agreed timelines can disrupt both parties causing loss and trust leading to disputes." },
+                { title: "Misaligned Expectations", desc: "Differences in interpretation of contract clauses, deliverables, or standards often lead to conflicts between parties." },
               ].map((c, i) => (
                 <div key={i} className={`cad-cause-card causes-card-${i + 1}`}>
                   <div className="cad-cause-dot" />
@@ -396,33 +396,43 @@ export default function ContractDispute() {
           </div>
         </section>
 
-        {/* ══ HOW IT WORKS ══ */}
-        <section ref={hiwRef} className={`cad-hiw-wrap hiw-section${hiwVisible ? " hiw-animate" : ""}`}>
+        {/* ── HOW IT WORKS ── */}
+        <section ref={hiwRef} className={`hiw-section${hiwVisible ? " hiw-animate" : ""}`}>
           <div className="hiw-header">
             <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
-            <h2 className="hiw-title">Still Not Resolved? Try Contract &amp; Agreement Dispute Mediation</h2>
-            <p className="hiw-sub">Our mediation process is quick, confidential, and legally recognised.</p>
+            <h2 className="hiw-title">How It Works</h2>
+            <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
           </div>
+
           <div className="hiw-stage">
-            <svg className="hiw-wave" viewBox="0 0 1200 260" preserveAspectRatio="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-              <path className="hiw-wave-path" d="M-60,130 C120,260 240,260 400,130 C560,0 680,0 840,130 C1000,260 1120,260 1260,130" fill="none" stroke="#7c5cbf" strokeWidth="2.2" strokeDasharray="7 10" strokeLinecap="round" />
-            </svg>
-            <div className="hiw-dot hiw-dot-1" aria-hidden="true"><img src="/assets/icons/1.png" alt="" /></div>
-            <div className="hiw-dot hiw-dot-2" aria-hidden="true"><img src="/assets/icons/2.png" alt="" /></div>
-            <div className="hiw-dot hiw-dot-3" aria-hidden="true"><img src="/assets/icons/3.png" alt="" /></div>
+            {/* Wave spans full viewport width, not constrained to max-width */}
+            <img src="/assets/icons/line.png" className="hiw-wave-img" alt="" aria-hidden="true" />
+
+            <div className="hiw-dot hiw-dot-1"><img src="/assets/icons/1.png" alt="" /></div>
+            <div className="hiw-dot hiw-dot-2"><img src="/assets/icons/2.png" alt="" /></div>
+            <div className="hiw-dot hiw-dot-3"><img src="/assets/icons/3.png" alt="" /></div>
+
             <div className="hiw-step hiw-step-1">
-              <div className="hiw-ghost" aria-hidden="true">1</div>
-              <h4>Submit Your Case</h4>
+              <div className="hiw-step-heading">
+                <h4>Submit Your Case</h4>
+                <span className="hiw-ghost" aria-hidden="true">1</span>
+              </div>
               <p>Provide your dispute details and upload necessary documents securely.</p>
             </div>
+
             <div className="hiw-step hiw-step-2">
-              <div className="hiw-ghost" aria-hidden="true">2</div>
-              <h4>Mediation &amp; Discussion</h4>
+              <div className="hiw-step-heading">
+                <h4>Mediation &amp; Discussion</h4>
+                <span className="hiw-ghost" aria-hidden="true">2</span>
+              </div>
               <p>The other party is notified and a mediator facilitates discussion between both sides.</p>
             </div>
+
             <div className="hiw-step hiw-step-3">
-              <div className="hiw-ghost" aria-hidden="true">3</div>
-              <h4>Resolution</h4>
+              <div className="hiw-step-heading">
+                <h4>Resolution</h4>
+                <span className="hiw-ghost" aria-hidden="true">3</span>
+              </div>
               <p>Reach a fair agreement or get a final decision through arbitration.</p>
             </div>
           </div>
@@ -479,7 +489,7 @@ export default function ContractDispute() {
               {slots.map((offset) => {
                 const idx = getSlot(offset);
                 const isCenter = offset === 0;
-                const isNear   = Math.abs(offset) === 1;
+                const isNear = Math.abs(offset) === 1;
                 const cls = isCenter
                   ? "svc-floating-avatar active"
                   : isNear

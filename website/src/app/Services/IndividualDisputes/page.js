@@ -228,88 +228,47 @@ const IndividualDisputes = () => {
           </div>
         </section>
 
-        {/* ── HOW IT WORKS ── */}
-        <section ref={hiwRef} className={`hiw-section${hiwVisible ? " hiw-animate" : ""}`}>
-          <div className="hiw-header">
-            <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
-            <h2 className="hiw-title">How It Works</h2>
-            <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
-          </div>
+   {/* ── HOW IT WORKS ── */}
+      <section ref={hiwRef} className={`hiw-section${hiwVisible ? " hiw-animate" : ""}`}>
+  <div className="hiw-header">
+    <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
+    <h2 className="hiw-title">How It Works</h2>
+    <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
+  </div>
 
-          <div className="hiw-stage">
+  <div className="hiw-stage">
+    {/* Wave spans full viewport width, not constrained to max-width */}
+    <img src="/assets/icons/line.png" className="hiw-wave-img" alt="" aria-hidden="true" />
 
-            {/* ── WAVE SVG ──
-        viewBox: 0 0 1440 480
-        Path anchors (viewBox coords):
-          Start  → (0, 300)
-          Dot-1  → (360, 140)   peak
-          Dot-2  → (720, 390)   trough
-          Dot-3  → (1080, 140)  peak
-          End    → (1440, 300)
+    <div className="hiw-dot hiw-dot-1"><img src="/assets/icons/1.png" alt="" /></div>
+    <div className="hiw-dot hiw-dot-2"><img src="/assets/icons/2.png" alt="" /></div>
+    <div className="hiw-dot hiw-dot-3"><img src="/assets/icons/3.png" alt="" /></div>
 
-        CSS dot positions mirror these:
-          dot-1: left=25%, top=140px
-          dot-2: left=50%, top=390px
-          dot-3: left=75%, top=140px
-    ── */}
-           <svg
-  className="hiw-wave"
-  viewBox="0 0 1440 480"
-  preserveAspectRatio="xMidYMid meet"
-  style={{ position:'absolute', top:0, left:0, width:'100%', height:'480px' }}
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    className="hiw-wave-shadow"
-    d="M-100,300 C100,300 220,172 360,172 C500,172 540,428 720,428 C900,428 940,172 1080,172 C1220,172 1340,300 1540,300"
-    transform="translate(0,6)"
-  />
-  <path
-    className="hiw-wave-dotted"
-    d="M-100,300 C100,300 220,172 360,172 C500,172 540,428 720,428 C900,428 940,172 1080,172 C1220,172 1340,300 1540,300"
-  />
-</svg>
+    <div className="hiw-step hiw-step-1">
+      <div className="hiw-step-heading">
+        <h4>Submit Your Case</h4>
+        <span className="hiw-ghost" aria-hidden="true">1</span>
+      </div>
+      <p>Provide your dispute details and upload necessary documents securely.</p>
+    </div>
 
-            {/* ── Step 1: upper-left ── */}
-            <div className="hiw-step hiw-step-1">
-              <div className="hiw-step-heading">
-                <h4>Submit Your Case</h4>
-                <span className="hiw-ghost">1</span>
-              </div>
-              <p>Provide your dispute details and upload necessary documents securely.</p>
-            </div>
+    <div className="hiw-step hiw-step-2">
+      <div className="hiw-step-heading">
+        <h4>Mediation &amp; Discussion</h4>
+        <span className="hiw-ghost" aria-hidden="true">2</span>
+      </div>
+      <p>The other party is notified and a mediator facilitates discussion between both sides.</p>
+    </div>
 
-            {/* ── Step 2: below center trough ── */}
-            <div className="hiw-step hiw-step-2">
-              <div className="hiw-step-heading">
-                <h4>Mediation &amp; Discussion</h4>
-                <span className="hiw-ghost">2</span>
-              </div>
-              <p>The other party is notified and a mediator facilitates discussion between both sides.</p>
-            </div>
-
-            {/* ── Step 3: upper-right ── */}
-            <div className="hiw-step hiw-step-3">
-              <div className="hiw-step-heading">
-                <h4>Resolution</h4>
-                <span className="hiw-ghost">3</span>
-              </div>
-              <p>Reach a fair agreement or get a final decision through arbitration.</p>
-            </div>
-
-            {/* ── Dot icons ── */}
-            <div className="hiw-dot hiw-dot-1">
-              <img src="/assets/icons/1.png" alt="" />
-            </div>
-            <div className="hiw-dot hiw-dot-2">
-              <img src="/assets/icons/2.png" alt="" />
-            </div>
-            <div className="hiw-dot hiw-dot-3">
-              <img src="/assets/icons/3.png" alt="" />
-            </div>
-
-          </div>
-        </section>
+    <div className="hiw-step hiw-step-3">
+      <div className="hiw-step-heading">
+        <h4>Resolution</h4>
+        <span className="hiw-ghost" aria-hidden="true">3</span>
+      </div>
+      <p>Reach a fair agreement or get a final decision through arbitration.</p>
+    </div>
+  </div>
+</section>
 
         {/* ── WHY CHOOSE ── */}
         <section ref={whyRef} className={`id-why${whyVisible ? " why-animate" : ""}`}>

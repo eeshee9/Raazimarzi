@@ -38,28 +38,28 @@ function FaqItem({ q, a }) {
 
 /* ── Testimonial data ── */
 const TESTIMONIALS = [
-  { name: "Riya Sharma, Mumbai",   img: "/assets/images/t1.png", stars: 5, text: "RaaziMarzi helped me resolve a defective product complaint quickly. The entire process was smooth and the mediator was very professional." },
-  { name: "Amit Verma, Delhi",     img: "/assets/images/t2.png", stars: 5, text: "I had a billing dispute with an online retailer for months. RaaziMarzi resolved it in just 2 sessions. Highly recommend!" },
+  { name: "Riya Sharma, Mumbai", img: "/assets/images/t1.png", stars: 5, text: "RaaziMarzi helped me resolve a defective product complaint quickly. The entire process was smooth and the mediator was very professional." },
+  { name: "Amit Verma, Delhi", img: "/assets/images/t2.png", stars: 5, text: "I had a billing dispute with an online retailer for months. RaaziMarzi resolved it in just 2 sessions. Highly recommend!" },
   { name: "Priya Nair, Bangalore", img: "/assets/images/t3.png", stars: 5, text: "The platform made it easy to handle a delivery issue with a vendor. Everything was managed online without any hassle." },
   { name: "Suresh Kumar, Chennai", img: "/assets/images/t4.png", stars: 5, text: "Professional, fast, and legally sound. RaaziMarzi gave me confidence that my consumer rights were being protected." },
-  { name: "Tenant, Hyderabad",     img: "/assets/images/t5.png", stars: 5, text: "This platform made it easy to handle a payment dispute with a client. The mediation process was smooth, and everything was managed online without any hassle." },
+  { name: "Tenant, Hyderabad", img: "/assets/images/t5.png", stars: 5, text: "This platform made it easy to handle a payment dispute with a client. The mediation process was smooth, and everything was managed online without any hassle." },
 ];
 
 /* ── Why Choose data ── */
 const WHY_CARDS = [
-  { icon: "/assets/icons/fastresol.png",  title: "Fast Resolution",  desc: "Resolve disputes quickly without long court procedures." },
-  { icon: "/assets/icons/legallycom.png", title: "Secure Platform",  desc: "Your data and documents are protected with strong security." },
-  { icon: "/assets/icons/s&c.png",        title: "Expert Mediators", desc: "Get guidance from experienced and neutral professionals." },
-  { icon: "/assets/icons/neutralexp.png", title: "Cost Effective",   desc: "Save legal costs compared to traditional litigation." },
-  { icon: "/assets/icons/247.png",        title: "Accessible Anytime", desc: "Resolve disputes from anywhere, anytime online." },
+  { icon: "/assets/icons/fastresol.png", title: "Fast Resolution", desc: "Resolve disputes quickly without long court procedures." },
+  { icon: "/assets/icons/legallycom.png", title: "Secure Platform", desc: "Your data and documents are protected with strong security." },
+  { icon: "/assets/icons/s&c.png", title: "Expert Mediators", desc: "Get guidance from experienced and neutral professionals." },
+  { icon: "/assets/icons/neutralexp.png", title: "Cost Effective", desc: "Save legal costs compared to traditional litigation." },
+  { icon: "/assets/icons/247.png", title: "Accessible Anytime", desc: "Resolve disputes from anywhere, anytime online." },
 ];
 
 /* ── FAQ data ── */
 const FAQS = [
-  { q: "Is my privacy protected during the process?",      a: "Yes, absolutely. All discussions held within RaaziMarzi are confidential and cannot be used in a court of law. This allows both parties to speak freely without fear of legal prejudice." },
-  { q: "Can I bring my own lawyer to the session?",        a: "Yes, you may have legal representation during sessions. However, the mediation process is designed to be collaborative, not adversarial." },
+  { q: "Is my privacy protected during the process?", a: "Yes, absolutely. All discussions held within RaaziMarzi are confidential and cannot be used in a court of law. This allows both parties to speak freely without fear of legal prejudice." },
+  { q: "Can I bring my own lawyer to the session?", a: "Yes, you may have legal representation during sessions. However, the mediation process is designed to be collaborative, not adversarial." },
   { q: "What happens if the other party refuses to join?", a: "If the other party declines to participate, we will notify you and help explore alternative options for resolving your dispute." },
-  { q: "How long does the average case take?",             a: "Most consumer disputes are resolved within 2–4 sessions, typically spanning 1–3 weeks depending on complexity and party availability." },
+  { q: "How long does the average case take?", a: "Most consumer disputes are resolved within 2–4 sessions, typically spanning 1–3 weeks depending on complexity and party availability." },
 ];
 
 /* ══════════════════════════════════════════════════════════
@@ -69,8 +69,8 @@ export default function ConsumerDisputes() {
 
   /* Section observers */
   const [aboutRef, aboutIn] = useInView();
-  const [hiwRef,   hiwIn]   = useInView();
-  const [whyRef,   whyIn]   = useInView();
+  const [hiwRef, hiwIn] = useInView();   /* ← fixed: was hiwVisible, now hiwIn */
+  const [whyRef, whyIn] = useInView();
 
   /* Flip cards spread */
   const [spread, setSpread] = useState(false);
@@ -247,33 +247,41 @@ export default function ConsumerDisputes() {
         </section>
 
         {/* ── HOW IT WORKS ── */}
-        <section ref={hiwRef} className={`cd-hiw-section${hiwIn ? " cd-hiw-animate" : ""}`}>
-          <div className="cd-hiw-header">
-            <p className="cd-hiw-eyebrow">3 SIMPLE STEPS</p>
-            <h2 className="cd-hiw-title">How It Works</h2>
-            <p className="cd-hiw-sub">A simple and secure process to resolve disputes online.</p>
+        <section ref={hiwRef} className={`hiw-section${hiwIn ? " hiw-animate" : ""}`}>
+          <div className="hiw-header">
+            <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
+            <h2 className="hiw-title">How It Works</h2>
+            <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
           </div>
-          <div className="cd-hiw-stage">
-            <svg className="cd-hiw-wave" viewBox="0 0 1440 260" preserveAspectRatio="none">
-              <path className="cd-hiw-wave-shadow" d="M0,160 C200,260 300,260 500,160 C700,60 800,60 1000,160 C1200,260 1300,260 1440,160" />
-              <path className="cd-hiw-wave-dotted" d="M0,160 C200,260 300,260 500,160 C700,60 800,60 1000,160 C1200,260 1300,260 1440,160" />
-            </svg>
-            <div className="cd-hiw-dot cd-hiw-dot-1"><img src="/assets/icons/1.png" alt="" /></div>
-            <div className="cd-hiw-dot cd-hiw-dot-2"><img src="/assets/icons/2.png" alt="" /></div>
-            <div className="cd-hiw-dot cd-hiw-dot-3"><img src="/assets/icons/3.png" alt="" /></div>
-            <div className="cd-hiw-step cd-hiw-step-1">
-              <div className="cd-hiw-ghost">1</div>
-              <h4>Submit Your Case</h4>
+
+          <div className="hiw-stage">
+            <img src="/assets/icons/line.png" className="hiw-wave-img" alt="" aria-hidden="true" />
+
+            <div className="hiw-dot hiw-dot-1"><img src="/assets/icons/1.png" alt="" /></div>
+            <div className="hiw-dot hiw-dot-2"><img src="/assets/icons/2.png" alt="" /></div>
+            <div className="hiw-dot hiw-dot-3"><img src="/assets/icons/3.png" alt="" /></div>
+
+            <div className="hiw-step hiw-step-1">
+              <div className="hiw-step-heading">
+                <h4>Submit Your Case</h4>
+                <span className="hiw-ghost" aria-hidden="true">1</span>
+              </div>
               <p>Provide your dispute details and upload necessary documents securely.</p>
             </div>
-            <div className="cd-hiw-step cd-hiw-step-2">
-              <div className="cd-hiw-ghost">2</div>
-              <h4>Mediation &amp; Discussion</h4>
+
+            <div className="hiw-step hiw-step-2">
+              <div className="hiw-step-heading">
+                <h4>Mediation &amp; Discussion</h4>
+                <span className="hiw-ghost" aria-hidden="true">2</span>
+              </div>
               <p>The other party is notified and a mediator facilitates discussion between both sides.</p>
             </div>
-            <div className="cd-hiw-step cd-hiw-step-3">
-              <div className="cd-hiw-ghost">3</div>
-              <h4>Resolution</h4>
+
+            <div className="hiw-step hiw-step-3">
+              <div className="hiw-step-heading">
+                <h4>Resolution</h4>
+                <span className="hiw-ghost" aria-hidden="true">3</span>
+              </div>
               <p>Reach a fair agreement or get a final decision through arbitration.</p>
             </div>
           </div>
@@ -333,8 +341,8 @@ export default function ConsumerDisputes() {
                 const cls = isCenter
                   ? "svc-floating-avatar active"
                   : isNear
-                  ? "svc-floating-avatar svc-av-near"
-                  : "svc-floating-avatar svc-av-far";
+                    ? "svc-floating-avatar svc-av-near"
+                    : "svc-floating-avatar svc-av-far";
                 return (
                   <button
                     key={offset}

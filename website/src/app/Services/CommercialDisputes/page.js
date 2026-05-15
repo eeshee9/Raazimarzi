@@ -378,63 +378,47 @@ export default function CommercialDisputes() {
                         </div>
                     </div>
                 </section>
+                {/* ── HOW IT WORKS ── */}
+                <section ref={hiwRef} className={`hiw-section${hiwVisible ? " hiw-animate" : ""}`}>
+                    <div className="hiw-header">
+                        <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
+                        <h2 className="hiw-title">How It Works</h2>
+                        <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
+                    </div>
 
-               <section ref={hiwRef} className={`cd-hiw-wrap hiw-section${hiwVisible ? " hiw-animate" : ""}`}>
-  <div className="hiw-header">
-    <p className="hiw-eyebrow">3 SIMPLE STEPS</p>
-    <h2 className="hiw-title">How It Works</h2>
-    <p className="hiw-sub">A simple and secure process to resolve disputes online.</p>
-  </div>
+                    <div className="hiw-stage">
+                        {/* Wave spans full viewport width, not constrained to max-width */}
+                        <img src="/assets/icons/line.png" className="hiw-wave-img" alt="" aria-hidden="true" />
 
-  <div className="hiw-stage">
-    <svg className="hiw-svg" viewBox="0 0 1200 390"
-      xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"
-      aria-hidden="true">
+                        <div className="hiw-dot hiw-dot-1"><img src="/assets/icons/1.png" alt="" /></div>
+                        <div className="hiw-dot hiw-dot-2"><img src="/assets/icons/2.png" alt="" /></div>
+                        <div className="hiw-dot hiw-dot-3"><img src="/assets/icons/3.png" alt="" /></div>
 
-      {/* DASHED WAVE */}
-      <path
-        className="hiw-wave-path"
-        d="M-60,200 C80,200 140,330 260,330 C380,330 440,70 600,70 C760,70 820,330 940,330 C1060,330 1120,200 1260,200"
-        fill="none" stroke="#5b7af5" strokeWidth="2"
-        strokeDasharray="9 12" strokeLinecap="round"
-      />
+                        <div className="hiw-step hiw-step-1">
+                            <div className="hiw-step-heading">
+                                <h4>Submit Your Case</h4>
+                                <span className="hiw-ghost" aria-hidden="true">1</span>
+                            </div>
+                            <p>Provide your dispute details and upload necessary documents securely.</p>
+                        </div>
 
-      {/* ── STEP 1 top-left ── */}
-      <text className="hiw-h" x="22" y="52">Submit Your Case</text>
-      <text className="hiw-p" x="22" y="74">Provide your dispute details and</text>
-      <text className="hiw-p" x="22" y="90">upload necessary documents securely.</text>
-      <text className="hiw-ghost" x="248" y="158" textAnchor="middle">1</text>
-      <g className={`hiw-dot hiw-dot-1`}>
-        <circle cx="260" cy="330" r="27" fill="#fff" stroke="#d8dcf5" strokeWidth="1.5"/>
-        <image href="/assets/icons/1.png" x="234" y="304" width="52" height="52"
-          style={{clipPath:'circle(23px at 26px 26px)'}}/>
-      </g>
+                        <div className="hiw-step hiw-step-2">
+                            <div className="hiw-step-heading">
+                                <h4>Mediation &amp; Discussion</h4>
+                                <span className="hiw-ghost" aria-hidden="true">2</span>
+                            </div>
+                            <p>The other party is notified and a mediator facilitates discussion between both sides.</p>
+                        </div>
 
-      {/* ── STEP 2 bottom-center ── */}
-      <g className={`hiw-dot hiw-dot-2`}>
-        <circle cx="600" cy="70" r="27" fill="#fff" stroke="#d8dcf5" strokeWidth="1.5"/>
-        <image href="/assets/icons/2.png" x="574" y="44" width="52" height="52"
-          style={{clipPath:'circle(23px at 26px 26px)'}}/>
-      </g>
-      <text className="hiw-h" x="422" y="248">Mediation &amp; Discussion</text>
-      <text className="hiw-p" x="422" y="270">The other party is notified and a mediator</text>
-      <text className="hiw-p" x="422" y="286">facilitates discussion between both sides.</text>
-      <text className="hiw-ghost" x="688" y="368" textAnchor="middle">2</text>
-
-      {/* ── STEP 3 top-right ── */}
-      <text className="hiw-h" x="820" y="52">Resolution</text>
-      <text className="hiw-p" x="820" y="74">Reach a fair agreement or get a</text>
-      <text className="hiw-p" x="820" y="90">final decision through arbitration.</text>
-      <text className="hiw-ghost" x="1050" y="158" textAnchor="middle">3</text>
-      <g className={`hiw-dot hiw-dot-3`}>
-        <circle cx="940" cy="330" r="27" fill="#fff" stroke="#d8dcf5" strokeWidth="1.5"/>
-        <image href="/assets/icons/3.png" x="914" y="304" width="52" height="52"
-          style={{clipPath:'circle(23px at 26px 26px)'}}/>
-      </g>
-
-    </svg>
-  </div>
-</section>
+                        <div className="hiw-step hiw-step-3">
+                            <div className="hiw-step-heading">
+                                <h4>Resolution</h4>
+                                <span className="hiw-ghost" aria-hidden="true">3</span>
+                            </div>
+                            <p>Reach a fair agreement or get a final decision through arbitration.</p>
+                        </div>
+                    </div>
+                </section>
 
                 {/* ══════════════════════════════════════════════
             WHY CHOOSE

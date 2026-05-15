@@ -771,11 +771,12 @@ export default function Header() {
                       </span>
                     </div>
                   ) : (
-                    <button
-                      className={`hdr__nav-btn ${isOpen ? "hdr__nav-btn--open" : ""} ${isActive ? "hdr__nav-btn--active" : ""}`}
-                      onClick={() => toggleNav(item.id)}
-                      aria-expanded={isOpen}
-                    >
+                  <button
+  suppressHydrationWarning
+  className={`hdr__nav-btn ${isOpen ? "hdr__nav-btn--open" : ""} ${isActive ? "hdr__nav-btn--active" : ""}`}
+  onClick={() => toggleNav(item.id)}
+  aria-expanded={isOpen}
+>
                       {item.label}
                       <svg
                         className={`hdr__nav-chevron ${isOpen ? "hdr__nav-chevron--up" : ""}`}
