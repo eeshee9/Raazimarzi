@@ -1160,8 +1160,6 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
 
 /* =========================================================
    individualDisputes.css  — RESPONSIVE OVERRIDES ONLY
-   Desktop CSS is untouched. All animations preserved.
-   Breakpoints match Figma mobile design exactly.
    ========================================================= */
 
 /* =========================================================
@@ -1326,7 +1324,7 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
 }
 
 /* =========================================================
-   ≤ 768px  — Mobile-portrait (Figma primary target)
+   ≤ 768px  — Mobile-portrait 
    ========================================================= */
 @media (max-width: 768px) {
 
@@ -1366,13 +1364,169 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
   .id-flip-back p  { font-size: 13.5px; }
 
   /* ── HOW IT WORKS ── */
-  .hiw-section { padding: 60px 0 0; }
+ 
+/* =========================================================
+   HOW IT WORKS — MOBILE RESPONSIVE
+========================================================= */
 
-  .hiw-title { font-size: clamp(24px, 6vw, 36px); }
 
-  .hiw-step-heading h4 { font-size: 16px; white-space: normal; }
+  /* ── Section wrapper ── */
+  .hiw-section {
+    padding: 52px 0 60px;
+    overflow: visible;          /* allow ghost numbers to peek out */
+  }
 
-  .hiw-ghost { font-size: 68px; }
+  .hiw-header {
+    padding: 0 24px;
+    margin-bottom: 0;
+  }
+  .hiw-eyebrow { font-size: 10px; letter-spacing: 2.5px; margin-bottom: 10px; }
+  .hiw-title   { font-size: 24px; margin-bottom: 10px; }
+  .hiw-sub     { font-size: 13px; line-height: 1.75; margin-bottom: 0; }
+
+  /* ── Stage: natural height, no bleed ── */
+  .hiw-stage {
+    position:   relative;
+    width:      100%;
+    left:       0;
+    transform:  none;
+    height:     auto;
+    min-height: 640px;        
+    display:    block;          
+    padding:    0;
+    margin-top: 0;
+  }
+
+  /* ── Kill the desktop wave image ── */
+  .hiw-wave-img { display: none !important; }
+
+  .hiw-stage::before {
+    content:  "";
+    position: absolute;
+    top:      0;
+    left:     0;
+    width:    100%;
+    height:   100%;
+    /* SVG S-curve: starts top-right area, curves left, curves right, ends bottom-center */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='390' height='640' viewBox='0 0 390 640'%3E%3Cpath d='M 280 40 C 280 150, 80 180, 80 280 C 80 380, 280 420, 240 540' fill='none' stroke='%23c4b8ff' stroke-width='2' stroke-dasharray='10 8' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:   no-repeat;
+    background-position: center top;
+    background-size:     100% 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Dots: show on mobile, repositioned ── */
+  .hiw-dot {
+    display:    flex !important;
+    opacity:    0;
+    width:      40px;
+    height:     40px;
+    position:   absolute;
+    z-index:    3;
+    transform:  translate(-50%, -50%);
+  }
+  .hiw-dot img { width: 18px; height: 18px; }
+
+  /* Dot positions matched to the S-curve above */
+  .hiw-dot-1 { left: 72%;  top: 12%; }   /* top-right area */
+  .hiw-dot-2 { left: 20%;  top: 44%; }   /* mid-left */
+  .hiw-dot-3 { left: 62%;  top: 76%; }   /* bottom-right */
+
+  .hiw-animate .hiw-dot-1 { animation: hiwDotPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.5s  forwards; }
+  .hiw-animate .hiw-dot-2 { animation: hiwDotPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 1.0s  forwards; }
+  .hiw-animate .hiw-dot-3 { animation: hiwDotPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 1.5s  forwards; }
+
+  /* ── Steps: absolute positioned, alternating sides ── */
+  .hiw-step {
+    position:  absolute;
+    opacity:   0;
+    z-index:   2;
+    max-width: 200px;
+  }
+
+  /* Step 1 — right side, top */
+  .hiw-step-1 {
+    left:       4%;
+    top:        6%;
+    text-align: left;
+    transform:  none;
+    width:      170px;
+  }
+
+  /* Step 2 — left side, middle */
+  .hiw-step-2 {
+    left:       60%;
+    top:        37%;
+    text-align: left;
+    transform:  none;
+    width:      180px;
+  }
+
+  /* Step 3 — center-right, bottom */
+  .hiw-step-3 {
+    left:       4%;
+    top:        67%;
+    text-align: left;
+    transform:  none;
+    width:      200px;
+  }
+
+  /* Step heading */
+  .hiw-step-heading {
+    display:     flex;
+    align-items: baseline;
+    gap:         0;
+    flex-wrap:   nowrap;
+  }
+
+  .hiw-step-heading h4 {
+    font-size:   16px;
+    font-weight: 800;
+    color:       #1a1a2e;
+    margin:      0;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  /* Ghost number — large, behind text */
+  .hiw-ghost {
+    font-size:      88px;
+    font-weight:    900;
+    line-height:    0.82;
+    height:         72px;
+    color:          rgba(100, 90, 160, 0.13);
+    letter-spacing: -3px;
+    display:        block;
+    margin-top:     -8px;
+    user-select:    none;
+    pointer-events: none;
+  }
+
+  .hiw-step p {
+    font-size:  12.5px;
+    color:      #70707f;
+    line-height: 1.65;
+    margin:     6px 0 0;
+    max-width:  100%;
+  }
+
+  /* ── Entrance animations ── */
+  .hiw-animate .hiw-step-1 {
+    animation: hiwMobileFade 0.65s cubic-bezier(0.22,1,0.36,1) 0.3s forwards !important;
+  }
+  .hiw-animate .hiw-step-2 {
+    animation: hiwMobileFade 0.65s cubic-bezier(0.22,1,0.36,1) 0.8s forwards !important;
+  }
+  .hiw-animate .hiw-step-3 {
+    animation: hiwMobileFade 0.65s cubic-bezier(0.22,1,0.36,1) 1.3s forwards !important;
+  }
+
+  @keyframes hiwMobileFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
 
   /* ── WHY grid: keep 2-col on 768, centered last if odd ── */
   .id-why { padding: 70px 0 75px; }
@@ -1505,30 +1659,208 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
 
   .id-flip-deco { width: 110px; height: 110px; }
 
-  /* ── HOW IT WORKS ── */
-  .hiw-section { padding: 50px 0 0; }
+/* =========================================================
+   HOW IT WORKS — MOBILE RESPONSIVE
+========================================================= */
 
-  .hiw-header { padding: 0 16px; }
+@media (max-width: 768px) {
 
-  .hiw-title { font-size: clamp(22px, 6.5vw, 30px); }
+  /* ── Section wrapper ── */
+  .hiw-section {
+    padding: 52px 0 60px;
+    overflow: visible;          /* allow ghost numbers to peek out */
+  }
 
-  .hiw-sub { font-size: 13px; }
+  .hiw-header {
+    padding: 0 24px;
+    margin-bottom: 0;
+  }
+  .hiw-eyebrow { font-size: 10px; letter-spacing: 2.5px; margin-bottom: 10px; }
+  .hiw-title   { font-size: 24px; margin-bottom: 10px; }
+  .hiw-sub     { font-size: 13px; line-height: 1.75; margin-bottom: 0; }
 
-  .hiw-stage { gap: 32px; padding: 32px 0 0; }
+  /* ── Stage: natural height, no bleed ── */
+  .hiw-stage {
+    position:   relative;
+    width:      100%;
+    left:       0;
+    transform:  none;
+    height:     auto;
+    min-height: 640px;        
+    display:    block;          
+    padding:    0;
+    margin-top: 0;
+  }
+
+  /* ── Kill the desktop wave image ── */
+  .hiw-wave-img { display: none !important; }
+
+  /* ── Inject mobile S-curve SVG via pseudo-element ──
+     We draw it with an inline SVG background on the stage.
+     A dashed vertical S-curve running top→bottom.          */
+  .hiw-stage::before {
+    content:  "";
+    position: absolute;
+    top:      0;
+    left:     0;
+    width:    100%;
+    height:   100%;
+    /* SVG S-curve: starts top-right area, curves left, curves right, ends bottom-center */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='390' height='640' viewBox='0 0 390 640'%3E%3Cpath d='M 280 40 C 280 150, 80 180, 80 280 C 80 380, 280 420, 240 540' fill='none' stroke='%23c4b8ff' stroke-width='2' stroke-dasharray='10 8' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:   no-repeat;
+    background-position: center top;
+    background-size:     100% 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Dots: show on mobile, repositioned ── */
+  .hiw-dot {
+    display:    flex !important;
+    opacity:    0;
+    width:      40px;
+    height:     40px;
+    position:   absolute;
+    z-index:    3;
+    transform:  translate(-50%, -50%);
+  }
+  .hiw-dot img { width: 18px; height: 18px; }
+
+  /* Dot positions matched to the S-curve above */
+  .hiw-dot-1 { left: 72%;  top: 12%; }   /* top-right area */
+  .hiw-dot-2 { left: 20%;  top: 44%; }   /* mid-left */
+  .hiw-dot-3 { left: 62%;  top: 76%; }   /* bottom-right */
+
+  .hiw-animate .hiw-dot-1 { animation: hiwDotPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.5s  forwards; }
+  .hiw-animate .hiw-dot-2 { animation: hiwDotPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 1.0s  forwards; }
+  .hiw-animate .hiw-dot-3 { animation: hiwDotPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 1.5s  forwards; }
+
+  /* ── Steps: absolute positioned, alternating sides ── */
+  .hiw-step {
+    position:  absolute;
+    opacity:   0;
+    z-index:   2;
+    max-width: 200px;
+  }
+
+  /* Step 1 — right side, top */
+  .hiw-step-1 {
+    left:       4%;
+    top:        6%;
+    text-align: left;
+    transform:  none;
+    width:      170px;
+  }
+
+  /* Step 2 — left side, middle */
+  .hiw-step-2 {
+    left:       60%;
+    top:        37%;
+    text-align: left;
+    transform:  none;
+    width:      180px;
+  }
+
+  /* Step 3 — center-right, bottom */
+  .hiw-step-3 {
+    left:       4%;
+    top:        67%;
+    text-align: left;
+    transform:  none;
+    width:      200px;
+  }
+
+  /* Step heading */
+  .hiw-step-heading {
+    display:     flex;
+    align-items: baseline;
+    gap:         0;
+    flex-wrap:   nowrap;
+  }
+
+  .hiw-step-heading h4 {
+    font-size:   16px;
+    font-weight: 800;
+    color:       #1a1a2e;
+    margin:      0;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  /* Ghost number — large, behind text */
+  .hiw-ghost {
+    font-size:      88px;
+    font-weight:    900;
+    line-height:    0.82;
+    height:         72px;
+    color:          rgba(100, 90, 160, 0.13);
+    letter-spacing: -3px;
+    display:        block;
+    margin-top:     -8px;
+    user-select:    none;
+    pointer-events: none;
+  }
+
+  .hiw-step p {
+    font-size:  12.5px;
+    color:      #70707f;
+    line-height: 1.65;
+    margin:     6px 0 0;
+    max-width:  100%;
+  }
+
+  /* ── Entrance animations ── */
+  .hiw-animate .hiw-step-1 {
+    animation: hiwMobileFade 0.65s cubic-bezier(0.22,1,0.36,1) 0.3s forwards !important;
+  }
+  .hiw-animate .hiw-step-2 {
+    animation: hiwMobileFade 0.65s cubic-bezier(0.22,1,0.36,1) 0.8s forwards !important;
+  }
+  .hiw-animate .hiw-step-3 {
+    animation: hiwMobileFade 0.65s cubic-bezier(0.22,1,0.36,1) 1.3s forwards !important;
+  }
+
+  @keyframes hiwMobileFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ── 480px: tighten spacing slightly ── */
+@media (max-width: 480px) {
+  .hiw-stage   { min-height: 580px; }
+  .hiw-title   { font-size: 22px; }
+  .hiw-ghost   { font-size: 76px; height: 62px; }
+
+  .hiw-step-1  { left: 48%; top: 7%;  width: 150px; }
+  .hiw-step-2  { left: 3%;  top: 38%; width: 160px; }
+  .hiw-step-3  { left: 30%; top: 67%; width: 175px; }
+
+  .hiw-dot-1   { left: 70%; top: 13%; }
+  .hiw-dot-2   { left: 22%; top: 44%; }
+  .hiw-dot-3   { left: 60%; top: 75%; }
 
   .hiw-step-heading h4 { font-size: 15px; }
+  .hiw-step p          { font-size: 12px; }
+}
 
-  .hiw-ghost { font-size: 58px; }
-
-  /* Step text size */
-  .hiw-step p,
-  .hiw-step-1 p,
-  .hiw-step-2 p,
-  .hiw-step-3 p {
-    font-size: 13px;
-    color: #6b7280;
-    line-height: 1.7;
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .hiw-step,
+  .hiw-step-1,
+  .hiw-step-2,
+  .hiw-step-3,
+  .hiw-dot {
+    opacity:   1 !important;
+    transform: translate(-50%, -50%) !important;
+    animation: none !important;
   }
+  .hiw-step-1,
+  .hiw-step-2,
+  .hiw-step-3 {
+    transform: none !important;
+  }
+}
 
   /* ── WHY CHOOSE ── */
   .id-why { padding: 56px 0 60px; }

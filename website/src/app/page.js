@@ -162,15 +162,6 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-
-        <div className="hero-dashboard-wrap">
-          <img
-            src="/assets/images/hero-dashboard.png"
-            className={`dashboard-mockup${animate ? " drop" : ""}`}
-            alt="RaaziMarzi dispute resolution dashboard"
-          />
-        </div>
-
       </section>
 
       {/* ══ STATUE ══ */}
