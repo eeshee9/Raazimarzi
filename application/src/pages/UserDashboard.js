@@ -7,13 +7,70 @@ import UDIcon1 from "../assets/icons/ud-1.png";
 import UDIcon2 from "../assets/icons/ud-2.png";
 import UDIcon3 from "../assets/icons/ud-3.png";
 import UDIcon4 from "../assets/icons/ud-4.png";
-import fingerprint from "../assets/icons/fingerprint.png"
-import respond from "../assets/icons/respond.png"
+import fingerprint from "../assets/icons/fingerprint.png";
+import respond from "../assets/icons/respond.png";
 
 import "./UserDashboard.css";
 
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+// ─── Status badge helper (shared desktop + mobile) ────────────────────────────
+const getStatusStyle = (status) => {
+  const s = status?.toLowerCase();
+  if (["resolved", "awarded"].includes(s))
+    return { background: "#dcfce7", color: "#16a34a" };
+  if (["in-progress", "assigned", "notice-sent", "mediation", "arbitration", "in mediation"].includes(s))
+    return { background: "#dbeafe", color: "#1d4ed8" };
+  if (["pending", "pending-review"].includes(s))
+    return { background: "#fef3c7", color: "#92400e" };
+  if (["rejected", "withdrawn", "closed"].includes(s))
+    return { background: "#f3f4f6", color: "#6b7280" };
+  return { background: "#fef3c7", color: "#92400e" };
+};
+
+const getStatusLabel = (status) => {
+  const s = status?.toLowerCase();
+  if (s === "mediation" || s === "in mediation") return "IN MEDIATION";
+  return (status || "PENDING").toUpperCase();
+};
+
+// ─── Relative time ─────────────────────────────────────────────────────────────
+const relativeTime = (dateStr) => {
+  if (!dateStr) return "—";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (hours < 24) return `Updated ${hours} hour${hours !== 1 ? "s" : ""} ago`;
+  if (days === 1) return "Updated Yesterday";
+  if (days < 7) return `Updated ${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  if (days < 14) return "Closed 1 week ago";
+  return `Updated ${weeks} weeks ago`;
+};
+
+// ─── Mobile dispute card ───────────────────────────────────────────────────────
+const MobileDisputeCard = ({ c, onNavigate }) => {
+  const statusStyle = getStatusStyle(c.status);
+  const statusLabel = getStatusLabel(c.status);
+  return (
+    <div className="mob-dispute-card" onClick={() => onNavigate(c.id || c._id)}>
+      <div className="mob-dispute-top">
+        <div className="mob-dispute-meta">
+          <span className="mob-case-id-badge">#{c.id || c._id}</span>
+          <span className="mob-status-badge" style={statusStyle}>{statusLabel}</span>
+        </div>
+        <svg width="7" height="12" viewBox="0 0 7 12" fill="none" className="mob-dispute-arrow">
+          <path d="M1 1l5 5-5 5" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <p className="mob-dispute-title">{c.title || c.topic || "—"}</p>
+      <p className="mob-dispute-updated">{relativeTime(c.updatedAt || c.createdAt)}</p>
+    </div>
+  );
+};
+
+// ─── Main Dashboard ────────────────────────────────────────────────────────────
 const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,26 +89,15 @@ const UserDashboard = () => {
         setError(null);
 
         const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Not logged in");
-          setLoading(false);
-          return;
-        }
+        if (!token) { setError("Not logged in"); setLoading(false); return; }
 
         const res = await fetch(`${API_URL}/dashboard/user`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         });
-
         const data = await res.json();
 
-        if (!res.ok || !data.success) {
-          setError(data.message || "Failed to load dashboard");
-          return;
-        }
+        if (!res.ok || !data.success) { setError(data.message || "Failed to load dashboard"); return; }
 
         setStats(data.stats || { total: 0, active: 0, resolved: 0, pending: 0 });
         setCases(data.cases || []);
@@ -59,7 +105,6 @@ const UserDashboard = () => {
         setMessages(data.messages || []);
         setActions(data.actions || []);
         setUserName(data.userName || "User");
-
       } catch (err) {
         console.error("❌ Dashboard fetch error:", err);
         setError("Could not connect to server");
@@ -67,25 +112,11 @@ const UserDashboard = () => {
         setLoading(false);
       }
     };
-
     fetchDashboard();
   }, []);
 
-  const getStatusStyle = (status) => {
-    const s = status?.toLowerCase();
-    if (["resolved", "awarded"].includes(s))
-      return { background: "#dcfce7", color: "#16a34a" };
-    if (["in-progress", "assigned", "notice-sent", "mediation", "arbitration"].includes(s))
-      return { background: "#dbeafe", color: "#1d4ed8" };
-    if (["pending", "pending-review"].includes(s))
-      return { background: "#fef3c7", color: "#92400e" };
-    if (["rejected", "withdrawn", "closed"].includes(s))
-      return { background: "#fee2e2", color: "#dc2626" };
-    return { background: "#fef3c7", color: "#92400e" };
-  };
-
   const formatDate = (dateStr) => {
-    if (!dateStr) return "—";
+    if (!dateStr) return { month: "—", day: "—" };
     const d = new Date(dateStr);
     return {
       month: d.toLocaleString("en-IN", { month: "short" }).toUpperCase(),
@@ -95,31 +126,25 @@ const UserDashboard = () => {
 
   const formatTime = (dateStr) => {
     if (!dateStr) return "";
-    return new Date(dateStr).toLocaleTimeString("en-IN", {
-      hour: "2-digit", minute: "2-digit", hour12: false,
-    });
+    return new Date(dateStr).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
   };
 
   const formatMessageTime = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-    const now = new Date();
-    const diff = now - d;
-    if (diff < 86400000) {
-      return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
-    }
+    const diff = Date.now() - d;
+    if (diff < 86400000) return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
     return "Yesterday";
   };
 
+  // ── Loading / error guards ──
   if (loading) {
     return (
       <div className="dashboard-container">
         <UserSidebar activePage="dashboard" />
         <main className="main-content">
           <UserNavbar />
-          <div className="center-state">
-            <p>Loading dashboard...</p>
-          </div>
+          <div className="center-state"><p>Loading dashboard...</p></div>
         </main>
       </div>
     );
@@ -131,57 +156,80 @@ const UserDashboard = () => {
         <UserSidebar activePage="dashboard" />
         <main className="main-content">
           <UserNavbar />
-          <div className="center-state">
-            <p style={{ color: "#dc2626" }}>{error}</p>
-          </div>
+          <div className="center-state"><p style={{ color: "#dc2626" }}>{error}</p></div>
         </main>
       </div>
     );
   }
 
+  // ── Full render ──
   return (
     <div className="dashboard-container">
       <UserSidebar activePage="dashboard" />
 
       <main className="main-content">
-        <UserNavbar />
 
-        {/* Stats */}
+
+        {/* ════ MOBILE TOP BAR ════ */}
+        <div className="mob-topbar">
+          <button
+            className="mob-hamburger"
+            aria-label="Open menu"
+            onClick={() => window.dispatchEvent(new Event("open-mobile-menu"))}
+          >
+            <span /><span /><span />
+          </button>
+          <button className="mob-bell" aria-label="notifications">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2a6 6 0 00-6 6v3.5L2.5 14h15L16 11.5V8a6 6 0 00-6-6z"
+                stroke="#374151" strokeWidth="1.5" />
+              <path d="M8 16a2 2 0 004 0"
+                stroke="#374151" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+
+        {/* ════ DESKTOP NAVBAR ════ */}
+        <div className="dash-desktop-navbar">
+          <UserNavbar />
+        </div>
+
+        {/* ════ GREETING ════ */}
+        <div className="greeting">
+          <h2>Hello, {userName} 👋</h2>
+          <p>
+            You have{" "}
+            <span className="highlight">{stats.active} active disputes</span>{" "}
+            requiring your attention.
+          </p>
+        </div>
+
+        {/* ════ STATS ════ */}
         <section className="stats">
           <div className="stat-card">
-            <div className="stat-icon-wrap">
-              <img src={UDIcon1} alt="Total Cases" className="stat-icon" />
-            </div>
+            <div className="stat-icon-wrap"><img src={UDIcon1} alt="Total Cases" className="stat-icon" /></div>
             <div className="stat-info">
               <p className="stat-label">Total Cases</p>
               <h2 className="stat-value">{String(stats.total).padStart(2, "0")}</h2>
             </div>
           </div>
-
           <div className="stat-card">
-            <div className="stat-icon-wrap">
-              <img src={UDIcon2} alt="Active Cases" className="stat-icon" />
-            </div>
+            <div className="stat-icon-wrap"><img src={UDIcon2} alt="Active Cases" className="stat-icon" /></div>
             <div className="stat-info">
               <p className="stat-label">Active Cases</p>
               <h2 className="stat-value">{String(stats.active).padStart(2, "0")}</h2>
             </div>
           </div>
-
           <div className="stat-card">
-            <div className="stat-icon-wrap">
-              <img src={UDIcon3} alt="Resolved Cases" className="stat-icon" />
-            </div>
+            <div className="stat-icon-wrap"><img src={UDIcon3} alt="Resolved Cases" className="stat-icon" /></div>
             <div className="stat-info">
               <p className="stat-label">Resolved Cases</p>
               <h2 className="stat-value">{String(stats.resolved).padStart(2, "0")}</h2>
             </div>
           </div>
-
           <div className="stat-card">
-            <div className="stat-icon-wrap">
-              <img src={UDIcon4} alt="Pending Actions" className="stat-icon" />
-            </div>
+            <div className="stat-icon-wrap"><img src={UDIcon4} alt="Pending Actions" className="stat-icon" /></div>
             <div className="stat-info">
               <p className="stat-label">Pending Actions</p>
               <h2 className="stat-value">{String(stats.pending).padStart(2, "0")}</h2>
@@ -189,20 +237,45 @@ const UserDashboard = () => {
           </div>
         </section>
 
-        {/*----------------- Cases + Action Required ---------*/}
+        {/* ════ ACTION REQUIRED + RECENT DISPUTES ════ */}
         <section className="cases-actions-row">
 
-          {/* LEFT — Recent Disputes */}
+          {/* Action Required — shown FIRST on mobile (order via CSS) */}
+          <div className="action-required-panel">
+            <div className="action-header">
+              <span className="action-exclaim">!</span>
+              <h3 className="action-title">Action Required</h3>
+            </div>
+            {actions.length === 0 ? (
+              <p className="empty-state">No actions required.</p>
+            ) : (
+              <div className="action-list">
+                {actions.map((action, i) => (
+                  <div key={i} className="action-item">
+                    <div className="action-left-border" />
+                    <div className="action-icon">
+                      {action.type === "document"
+                        ? <img src={fingerprint} alt="doc" />
+                        : <img src={respond} alt="chat" />}
+                    </div>
+                    <p className="action-text">{action.description}</p>
+                    <button className="action-cta">
+                      {action.type === "document" ? "Complete Now" : "Reply"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Disputes */}
           <div className="disputes-wrapper">
             <div className="disputes-header">
               <h3 className="disputes-title">Recent Disputes</h3>
-              <button
-                className="view-all-btn"
-                onClick={() => navigate("/user/my-cases")}
-              >
-                View All
-              </button>
+              <button className="view-all-btn" onClick={() => navigate("/user/my-cases")}>View All</button>
             </div>
+
+            {/* Desktop table */}
             <div className="cases-section">
               {cases.length === 0 ? (
                 <p className="empty-state">No cases found.</p>
@@ -237,50 +310,34 @@ const UserDashboard = () => {
                 </table>
               )}
             </div>
-          </div>
 
-          {/* RIGHT — Action Required */}
-          <div className="action-required-panel">
-            <div className="action-header">
-              <span className="action-exclaim">!</span>
-              <h3 className="action-title">Action Required</h3>
+            {/* Mobile card list */}
+            <div className="mob-dispute-list">
+              {cases.length === 0 ? (
+                <p className="empty-state">No cases found.</p>
+              ) : (
+                cases.slice(0, 5).map((c, i) => (
+                  <MobileDisputeCard
+                    key={i}
+                    c={c}
+                    onNavigate={() => navigate(`/user/case/${c.id || c._id}`)}
+                  />
+                ))
+              )}
             </div>
-
-            {actions.length === 0 ? (
-              <p className="empty-state">No actions required.</p>
-            ) : (
-              <div className="action-list">
-                {actions.map((action, i) => (
-                  <div key={i} className="action-item">
-                    <div className="action-left-border" />
-                    <div className="action-icon">
-                      {action.type === "document" ? (
-                        <img src={fingerprint} alt="doc" />
-                      ) : (
-                        <img src={respond} alt="chat" />
-                      )}
-                    </div>
-                    <p className="action-text">{action.description}</p>
-                    <button className="action-cta">
-                      {action.type === "document" ? "Complete Now" : "Reply"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
         </section>
 
-        {/* Messages + Appointments */}
+        {/* ════ BOTTOM ROW ════ */}
         <section className="bottom-row">
+
           {/* Recent Messages */}
           <div className="messages-section">
             <div className="section-header">
               <h3>Recent Messages</h3>
               <button className="icon-btn">···</button>
             </div>
-
             <div className="message-list">
               {messages.length === 0 ? (
                 <p className="empty-state">No messages yet.</p>
@@ -303,11 +360,7 @@ const UserDashboard = () => {
                 ))
               )}
             </div>
-
-            <button
-              className="goto-messenger-btn"
-              onClick={() => navigate("/user/chats")}
-            >
+            <button className="goto-messenger-btn" onClick={() => navigate("/user/chats")}>
               Go to Messenger
             </button>
           </div>
@@ -315,7 +368,6 @@ const UserDashboard = () => {
           {/* Upcoming Appointments */}
           <div className="appointments-section">
             <h3>Upcoming Appointments</h3>
-
             {meetings.length === 0 ? (
               <p className="empty-state">No upcoming appointments.</p>
             ) : (
@@ -336,17 +388,11 @@ const UserDashboard = () => {
                         </p>
                       </div>
                       {isPrimary ? (
-                        <button
-                          className="join-meeting-btn"
-                          onClick={() => navigate("/user/case-meetings")}
-                        >
+                        <button className="join-meeting-btn" onClick={() => navigate("/user/case-meetings")}>
                           Join Meeting
                         </button>
                       ) : (
-                        <button
-                          className="view-details-outline-btn"
-                          onClick={() => navigate("/user/documents")}
-                        >
+                        <button className="view-details-outline-btn" onClick={() => navigate("/user/documents")}>
                           View Details
                         </button>
                       )}
@@ -356,6 +402,7 @@ const UserDashboard = () => {
               </div>
             )}
           </div>
+
         </section>
       </main>
     </div>

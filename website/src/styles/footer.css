@@ -1,138 +1,206 @@
 .footer {
-  background: #0d0d0d;
-  color: #fff;
-  padding: 10px 70px;
+  background: #ffffff;
+  color: #1a1a1a;
+  padding: 48px 80px 0;
   font-family: "Inter", sans-serif;
+  border-top: 1px solid #e5e7eb;
 }
 
+/* ── Top row (desktop) ── */
 .footer-top {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 40px;
+  padding-bottom: 32px;
+}
+
+.footer-brand {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .footer-logo {
-  height: 80px;
+  height: 70px;
+  width: auto;
+  object-fit: contain;
 }
 
-.footer-social {
-  text-align: center;
-}
-
-.footer-social p {
-  margin-bottom: 10px;
-  font-size: 1.1rem;
+.footer-tagline {
+  font-size: 13.5px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 190px;
 }
 
 .social-icons {
   display: flex;
-  gap: 18px;
-  font-size: 28px;
-  cursor: pointer;
+  gap: 14px;
+  align-items: center;
 }
 
-.footer-newsletter {
-  text-align: left;
-}
-
-.footer-newsletter p {
-  margin-bottom: 10px;
-  font-size: 1.1rem;
-}
-
-.newsletter-box {
+.social-icons a {
+  color: #374151;
+  font-size: 20px;
+  transition: color 0.2s;
   display: flex;
-  gap: 10px;
+  align-items: center;
 }
 
-.newsletter-box input {
-  padding: 12px;
-  width: 260px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
+.social-icons a:hover {
+  color: #6366f1;
 }
 
-.newsletter-box button {
-  background: #3b82f6;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.newsletter-box button:hover {
-  background: #2563eb;
-}
-
-.newsletter-text {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.8rem;
-  opacity: 0.7;
-}
-
-.footer-divider {
-  margin: 35px 0;
-  border: 0;
-  border-top: 1px solid #333;
-}
-
+/* ── Link columns (desktop) ── */
 .footer-links {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 40px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
 }
 
 .footer-links h4 {
-  margin-bottom: 15px;
-  font-size: 18px;
-  color: #778AFF;
+  margin: 0 0 18px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: 0.01em;
 }
 
 .footer-links a {
   display: block;
-  color: #ccc;
+  color: #6b7280;
   text-decoration: none;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 14px;
+  transition: color 0.2s;
 }
 
 .footer-links a:hover {
-  color: white;
+  color: #111827;
+}
+
+/* ── Bottom bar ── */
+.footer-divider {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #e5e7eb;
 }
 
 .footer-bottom {
-  margin-top: 40px;
+  padding: 18px 0;
   text-align: center;
-  font-size: 14px;
-  opacity: 0.7;
+  font-size: 13.5px;
+  color: #6b7280;
 }
 
-/* Responsive */
+.footer-bottom a {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-bottom a:hover {
+  text-decoration: underline;
+}
+
+/* ════════════════════════════════════════
+   TABLET  (≤ 900px)
+════════════════════════════════════════ */
 @media (max-width: 900px) {
+  .footer {
+    padding: 40px 32px 0;
+  }
+
+  .footer-top {
+    grid-template-columns: 1fr;
+  }
+
   .footer-links {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* ════════════════════════════════════════
+   MOBILE  (≤ 600px)
+════════════════════════════════════════ */
 @media (max-width: 600px) {
+  .footer {
+    padding: 32px 0 0;
+  }
+
+  /* Brand block: centered */
   .footer-top {
-    flex-direction: column;
-    gap: 25px;
-  }
-
-  .newsletter-box {
-    flex-direction: column;
-  }
-
-  .newsletter-box input {
-    width: 100%;
-  }
-
-  .footer-links {
     grid-template-columns: 1fr;
+    gap: 0;
+    padding-bottom: 0;
+  }
+
+  .footer-brand {
+    align-items: center;
+    text-align: center;
+    padding: 0 24px 28px;
+    gap: 14px;
+  }
+
+  .footer-tagline {
+    max-width: 260px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .social-icons {
+    justify-content: center;
+    gap: 20px;
+    font-size: 22px;
+  }
+
+  /* 2×2 grid with dividers between cells */
+  .footer-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  /* Each cell: inner padding + grid-line borders */
+  .footer-links > div {
+    padding: 24px 20px;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Right column: remove duplicate right border */
+  .footer-links > div:nth-child(even) {
+    border-right: none;
+  }
+
+  /* Bottom row: remove extra bottom border */
+  .footer-links > div:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+
+  .footer-links h4 {
+    font-size: 12px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    color: #111827;
+  }
+
+  .footer-links a {
+    font-size: 13.5px;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #6b7280;
+  }
+
+  .footer-bottom {
+    font-size: 12.5px;
+    padding: 16px 24px;
+    line-height: 1.7;
   }
 }

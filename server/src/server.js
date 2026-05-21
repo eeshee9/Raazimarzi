@@ -4,8 +4,9 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";                          // ✅ NEW
-import rateLimit from "express-rate-limit";           // ✅ NEW
+import cookieParser from "cookie-parser";            
+import helmet from "helmet";                          
+import rateLimit from "express-rate-limit";        
 import { createServer } from "http";
 import { Server } from "socket.io";
 import path from "path";
@@ -38,65 +39,68 @@ import arbitratorRoutes  from "./routes/arbitratorRoutes.js";
 import caseManagerRoutes from "./routes/caseManagerRoutes.js";
 import feedbackRoutes    from "./routes/feedbackRoutes.js";
 import pdfRoutes         from "./routes/pdfRoutes.js";
+import cmsRoutes         from "./routes/cmsRoutes.js";  
 
 const app = express();
 
 /* ═══════════════════════════════════════════════════════════════
    ✅ HELMET — sets secure HTTP headers
-   Protects against XSS, clickjacking, MIME sniffing, etc.
 ═══════════════════════════════════════════════════════════════ */
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }, // allow images/docs from CDN
-  contentSecurityPolicy: false,                          // disable CSP (frontend handles this)
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false,
 }));
 
 /* ═══════════════════════════════════════════════════════════════
    ✅ RATE LIMITERS
 ═══════════════════════════════════════════════════════════════ */
-
-// General API — 100 requests per 15 minutes per IP
 const generalLimiter = rateLimit({
-  windowMs:         15 * 60 * 1000,
-  max:              100,
-  standardHeaders:  true,
-  legacyHeaders:    false,
+  windowMs:        15 * 60 * 1000,
+  max:             100,
+  standardHeaders: true,
+  legacyHeaders:   false,
   message: { success: false, message: "Too many requests. Please try again after 15 minutes." },
 });
 
-// Auth routes — stricter: 10 attempts per 15 minutes (prevents brute force)
 const authLimiter = rateLimit({
-  windowMs:         15 * 60 * 1000,
-  max:              10,
-  standardHeaders:  true,
-  legacyHeaders:    false,
+  windowMs:        15 * 60 * 1000,
+  max:             10,
+  standardHeaders: true,
+  legacyHeaders:   false,
   message: { success: false, message: "Too many login attempts. Please try again after 15 minutes." },
 });
 
-// OTP routes — very strict: 5 per 15 minutes (prevents OTP spam)
 const otpLimiter = rateLimit({
-  windowMs:         15 * 60 * 1000,
-  max:              5,
-  standardHeaders:  true,
-  legacyHeaders:    false,
+  windowMs:        15 * 60 * 1000,
+  max:             5,
+  standardHeaders: true,
+  legacyHeaders:   false,
   message: { success: false, message: "Too many OTP requests. Please try again after 15 minutes." },
 });
 
-// Contact/Demo — 5 per hour (prevents form spam)
 const contactLimiter = rateLimit({
-  windowMs:         60 * 60 * 1000,
-  max:              5,
-  standardHeaders:  true,
-  legacyHeaders:    false,
+  windowMs:        60 * 60 * 1000,
+  max:             5,
+  standardHeaders: true,
+  legacyHeaders:   false,
   message: { success: false, message: "Too many submissions. Please try again after an hour." },
 });
 
-// File upload — 20 per hour
 const uploadLimiter = rateLimit({
-  windowMs:         60 * 60 * 1000,
-  max:              20,
-  standardHeaders:  true,
-  legacyHeaders:    false,
+  windowMs:        60 * 60 * 1000,
+  max:             20,
+  standardHeaders: true,
+  legacyHeaders:   false,
   message: { success: false, message: "Too many uploads. Please try again after an hour." },
+});
+
+// ← NEW: CMS rate limiter — 60 requests per 15 min (SEO team usage)
+const cmsLimiter = rateLimit({
+  windowMs:        15 * 60 * 1000,
+  max:             60,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { success: false, message: "Too many CMS requests. Please try again after 15 minutes." },
 });
 
 /* ═══════════════════════════════════════════════════════════════
@@ -106,7 +110,7 @@ const allowedOrigins = [
   "https://raazimarzi.com",
   "https://www.raazimarzi.com",
   "http://localhost:3000",
-  "http://localhost:3001"
+  "http://localhost:3001",
 ];
 
 app.use(cors({
@@ -118,18 +122,17 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  credentials:     true,
-  methods:         ["GET","POST","PUT","DELETE","PATCH","OPTIONS"],
-  allowedHeaders:  ["Content-Type","Authorization"],
+  credentials:    true,
+  methods:        ["GET","POST","PUT","DELETE","PATCH","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"],
 }));
 
 /* ═══════════════════════════════════════════════════════════════
    BODY PARSING
 ═══════════════════════════════════════════════════════════════ */
-// ✅ Raw body for Razorpay webhook (must be BEFORE express.json)
-// app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(cookieParser()); // ← NEW — must be after express.json
 
 /* ═══════════════════════════════════════════════════════════════
    STATIC FILES
@@ -138,16 +141,14 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 /* ═══════════════════════════════════════════════════════════════
    ✅ APPLY RATE LIMITERS TO ROUTES
-   Apply specific limiters before routes that need them,
-   then apply the general limiter to all /api routes
 ═══════════════════════════════════════════════════════════════ */
-app.use("/api/auth",     authLimiter);     // strict — login/signup
-app.use("/api/otp",      otpLimiter);      // very strict — OTP spam
-app.use("/api/contact",  contactLimiter);  // form spam
-app.use("/api/demo",     contactLimiter);  // form spam
-app.use("/api/documents/upload", uploadLimiter); // file upload
-
-app.use("/api", generalLimiter); // catch-all for all other API routes
+app.use("/api/auth",              authLimiter);
+app.use("/api/otp",               otpLimiter);
+app.use("/api/contact",           contactLimiter);
+app.use("/api/demo",              contactLimiter);
+app.use("/api/documents/upload",  uploadLimiter);
+app.use("/api/cms",               cmsLimiter);    
+app.use("/api", generalLimiter);
 
 /* ═══════════════════════════════════════════════════════════════
    ROUTES
@@ -170,6 +171,7 @@ app.use("/api/arbitrator",   arbitratorRoutes);
 app.use("/api/case-manager", caseManagerRoutes);
 app.use("/api/feedback",     feedbackRoutes);
 app.use("/api/pdf",          pdfRoutes);
+app.use("/api/cms",          cmsRoutes);          // ← NEW
 
 /* ═══════════════════════════════════════════════════════════════
    ADMIN: Manual Cron Triggers
@@ -293,6 +295,7 @@ server.listen(PORT, async () => {
   console.log(`\n🔒 Security:`);
   console.log(`   Helmet:      ✅ enabled`);
   console.log(`   Rate limit:  ✅ enabled (auth: 10/15min, otp: 5/15min, api: 100/15min)`);
+  console.log(`   CMS:         ✅ enabled (60/15min)`);       // ← NEW
 
   console.log(`\n📧 Email Configuration:`);
   console.log(`   Host: ${process.env.EMAIL_HOST || "smtp.zoho.in"}`);
@@ -333,6 +336,9 @@ server.listen(PORT, async () => {
   console.log(`   POST /api/payments/create-order     - Create Razorpay order`);
   console.log(`   POST /api/payments/verify           - Verify payment`);
   console.log(`   POST /api/admin/cron/run-notice-check - Manual cron trigger`);
+  console.log(`   POST /api/cms/auth/login            - CMS SEO team login`);  // ← NEW
+  console.log(`   GET  /api/cms/dashboard             - CMS dashboard`);        // ← NEW
+  console.log(`   GET  /api/cms/pages                 - All CMS pages`);        // ← NEW
   console.log(`\n✨ Ready to accept connections!\n`);
 });
 

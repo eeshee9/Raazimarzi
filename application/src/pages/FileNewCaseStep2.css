@@ -484,3 +484,281 @@
     margin-left: 0;
   }
 }
+
+
+
+/* ══════════════════════════════════════════
+   STEP 2 — CASE DETAILS
+   RESPONSIVE
+══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — TABLET (≤ 900px)
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .s2-body {
+    grid-template-columns: 1fr !important;
+    gap: 24px;
+  }
+
+  .s2-aside {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .s2-tips-card,
+  .s2-support-card {
+    flex: 1;
+    min-width: 240px;
+  }
+
+  .s2-category-row {
+    gap: 10px;
+  }
+
+  .s2-range-row {
+    gap: 10px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 768px)
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Two-column body collapses ── */
+  .s2-body {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  /* ── Aside: stacks to full-width column ── */
+  .s2-aside {
+    position: static;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .s2-tips-card,
+  .s2-support-card {
+    width: 100%;
+    min-width: unset;
+  }
+
+  /* ── Section headings ── */
+  .s2-section {
+    margin-bottom: 22px;
+  }
+
+  .s2-section-heading {
+    font-size: 15px;
+    padding-left: 10px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Category cards: vertical list ── */
+  .s2-category-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .s2-category-card {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 14px 16px;
+    gap: 14px;
+    border-radius: 10px;
+  }
+
+  .s2-cat-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .s2-cat-label {
+    font-size: 14px;
+  }
+
+  .s2-cat-sub {
+    font-size: 11px;
+    display: block;
+  }
+
+  /* ── Money card ── */
+  .s2-money-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .s2-money-q {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .s2-toggle-row {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .s2-toggle-btn {
+    flex: 1;
+    padding: 9px 12px;
+    font-size: 13px;
+    text-align: center;
+    border-radius: 8px;
+  }
+
+  /* Range buttons: 2×2 grid */
+  .s2-range-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .s2-range-btn {
+    min-width: unset;
+    width: 100%;
+    padding: 10px 8px;
+    border-radius: 8px;
+  }
+
+  .s2-range-label {
+    font-size: 11px;
+  }
+
+  .s2-range-val {
+    font-size: 12px;
+  }
+
+  /* ── Textarea ── */
+  .s2-textarea {
+    min-height: 120px;
+    font-size: 13px;
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  /* ── Tips card ── */
+  .s2-tips-card {
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  .s2-tips-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .s2-tips-list {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .s2-tips-list li {
+    font-size: 12px;
+  }
+
+  .s2-tip-icon {
+    font-size: 14px;
+  }
+
+  .s2-progress-label {
+    font-size: 9px;
+  }
+
+  .s2-progress-step {
+    font-size: 11px;
+  }
+
+  /* ── Support card ── */
+  .s2-support-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .s2-support-title {
+    font-size: 13px;
+  }
+
+  .s2-support-text {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .s2-chat-btn {
+    font-size: 12px;
+    padding: 9px;
+  }
+
+  /* ── Footer fee ── */
+  .s2-fee-display {
+    margin-left: 0;
+  }
+
+  .s2-fee-label {
+    font-size: 9px;
+  }
+
+  .s2-fee-amount {
+    font-size: 17px;
+  }
+
+  .s2-fee-tax {
+    font-size: 11px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (≤ 390px)
+══════════════════════════════════════════ */
+@media (max-width: 390px) {
+  .s2-section-heading {
+    font-size: 13px;
+  }
+
+  .s2-category-card {
+    padding: 12px 14px;
+  }
+
+  .s2-cat-icon {
+    font-size: 20px;
+  }
+
+  .s2-cat-label {
+    font-size: 13px;
+  }
+
+  .s2-money-card {
+    padding: 14px 12px;
+  }
+
+  .s2-range-row {
+    gap: 6px;
+  }
+
+  .s2-range-btn {
+    padding: 9px 6px;
+  }
+
+  .s2-range-label {
+    font-size: 10px;
+  }
+
+  .s2-range-val {
+    font-size: 11px;
+  }
+
+  .s2-tips-card {
+    padding: 14px;
+  }
+
+  .s2-tips-list li {
+    font-size: 11px;
+  }
+
+  .s2-fee-amount {
+    font-size: 15px;
+  }
+}

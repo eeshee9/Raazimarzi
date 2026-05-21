@@ -526,3 +526,386 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ══════════════════════════════════════════
+   MY PROFILE — RESPONSIVE
+══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — TABLET (≤ 1100px)
+══════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .mp-section {
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    padding: 20px 28px 36px;
+  }
+
+  .mp-header {
+    padding: 24px 28px 0;
+  }
+
+  .mp-page-title {
+    font-size: 22px;
+  }
+
+  .mp-info-grid {
+    gap: 16px 24px;
+  }
+
+  .mp-bottom-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 768px)
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Hide sidebar, full width ── */
+  .usr-sidebar,
+  .sidebar {
+    display: none !important;
+  }
+
+  .main-content {
+    width: 100%;
+  }
+
+  /* ── Page header ── */
+  .mp-header {
+    padding: 16px 16px 0;
+  }
+
+  .mp-page-title {
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .mp-page-sub {
+    font-size: 13px;
+  }
+
+  /* ── Section: single column ── */
+  .mp-section {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px 16px 32px;
+    overflow-y: auto;
+  }
+
+  /* ── Left column: stacks vertically ── */
+  .mp-left {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ── Avatar card: horizontal layout (matches screenshot) ── */
+  .mp-avatar-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 18px;
+    padding: 20px;
+  }
+
+  .mp-avatar-wrap {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .mp-avatar {
+    width: 90px;
+    height: 90px;
+  }
+
+  .mp-verified-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    right: -8px;
+    top: 0;
+  }
+
+  .mp-avatar-cam {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    bottom: 0;
+    right: -4px;
+  }
+
+  /* Name / email / phone block */
+  .mp-avatar-card > div,
+  .mp-avatar-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mp-name {
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+
+  .mp-email {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+
+  .mp-phone {
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  .mp-edit-btn {
+    padding: 9px 20px;
+    font-size: 13px;
+    align-self: flex-start;
+  }
+
+  /* ── Profile strength card ── */
+  .mp-strength-card {
+    padding: 18px 20px;
+  }
+
+  .mp-strength-label {
+    font-size: 14px;
+  }
+
+  .mp-strength-pct {
+    font-size: 14px;
+  }
+
+  .mp-strength-hint {
+    font-size: 12px;
+  }
+
+  /* ── Identity verification card ── */
+  .mp-id-card {
+    padding: 18px 20px;
+  }
+
+  .mp-id-heading {
+    font-size: 10px;
+    margin-bottom: 12px;
+  }
+
+  .mp-id-row {
+    padding: 10px 14px;
+    gap: 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+
+  .mp-id-icon {
+    font-size: 18px;
+  }
+
+  .mp-id-label {
+    font-size: 10px;
+  }
+
+  .mp-id-val {
+    font-size: 13px;
+  }
+
+  .mp-id-preview {
+    height: 80px;
+    border-radius: 10px;
+    margin-top: 8px;
+  }
+
+  .mp-id-eye {
+    font-size: 20px;
+  }
+
+  /* ── Right column ── */
+  .mp-right {
+    gap: 14px;
+  }
+
+  /* Personal information card */
+  .mp-card {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .mp-card-header {
+    margin-bottom: 18px;
+  }
+
+  .mp-card-title {
+    font-size: 16px;
+  }
+
+  .mp-card-icon {
+    font-size: 16px;
+  }
+
+  .mp-inline-edit {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  /* Info grid: 2 cols on mobile as per screenshot */
+  .mp-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 20px;
+  }
+
+  .mp-info-label {
+    font-size: 9px;
+  }
+
+  .mp-info-val {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .mp-divider {
+    margin: 18px 0;
+  }
+
+  .mp-section-sub {
+    font-size: 10px;
+  }
+
+  /* ── Bottom row: notifications + security stacked ── */
+  .mp-bottom-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Notification card */
+  .mp-notif-card {
+    padding: 20px;
+  }
+
+  .mp-toggle-row {
+    padding: 12px 0;
+  }
+
+  .mp-toggle-label {
+    font-size: 13px;
+  }
+
+  .mp-toggle-sub {
+    font-size: 11px;
+  }
+
+  .mp-toggle {
+    width: 42px;
+    height: 23px;
+    flex-shrink: 0;
+  }
+
+  .mp-toggle-thumb {
+    width: 17px;
+    height: 17px;
+  }
+
+  .mp-toggle.on .mp-toggle-thumb {
+    left: 22px;
+  }
+
+  /* Security card */
+  .mp-security-card {
+    padding: 20px;
+  }
+
+  .mp-security-row {
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+
+  .mp-security-label {
+    font-size: 13px;
+  }
+
+  .mp-logout-other {
+    font-size: 13px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (≤ 390px)
+══════════════════════════════════════════ */
+@media (max-width: 390px) {
+  .mp-header {
+    padding: 14px 14px 0;
+  }
+
+  .mp-page-title {
+    font-size: 18px;
+  }
+
+  .mp-section {
+    padding: 14px 14px 28px;
+    gap: 12px;
+  }
+
+  .mp-avatar-card {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .mp-avatar {
+    width: 78px;
+    height: 78px;
+  }
+
+  .mp-name {
+    font-size: 16px;
+  }
+
+  .mp-email,
+  .mp-phone {
+    font-size: 12px;
+  }
+
+  .mp-edit-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .mp-card {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  .mp-card-title {
+    font-size: 15px;
+  }
+
+  /* Info grid: single column on very small */
+  .mp-info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mp-info-val {
+    font-size: 13px;
+  }
+
+  .mp-toggle-label {
+    font-size: 12px;
+  }
+
+  .mp-toggle-sub {
+    font-size: 10px;
+  }
+
+  .mp-id-row {
+    padding: 9px 12px;
+  }
+
+  .mp-id-val {
+    font-size: 12px;
+  }
+}

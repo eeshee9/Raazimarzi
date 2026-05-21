@@ -402,3 +402,263 @@
     padding: 18px 16px;
   }
 }
+
+
+/* ══════════════════════════════════════════
+   STEP 4 — REVIEW & PAYMENT
+   RESPONSIVE
+══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — TABLET (≤ 900px)
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .s4-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .s4-summary-grid {
+    gap: 16px 24px;
+  }
+
+  .s4-fee-card {
+    padding: 20px 18px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 768px)
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Layout: single column ── */
+  .s4-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  /* ── Summary card ── */
+  .s4-summary-card {
+    padding: 18px 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .s4-summary-header {
+    margin-bottom: 16px;
+  }
+
+  .s4-summary-title {
+    font-size: 16px;
+  }
+
+  .s4-edit-btn {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+
+  /* Summary grid: single column */
+  .s4-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .s4-field-label {
+    font-size: 10px;
+  }
+
+  .s4-field-value {
+    font-size: 14px;
+  }
+
+  .s4-claim-badge {
+    font-size: 12px;
+    padding: 3px 12px;
+  }
+
+  /* Brief */
+  .s4-brief-box {
+    padding: 14px 14px;
+    border-radius: 10px;
+  }
+
+  .s4-brief-box p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── Confirm card ── */
+  .s4-confirm-card {
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+
+  .s4-confirm-label {
+    gap: 12px;
+  }
+
+  .s4-checkbox {
+    width: 17px;
+    height: 17px;
+  }
+
+  .s4-confirm-heading {
+    font-size: 14px;
+  }
+
+  .s4-confirm-sub {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* ── Fee card ── */
+  .s4-fee-card {
+    padding: 18px 16px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+
+  .s4-fee-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .s4-fee-rows {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .s4-fee-label {
+    font-size: 13px;
+  }
+
+  .s4-fee-amount {
+    font-size: 13px;
+  }
+
+  .s4-fee-total-label {
+    font-size: 10px;
+  }
+
+  .s4-fee-currency {
+    font-size: 11px;
+  }
+
+  .s4-fee-total-amount {
+    font-size: 26px;
+    margin-bottom: 16px;
+  }
+
+  /* Pay button */
+  .s4-pay-btn {
+    padding: 13px 18px;
+    font-size: 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .s4-back-proofs-btn {
+    font-size: 13px;
+    padding: 6px 0;
+  }
+
+  /* ── Help card ── */
+  .s4-help-card {
+    padding: 16px 16px;
+    border-radius: 12px;
+  }
+
+  .s4-help-icon-wrap {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .s4-help-title {
+    font-size: 13px;
+  }
+
+  .s4-help-desc {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .s4-chat-btn {
+    font-size: 12px;
+    padding: 9px 14px;
+    border-radius: 8px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (≤ 390px)
+══════════════════════════════════════════ */
+@media (max-width: 390px) {
+  .s4-summary-card {
+    padding: 14px 12px;
+  }
+
+  .s4-summary-title {
+    font-size: 14px;
+  }
+
+  .s4-field-value {
+    font-size: 13px;
+  }
+
+  .s4-brief-box {
+    padding: 12px 12px;
+  }
+
+  .s4-brief-box p {
+    font-size: 12px;
+  }
+
+  .s4-confirm-card {
+    padding: 12px 12px;
+  }
+
+  .s4-confirm-heading {
+    font-size: 13px;
+  }
+
+  .s4-confirm-sub {
+    font-size: 11px;
+  }
+
+  .s4-fee-card {
+    padding: 14px 12px;
+  }
+
+  .s4-fee-title {
+    font-size: 14px;
+  }
+
+  .s4-fee-total-amount {
+    font-size: 22px;
+  }
+
+  .s4-pay-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .s4-help-card {
+    padding: 12px 12px;
+  }
+
+  .s4-help-title {
+    font-size: 12px;
+  }
+
+  .s4-help-desc {
+    font-size: 11px;
+  }
+
+  .s4-chat-btn {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+}

@@ -742,8 +742,8 @@ button { border: none; outline: none; cursor: pointer; font-family: inherit; }
 .hiw-step-2 p { max-width: 100%; }
 
 .hiw-step-3 {
-  left: 67%;            /* text starts left of dot, so heading+number sit beside dot */
-  top: 25%;             /* vertically near dot-3 at 52% */
+  left: 67%;        
+  top: 25%;          
   width: 240px;
   text-align: left;
 }

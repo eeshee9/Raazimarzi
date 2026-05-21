@@ -899,3 +899,641 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* ══════════════════════════════════════════
+   USER DASHBOARD — RESPONSIVE CSS
+   Replace / append after your existing
+   UserDashboard.css responsive section
+══════════════════════════════════════════ */
+
+/* ── Mobile top bar: hidden on desktop ── */
+.mob-topbar        { display: none; }
+.mob-dispute-list  { display: none; }
+.dash-desktop-navbar { display: block; }
+
+/* ══════════════════════════════════════════
+   TABLET  ≤ 1100px
+══════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .main-content {
+    padding: 20px 24px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .stat-card {
+    width: 100%;
+    height: auto;
+    padding: 16px 14px;
+  }
+
+  .cases-actions-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .action-required-panel {
+    width: 100%;
+    align-self: auto;
+  }
+
+  .disputes-wrapper {
+    width: 100%;
+  }
+
+  .bottom-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE DRAWER — add to UserDashboard.css
+   (after all existing sidebar rules)
+══════════════════════════════════════════ */
+
+/* ── Desktop sidebar: hide on mobile ── */
+@media (max-width: 768px) {
+  .usr-sidebar { display: none !important; }
+}
+
+/* ══════════════════════════════════════════
+   OVERLAY
+══════════════════════════════════════════ */
+.usr-mob-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.usr-mob-overlay.open {
+  display: block;
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════
+   DRAWER PANEL
+══════════════════════════════════════════ */
+.usr-mob-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 260px;
+  background: rgba(119, 138, 255, 1);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 28px;
+  border-radius: 0 24px 24px 0;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.usr-mob-drawer.open {
+  transform: translateX(0);
+}
+
+/* ── Drawer header (close button) ── */
+.usr-mob-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px 16px 8px;
+  flex-shrink: 0;
+}
+
+.usr-mob-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.usr-mob-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Drawer nav ── */
+.usr-mob-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 14px 0;
+  flex: 1;
+}
+
+.usr-mob-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+  height: 48px;
+  border-radius: 14px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.usr-mob-item img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  transition: filter 0.2s;
+}
+
+.usr-mob-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.usr-mob-item.active {
+  background: #fff;
+  color: rgba(119, 138, 255, 1);
+  font-weight: 700;
+}
+
+.usr-mob-item.active img {
+  filter: invert(52%) sepia(60%) saturate(600%) hue-rotate(204deg) brightness(95%);
+}
+
+/* ── Drawer logout ── */
+.usr-mob-logout {
+  padding: 16px 14px 0;
+  flex-shrink: 0;
+}
+
+.usr-mob-logout-item {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-radius: 14px;
+  justify-content: center !important;
+  height: 46px;
+  color: rgba(255, 80, 80, 1) !important;
+  font-weight: 700 !important;
+}
+
+.usr-mob-logout-item img {
+  filter: none !important;
+}
+
+/* ══════════════════════════════════════════
+   MOBILE  ≤ 768px
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Root layout ── */
+  .dashboard-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    background: #f7f8ff;
+  }
+
+  /* Hide sidebar — replaced by drawer (see UserSidebar) */
+  .usr-sidebar { display: none !important; }
+
+  /* Main content: no padding-top (topbar handles it) */
+  .main-content {
+    padding: 0 0 40px 0;
+    background: #f7f8ff;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ── Mobile top bar ── */
+  .mob-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid #f0f0f5;
+  }
+
+  .mob-hamburger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .mob-hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #374151;
+    border-radius: 2px;
+  }
+
+  .mob-bell {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Hide desktop navbar */
+  .dash-desktop-navbar { display: none; }
+  .navbar              { display: none !important; }
+
+  /* ── Greeting ── */
+  .greeting {
+    padding: 20px 16px 12px;
+    margin-bottom: 0;
+    background: #fff;
+  }
+
+  .greeting h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .greeting p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ── Stats: 2×2 grid, full width, no overflow ── */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px 16px;
+    margin: 0;
+    background: #fff;
+  }
+
+  .stat-card {
+    width: 100%;
+    height: auto;
+    min-height: 80px;
+    padding: 12px 10px;
+    border-radius: 14px;
+    background: rgba(247, 248, 255, 1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    box-shadow: none;
+  }
+
+  .stat-icon-wrap {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    text-align: left;
+  }
+
+  /* ── Cases + Action row: stack vertically ── */
+  .cases-actions-row {
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  /* Action Required — shows ABOVE disputes on mobile */
+  .action-required-panel {
+    order: 1;
+    width: 100%;
+    border-radius: 0;
+    padding: 16px;
+    margin: 0;
+    border-bottom: 8px solid #f7f8ff;
+    background: rgba(255, 218, 214, 0.25);
+  }
+
+  .action-title  { font-size: 15px; }
+  .action-text   { font-size: 13px; }
+  .action-cta    { font-size: 12px; }
+
+  .action-item {
+    border-radius: 10px;
+    padding: 12px 12px 12px 0;
+  }
+
+  /* Disputes — shows BELOW action on mobile */
+  .disputes-wrapper {
+    order: 2;
+    width: 100%;
+    padding: 16px 16px 0;
+    background: #fff;
+    border-bottom: 8px solid #f7f8ff;
+  }
+
+  .disputes-header {
+    margin-bottom: 12px;
+    padding: 0;
+  }
+
+  .disputes-title {
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  /* Hide desktop table, show mobile cards */
+  .cases-section    { display: none !important; }
+  .mob-dispute-list { display: flex; flex-direction: column; }
+
+  .mob-dispute-card {
+    background: #fff;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 14px 0;
+    cursor: pointer;
+  }
+
+  .mob-dispute-card:active { background: #f9fafb; }
+
+  .mob-dispute-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .mob-dispute-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .mob-case-id-badge {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+    background: #f3f4f6;
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+
+  .mob-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 3px 8px;
+    letter-spacing: 0.04em;
+  }
+
+  .mob-dispute-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 3px 0;
+  }
+
+  .mob-dispute-updated {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  /* ── Bottom row ── */
+  .bottom-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  .messages-section {
+    border-radius: 0;
+    box-shadow: none;
+    padding: 16px 16px 20px;
+    border-bottom: 8px solid #f7f8ff;
+  }
+
+  .messages-section .section-header h3 {
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .msg-preview { font-size: 12px; color: #6b7280; }
+
+  .goto-messenger-btn {
+    border-radius: 10px;
+    margin-top: 16px;
+    height: 40px;
+  }
+
+  .appointments-section {
+    border-radius: 0;
+    box-shadow: none;
+    padding: 16px 16px 20px;
+  }
+
+  .appointments-section h3 {
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .appointment-card {
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+
+  .join-meeting-btn,
+  .view-details-outline-btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   SMALL MOBILE  ≤ 390px
+══════════════════════════════════════════ */
+@media (max-width: 390px) {
+  .greeting h2    { font-size: 18px; }
+  .stat-label     { font-size: 11px; }
+  .stat-value     { font-size: 20px; }
+  .stat-icon,
+  .stat-icon-wrap { width: 34px; height: 34px; }
+  .stat-card      { gap: 8px; padding: 10px 8px; }
+
+  .disputes-title,
+  .appointments-section h3,
+  .messages-section .section-header h3 { font-size: 16px; }
+
+  .mob-dispute-title  { font-size: 14px; }
+  .mob-case-id-badge  { font-size: 11px; }
+  .mob-status-badge   { font-size: 10px; }
+}
+
+
+/* ══════════════════════════════════════════
+   STATS CARD FIX — matches screenshot
+   Paste at the very bottom of UserDashboard.css
+══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  .stats {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px !important;
+    padding: 16px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+  }
+
+  .stat-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 110px !important;
+    padding: 18px 14px !important;
+    border-radius: 16px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 14px !important;
+    background: rgba(247, 248, 255, 1) !important;
+    box-shadow: none !important;
+  }
+
+  .stat-icon-wrap {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .stat-icon {
+    width: 52px !important;
+    height: 52px !important;
+    object-fit: contain !important;
+  }
+
+  .stat-info {
+    min-width: 0 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+
+  .stat-label {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    white-space: normal !important;
+    line-height: 1.3 !important;
+    color: rgba(107, 114, 128, 1) !important;
+  }
+
+  .stat-value {
+    font-size: 30px !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    line-height: 1 !important;
+    color: #111 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .stats {
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .stat-card {
+    min-height: 95px !important;
+    padding: 14px 12px !important;
+    gap: 10px !important;
+  }
+
+  .stat-icon-wrap,
+  .stat-icon {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+  }
+
+  .stat-label  { font-size: 12px !important; }
+  .stat-value  { font-size: 26px !important; }
+}
+/* ══════════════════════════════════════════
+   STAT VALUE OVERFLOW FIX
+   Paste at the very bottom of UserDashboard.css
+══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  .stat-info {
+    min-width: 0 !important;
+    flex: 1 !important;
+    overflow: hidden !important;
+  }
+
+  .stat-value {
+    font-size: 28px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  .stat-label {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+
+  /* Prevent icon from shrinking and pushing text out */
+  .stat-icon-wrap {
+    flex-shrink: 0 !important;
+  }
+}

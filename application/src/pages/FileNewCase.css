@@ -378,7 +378,7 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — TABLET (≤ 900px)
 ══════════════════════════════════════════ */
 @media (max-width: 900px) {
   .fnc-grid-3 {
@@ -386,29 +386,215 @@
   }
 }
 
-@media (max-width: 600px) {
-  .fnc-body {
-    padding: 20px 16px;
+/* ══════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 768px)
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Root layout: hide sidebar, stack vertically ── */
+  .dashboard-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
   }
 
-  .fnc-grid-3 {
-    grid-template-columns: 1fr;
+  .usr-sidebar,
+  .sidebar {
+    display: none !important;
   }
 
-  .fnc-footer {
-    padding: 16px;
-    flex-wrap: wrap;
+  /* ── Main section fills screen ── */
+  .fnc-main {
+    height: 100vh;
+    overflow: hidden;
   }
 
+  /* ── Step bar: compact icons + short labels ── */
   .fnc-steps {
-    padding: 16px 16px 12px;
+    padding: 14px 12px 12px;
+    gap: 0;
+    justify-content: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .fnc-steps::-webkit-scrollbar {
+    display: none;
   }
 
   .fnc-step {
-    min-width: 70px;
+    min-width: 0;
+    flex: 1;
+    gap: 5px;
+  }
+
+  .fnc-step-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    flex-shrink: 0;
   }
 
   .fnc-step span {
     font-size: 10px;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .fnc-step-line {
+    max-width: 24px;
+    margin-bottom: 26px;
+    flex-shrink: 0;
+  }
+
+  /* ── Body ── */
+  .fnc-body {
+    padding: 20px 16px 12px;
+    overflow-y: auto;
+  }
+
+  .fnc-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .fnc-subtitle {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  /* ── Section cards ── */
+  .fnc-section-card {
+    padding: 16px 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  .fnc-section-title {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+
+  .fnc-section-icon {
+    font-size: 16px;
+  }
+
+  /* ── Form grid: 1 column on mobile ── */
+  .fnc-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Field labels slightly smaller */
+  .fnc-field label {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Inputs full width, slightly shorter */
+  .fnc-field input,
+  .fnc-field select {
+    height: 48px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  /* ── Add opponent button ── */
+  .fnc-add-opponent {
+    padding: 14px;
+    font-size: 13px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Info box ── */
+  .fnc-info-box {
+    padding: 14px 14px;
+    border-radius: 10px;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .fnc-info-icon {
+    font-size: 18px;
+  }
+
+  .fnc-info-title {
+    font-size: 13px;
+  }
+
+  .fnc-info-text {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  /* ── Footer: Cancel left, Continue right, no Save Draft on mobile ── */
+  .fnc-footer {
+    padding: 14px 16px;
+    gap: 12px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  /* Hide "Save as Draft" on mobile (matches screenshot) */
+  .fnc-draft-btn {
+    display: none;
+  }
+
+  /* Cancel sits on the left */
+  .fnc-cancel-btn {
+    margin-left: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+    flex-shrink: 0;
+  }
+
+  /* Continue button pushes to the right, pill style */
+  .fnc-next-btn {
+    margin-left: auto;
+    padding: 14px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 999px;
+    box-shadow:
+      0px 5px 0px 0px rgba(119, 138, 255, 1),
+      0px 4px 8px 0px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (≤ 390px)
+══════════════════════════════════════════ */
+@media (max-width: 390px) {
+  .fnc-title {
+    font-size: 18px;
+  }
+
+  .fnc-step span {
+    font-size: 9px;
+  }
+
+  .fnc-step-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .fnc-step-line {
+    max-width: 16px;
+  }
+
+  .fnc-next-btn {
+    padding: 13px 20px;
+    font-size: 13px;
+  }
+
+  .fnc-section-card {
+    padding: 14px 12px;
   }
 }

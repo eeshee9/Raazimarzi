@@ -1,324 +1,467 @@
 // src/pages/UserMyCases.js
 "use client";
 
-import React, { useState, useEffect, useCallback, createContext, useContext } from "react"; // ✅ added useCallback
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
+import UserSidebar from "../components/UserSidebar";
+import UserNavbar from "../components/Navbar";
 import api from "../api/axios";
 
-import HomeIcon from "../assets/icons/home.png";
-import Vector from "../assets/icons/Vector.png";
-import FileIcon from "../assets/icons/file.png";
-import MeetingIcon from "../assets/icons/meeting.png";
-import CaseIcon from "../assets/icons/newcase.png";
-import DocsIcon from "../assets/icons/document.png";
-import ChatIcon from "../assets/icons/chat.png";
-import PaymentIcon from "../assets/icons/payment.png";
-import SupportIcon from "../assets/icons/support.png";
-import LogoutIcon from "../assets/icons/logout.png";
-
 import "./UserMyCases.css";
-import { FaCog, FaBell, FaChevronLeft, FaChevronRight, FaSyncAlt } from "react-icons/fa";
+import { FaDownload, FaChevronLeft, FaChevronRight, FaTimes, FaChevronRight as FaArrow } from "react-icons/fa";
 
-// ─── Local UserContext ────────────────────────────────────────────────────────
-const UserContext = createContext();
-
-const useUser = () => {
-  const context = useContext(UserContext);
-  if (!context) throw new Error("useUser must be used within a UserProvider");
-  return context;
-};
-
-const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const clearUser = () => { setUser(null); localStorage.removeItem("userData"); };
-  const updateUser = (userData) => setUser(userData);
-  return (
-    <UserContext.Provider value={{ user, clearUser, updateUser }}>
-      {children}
-    </UserContext.Provider>
-  );
-};
-
-// ─── Status badge helper ──────────────────────────────────────────────────────
-const statusClass = (status = "") => status.toLowerCase().replace(/\s+/g, "-");
-
-// ─── CasesTable sub-component ─────────────────────────────────────────────────
-const CasesTable = ({ title, cases }) => (
-  <div className="table-section">
-    <h3>{title} <span style={{ color: "#888", fontWeight: 400 }}>({cases.length})</span></h3>
-    <table className="cases-table">
-      <thead>
-        <tr>
-          <th>Case ID</th>
-          <th>Title</th>
-          <th>Petitioner</th>
-          <th>Defendant</th>
-          <th>Category</th>
-          <th>Status</th>
-          <th>Filed On</th>
-        </tr>
-      </thead>
-      <tbody>
-        {cases.length === 0 ? (
-          <tr>
-            <td colSpan="7" style={{ textAlign: "center", padding: "24px", color: "#888" }}>
-              No cases found
-            </td>
-          </tr>
-        ) : (
-          cases.map((c) => (
-            <tr key={c._id}>
-              <td><code>{c.caseId}</code></td>
-              <td>{c.caseTitle || "-"}</td>
-              <td>{c.petitionerDetails?.fullName || "-"}</td>
-              <td>{c.defendantDetails?.fullName || "-"}</td>
-              <td>{c.caseType || "-"}</td>
-              <td>
-                <span className={`status ${statusClass(c.status)}`}>
-                  {c.status || "Pending"}
-                </span>
-              </td>
-              <td>
-                {c.createdAt
-                  ? new Date(c.createdAt).toLocaleDateString("en-IN", {
-                      day: "2-digit", month: "short", year: "numeric",
-                    })
-                  : "-"}
-              </td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
-  </div>
-);
-
-// ─── Main page content ────────────────────────────────────────────────────────
-const UserMyCasesContent = () => {
-  const navigate = useNavigate();
-  const { logoutUser } = useAuth();
-  const { clearUser } = useUser();
-
-  const [search, setSearch] = useState("");
-  const [raisedCases, setRaisedCases] = useState([]);
-  const [opponentCases, setOpponentCases] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [user, setUser] = useState({ fullName: "", avatar: "" });
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  // ─── Fetch user info + cases ────────────────────────────────────────────────
-  // ✅ Wrapped in useCallback to fix react-hooks/exhaustive-deps warning
-  const fetchData = useCallback(async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const userRes = await api.get("/cases/me");
-      setUser({
-        fullName: userRes.data.name || userRes.data.fullName || "User",
-        avatar: userRes.data.avatar || "https://i.pravatar.cc/40",
-      });
-
-      const casesRes = await api.get("/cases/my-cases");
-      console.log("✅ /cases/my-cases response:", casesRes.data);
-
-      const raised   = casesRes.data?.raisedCases  ?? [];
-      const opponent = casesRes.data?.opponentCases ?? [];
-
-      if (!Array.isArray(raised) || !Array.isArray(opponent)) {
-        throw new Error("Unexpected response shape from /cases/my-cases");
-      }
-
-      setRaisedCases(raised);
-      setOpponentCases(opponent);
-    } catch (err) {
-      console.error("❌ Failed to fetch data:", err);
-
-      if (err.response?.status === 401) {
-        navigate("/login");
-        return;
-      }
-
-      setError(
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to load cases. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]); // ✅ navigate is the only real external dependency
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]); // ✅ no more ESLint warning
-
-  // ─── Search filter ──────────────────────────────────────────────────────────
-  const filterCases = (list) =>
-    list.filter(
-      (c) =>
-        (c.caseId?.toLowerCase().includes(search.toLowerCase())) ||
-        (c.caseTitle?.toLowerCase().includes(search.toLowerCase())) ||
-        (c.petitionerDetails?.fullName?.toLowerCase().includes(search.toLowerCase())) ||
-        (c.defendantDetails?.fullName?.toLowerCase().includes(search.toLowerCase()))
-    );
-
-  const filteredRaised   = filterCases(raisedCases);
-  const filteredOpponent = filterCases(opponentCases);
-
-  // ─── Logout ──────────────────────────────────────────────────────────────────
-  const handleLogout = async () => {
-    if (!window.confirm("Are you sure you want to logout?")) return;
-    setIsLoggingOut(true);
-    try {
-      logoutUser();
-      clearUser();
-      localStorage.clear();
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      alert("Failed to logout. Please try again.");
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
-  // ─── Render guards ────────────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", flexDirection: "column", gap: 12 }}>
-        <div className="spinner" />
-        <p style={{ color: "#555" }}>Loading your cases…</p>
-      </div>
-    );
+// ─── Status badge styles ───────────────────────────────────────────────────────
+const getStatusStyle = (status = "") => {
+  const s = status.toLowerCase().replace(/\s+/g, "-");
+  switch (s) {
+    case "pending":
+      return { background: "#fef3c7", color: "#92400e", label: "PENDING" };
+    case "mediation":
+    case "in-mediation":
+      return { background: "#dbeafe", color: "#1d4ed8", label: "IN MEDIATION" };
+    case "active":
+    case "in-progress":
+      return { background: "#dcfce7", color: "#16a34a", label: status.toUpperCase() };
+    case "resolved":
+      return { background: "#dcfce7", color: "#16a34a", label: "RESOLVED" };
+    case "rejected":
+      return { background: "#fee2e2", color: "#dc2626", label: "REJECTED" };
+    case "closed":
+      return { background: "#f3f4f6", color: "#6b7280", label: "CLOSED" };
+    default:
+      return { background: "#f3f4f6", color: "#6b7280", label: status.toUpperCase() };
   }
+};
 
-  if (error) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", flexDirection: "column", gap: 16 }}>
-        <p style={{ color: "#e53e3e", fontSize: 16 }}>⚠️ {error}</p>
-        <button
-          onClick={fetchData}
-          style={{ padding: "10px 24px", background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14 }}
+// ─── Relative time helper ──────────────────────────────────────────────────────
+const relativeTime = (dateStr) => {
+  if (!dateStr) return "—";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins  = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
+  if (mins  < 60)  return `Updated ${mins} minute${mins !== 1 ? "s" : ""} ago`;
+  if (hours < 24)  return `Updated ${hours} hour${hours !== 1 ? "s" : ""} ago`;
+  if (days  === 1) return "Updated Yesterday";
+  if (days  < 7)   return `Updated ${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  return days < 14 ? "Updated 1 week ago" : `Updated ${weeks} weeks ago`;
+};
+
+// ─── Mobile Card ───────────────────────────────────────────────────────────────
+const MobileCard = ({ c, idx, isSelected, onToggle, onNavigate }) => {
+  const statusMeta = getStatusStyle(c.status || "pending");
+  return (
+    <div
+      className={`mc-mobile-card ${isSelected ? "mc-mobile-card-selected" : ""}`}
+      onClick={() => onNavigate(c._id)}
+    >
+      {/* Top row: case ID + status badge */}
+      <div className="mc-mobile-card-top">
+        <div className="mc-mobile-meta">
+          <span className="mc-mobile-caseid">#{c.caseId || "—"}</span>
+          <span
+            className="mc-mobile-badge"
+            style={{ background: statusMeta.background, color: statusMeta.color }}
+          >
+            {statusMeta.label}
+          </span>
+        </div>
+        <FaChevronRight className="mc-mobile-arrow" />
+      </div>
+
+      {/* Content row: checkbox + text */}
+      <div className="mc-mobile-card-body">
+        <div
+          className={`mc-mobile-checkbox ${isSelected ? "mc-mobile-checkbox-checked" : ""}`}
+          onClick={e => { e.stopPropagation(); onToggle(c._id); }}
         >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  // ─── Full render ──────────────────────────────────────────────────────────────
-  return (
-    <div className="dashboard-container">
-      {/* ── Sidebar ── */}
-      <aside className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-toggle" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
-            {sidebarCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
-          </div>
-        </div>
-
-        <nav className="menu">
-          {[
-            { icon: HomeIcon,    label: "Home",          path: "/user/dashboard" },
-            { icon: Vector,      label: "My Profile",    path: "/user/my-profile" },
-            { icon: FileIcon,    label: "File New Case", path: "/user/file-new-case/step1" },
-            { icon: CaseIcon,    label: "My Cases",      path: "/user/my-cases",      active: true },
-            { icon: MeetingIcon, label: "Case Meetings", path: "/user/case-meetings" },
-            { icon: DocsIcon,    label: "Documents",     path: "/user/documents" },
-            { icon: ChatIcon,    label: "Chats",         path: "/user/chats" },
-            { icon: PaymentIcon, label: "Payment",       path: "/user/payment" },
-            { icon: SupportIcon, label: "Support",       path: "/user/support" },
-          ].map(({ icon, label, path, active }) => (
-            <div key={label} className={`menu-item ${active ? "active" : ""}`} onClick={() => navigate(path)}>
-              <img src={icon} alt={label} />
-              {!sidebarCollapsed && <span>{label}</span>}
-            </div>
-          ))}
-        </nav>
-
-        <div className="logout">
-          <div
-            className="menu-item"
-            onClick={handleLogout}
-            style={{ cursor: isLoggingOut ? "not-allowed" : "pointer", opacity: isLoggingOut ? 0.6 : 1 }}
-          >
-            <img src={LogoutIcon} alt="Logout" />
-            {!sidebarCollapsed && <span>{isLoggingOut ? "Logging out…" : "Log out"}</span>}
-          </div>
-        </div>
-      </aside>
-
-      {/* ── Main content ── */}
-      <section className={`main-section ${sidebarCollapsed ? "expanded" : ""}`}>
-        {/* Navbar */}
-        <header className="navbar">
-          <div />
-          <div className="nav-icons">
-            <FaCog className="icon" />
-            <FaBell className="icon" />
-            <div className="profile">
-              <img src={user.avatar} alt="profile" />
-              <span>{user.fullName}</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Search + refresh */}
-        <div className="search-bar" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input
-            type="text"
-            placeholder="Search by case ID, title, petitioner or defendant…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ flex: 1 }}
-          />
-          <button className="reset-btn" onClick={() => setSearch("")}>
-            Reset
-          </button>
-          <button
-            className="reset-btn"
-            onClick={fetchData}
-            title="Refresh cases"
-            style={{ display: "flex", alignItems: "center", gap: 6 }}
-          >
-            <FaSyncAlt /> Refresh
-          </button>
-        </div>
-
-        {/* Summary strip */}
-        <div style={{ padding: "8px 0 4px", display: "flex", gap: 24, fontSize: 13, color: "#666" }}>
-          <span>📁 Raised by you: <strong>{raisedCases.length}</strong></span>
-          <span>⚖️ You as defendant: <strong>{opponentCases.length}</strong></span>
-          {search && (
-            <span style={{ color: "#4f46e5" }}>
-              🔍 Showing {filteredRaised.length + filteredOpponent.length} matches
-            </span>
+          {isSelected && (
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           )}
         </div>
-
-        {/* Tables */}
-        <CasesTable title="My Raised Cases" cases={filteredRaised} />
-        <CasesTable title="Opponent Parties Raised Cases" cases={filteredOpponent} />
-      </section>
+        <div className="mc-mobile-text">
+          <p className="mc-mobile-title">{c.caseTitle || c.caseType || "—"}</p>
+          <p className="mc-mobile-updated">{relativeTime(c.updatedAt || c.createdAt)}</p>
+        </div>
+      </div>
     </div>
   );
 };
 
-// ─── Export wrapped with UserProvider ─────────────────────────────────────────
-const UserMyCases = () => (
-  <UserProvider>
-    <UserMyCasesContent />
-  </UserProvider>
-);
+// ─── Main Component ────────────────────────────────────────────────────────────
+const UserMyCases = () => {
+  const navigate = useNavigate();
+  const { logoutUser } = useAuth();
+
+  // ── Data state ──
+  const [allCases, setAllCases]   = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState(null);
+
+  // ── Filter state ──
+  const [statusFilter,   setStatusFilter]   = useState("All Statuses");
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const [roleFilter,     setRoleFilter]     = useState("All Cases");
+  const [amountFilter,   setAmountFilter]   = useState("All Ranges");
+  const [dateFrom,       setDateFrom]       = useState("");
+  const [dateTo,         setDateTo]         = useState("");
+  const [mediatorFilter, setMediatorFilter] = useState("All Status");
+  const [activeFilters,  setActiveFilters]  = useState([]);
+
+  // ── Pagination ──
+  const [page,         setPage]         = useState(1);
+  const [rowsPerPage,  setRowsPerPage]  = useState(10);
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  // ─── Fetch ────────────────────────────────────────────────────────────────────
+  const fetchData = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) { navigate("/login"); return; }
+    setLoading(true);
+    setError(null);
+    try {
+      const casesRes = await api.get("/cases/my-cases");
+      const raised   = casesRes.data?.raisedCases   ?? [];
+      const opponent = casesRes.data?.opponentCases  ?? [];
+      const merged   = [
+        ...raised.map(c   => ({ ...c, _myRole: "petitioner" })),
+        ...opponent.map(c => ({ ...c, _myRole: "respondent"  })),
+      ];
+      setAllCases(merged);
+    } catch (err) {
+      if (err.response?.status === 401) { navigate("/login"); return; }
+      setError(err.response?.data?.message || err.message || "Failed to load cases.");
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // ─── Filtering ────────────────────────────────────────────────────────────────
+  const filteredCases = allCases.filter(c => {
+    if (statusFilter   !== "All Statuses"   && c.status?.toLowerCase()  !== statusFilter.toLowerCase())   return false;
+    if (categoryFilter !== "All Categories" && c.caseType               !== categoryFilter)                return false;
+    if (roleFilter     === "As Petitioner"  && c._myRole                !== "petitioner")                  return false;
+    if (roleFilter     === "As Respondent"  && c._myRole                !== "respondent")                  return false;
+    return true;
+  });
+
+  const totalCases     = filteredCases.length;
+  const totalPages     = Math.max(1, Math.ceil(totalCases / rowsPerPage));
+  const paginatedCases = filteredCases.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+  // ─── Active filter tags ────────────────────────────────────────────────────────
+  useEffect(() => {
+    const tags = [];
+    if (categoryFilter !== "All Categories") tags.push({ key: "category", label: categoryFilter });
+    if (statusFilter   !== "All Statuses")   tags.push({ key: "status",   label: statusFilter   });
+    if (roleFilter     !== "All Cases")      tags.push({ key: "role",     label: roleFilter     });
+    setActiveFilters(tags);
+    setPage(1);
+  }, [statusFilter, categoryFilter, roleFilter]);
+
+  const removeFilter = (key) => {
+    if (key === "category") setCategoryFilter("All Categories");
+    if (key === "status")   setStatusFilter("All Statuses");
+    if (key === "role")     setRoleFilter("All Cases");
+  };
+
+  const clearAllFilters = () => {
+    setStatusFilter("All Statuses");
+    setCategoryFilter("All Categories");
+    setRoleFilter("All Cases");
+    setAmountFilter("All Ranges");
+    setDateFrom("");
+    setDateTo("");
+    setMediatorFilter("All Status");
+  };
+
+  // ─── Row selection ─────────────────────────────────────────────────────────────
+  const toggleRow = (id) =>
+    setSelectedRows(prev => prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]);
+
+  // ─── Export CSV ────────────────────────────────────────────────────────────────
+  const exportCSV = () => {
+    const headers = ["Case ID","Topic","Petitioner","Respondent","Mediator","Status","Filed Date"];
+    const rows    = filteredCases.map(c => [
+      c.caseId,
+      c.caseTitle || c.caseType || "-",
+      c.petitionerDetails?.fullName || "-",
+      c.defendantDetails?.fullName  || "-",
+      c.mediator?.name || "-",
+      c.status || "Pending",
+      c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "-",
+    ]);
+    const csv  = [headers, ...rows].map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = "my-cases.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ─── Pagination footer ─────────────────────────────────────────────────────────
+  const PaginationFooter = () => (
+    <div className="mc-pagination">
+      <div className="mc-rows-per-page">
+        Rows per page:
+        <select
+          className="mc-rpp-select"
+          value={rowsPerPage}
+          onChange={e => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
+        >
+          {[5, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </div>
+
+      <div className="mc-page-info">
+        {totalCases === 0
+          ? "0 cases"
+          : `${(page - 1) * rowsPerPage + 1}–${Math.min(page * rowsPerPage, totalCases)} of ${totalCases.toLocaleString()} cases`}
+      </div>
+
+      <div className="mc-page-nav">
+        <button className="mc-page-btn" disabled={page <= 1}         onClick={() => setPage(p => p - 1)}><FaChevronLeft  size={11} /></button>
+        <button className="mc-page-btn" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><FaChevronRight size={11} /></button>
+      </div>
+
+      {selectedRows.length > 0 && (
+        <span className="mc-selected-info mc-selected-below">
+          Selected row(s) - {selectedRows.join(", ")}
+        </span>
+      )}
+    </div>
+  );
+
+  // ─── Render ────────────────────────────────────────────────────────────────────
+  return (
+    <div className="dashboard-container">
+      <UserSidebar activePage="my-cases" />
+
+      <main className="main-content mc-main">
+        {/* Mobile top bar — shown only on mobile */}
+        <div className="mc-mobile-topbar">
+          <button className="mc-mobile-hamburger" aria-label="menu">
+            <span /><span /><span />
+          </button>
+          <div className="mc-mobile-search">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#9ca3af" strokeWidth="1.5"/><path d="M10 10l2 2" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <span>Search cases, mediators or files...</span>
+          </div>
+          <button className="mc-mobile-bell" aria-label="notifications">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1a5 5 0 00-5 5v3l-1.5 2H15.5L14 9V6a5 5 0 00-5-5z" stroke="#374151" strokeWidth="1.5"/><path d="M7.5 15a1.5 1.5 0 003 0" stroke="#374151" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {/* Desktop navbar — hidden on mobile */}
+        <div className="mc-desktop-navbar">
+          <UserNavbar />
+        </div>
+
+        {/* Page heading */}
+        <div className="mc-heading-row">
+          <div>
+            <h1 className="mc-title">My Cases</h1>
+            <p className="mc-subtitle">Manage, monitor, and take action on all disputes</p>
+          </div>
+          <button className="mc-export-btn" onClick={exportCSV}>
+            <FaDownload style={{ fontSize: 13 }} />
+            Export as CSV
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="mc-filters-row">
+          <div className="mc-filter-group">
+            <label className="mc-filter-label">STATUS</label>
+            <select className="mc-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+              <option>All Statuses</option>
+              <option>Pending</option>
+              <option>Mediation</option>
+              <option>Active</option>
+              <option>Resolved</option>
+              <option>Rejected</option>
+              <option>Closed</option>
+            </select>
+          </div>
+          <div className="mc-filter-group">
+            <label className="mc-filter-label">CATEGORY</label>
+            <select className="mc-select" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+              <option>All Categories</option>
+              <option>Property</option>
+              <option>Family</option>
+              <option>Commercial</option>
+              <option>Employment</option>
+              <option>Consumer</option>
+            </select>
+          </div>
+          <div className="mc-filter-group">
+            <label className="mc-filter-label">MY ROLE</label>
+            <select className="mc-select" value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
+              <option>All Cases</option>
+              <option>As Petitioner</option>
+              <option>As Respondent</option>
+            </select>
+          </div>
+          {/* Amount + Date Range + Mediator hidden on mobile via CSS */}
+          <div className="mc-filter-group mc-filter-desktop-only">
+            <label className="mc-filter-label">AMOUNT</label>
+            <select className="mc-select" value={amountFilter} onChange={e => setAmountFilter(e.target.value)}>
+              <option>All Ranges</option>
+              <option>Under ₹10,000</option>
+              <option>₹10,000 – ₹50,000</option>
+              <option>₹50,000 – ₹1,00,000</option>
+              <option>Above ₹1,00,000</option>
+            </select>
+          </div>
+          <div className="mc-filter-group mc-filter-desktop-only">
+            <label className="mc-filter-label">DATE RANGE</label>
+            <div className="mc-date-range">
+              <input type="date" className="mc-date-input" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+              <span className="mc-date-sep">–</span>
+              <input type="date" className="mc-date-input" value={dateTo}   onChange={e => setDateTo(e.target.value)}   />
+            </div>
+          </div>
+          <div className="mc-filter-group mc-filter-desktop-only">
+            <label className="mc-filter-label">MEDIATOR</label>
+            <select className="mc-select" value={mediatorFilter} onChange={e => setMediatorFilter(e.target.value)}>
+              <option>All Status</option>
+              <option>Assigned</option>
+              <option>Unassigned</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Active filter tags */}
+        {activeFilters.length > 0 && (
+          <div className="mc-active-filters">
+            <span className="mc-active-label">Active Filters:</span>
+            {activeFilters.map(f => (
+              <span key={f.key} className="mc-filter-tag">
+                {f.label}
+                <button className="mc-tag-remove" onClick={() => removeFilter(f.key)}><FaTimes size={9} /></button>
+              </span>
+            ))}
+            <button className="mc-clear-all" onClick={clearAllFilters}>Clear All</button>
+          </div>
+        )}
+
+        {/* ── DESKTOP TABLE ─────────────────────────────────────────────────────── */}
+        <div className="mc-table-wrapper mc-desktop-table">
+          {loading ? (
+            <div className="mc-state-center"><div className="mc-spinner" /><p>Loading your cases…</p></div>
+          ) : error ? (
+            <div className="mc-state-center">
+              <p style={{ color: "#dc2626" }}>⚠️ {error}</p>
+              <button className="mc-retry-btn" onClick={fetchData}>Retry</button>
+            </div>
+          ) : (
+            <table className="mc-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 36 }}></th>
+                  <th>CASE ID</th>
+                  <th>TOPIC</th>
+                  <th>PARTICIPANTS</th>
+                  <th>MEDIATOR</th>
+                  <th>STATUS</th>
+                  <th>FEE (₹)</th>
+                  <th>FILED DATE</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedCases.length === 0 ? (
+                  <tr><td colSpan="9" className="mc-empty-row">No cases found</td></tr>
+                ) : (
+                  paginatedCases.map((c, idx) => {
+                    const globalIdx  = (page - 1) * rowsPerPage + idx + 1;
+                    const isSelected = selectedRows.includes(c._id);
+                    const statusMeta = getStatusStyle(c.status || "pending");
+                    return (
+                      <tr key={c._id} className={isSelected ? "mc-row-selected" : ""}>
+                        <td>
+                          <div
+                            className={`mc-row-num ${isSelected ? "mc-row-num-selected" : ""}`}
+                            onClick={() => toggleRow(c._id)}
+                          >{globalIdx}</div>
+                        </td>
+                        <td className="mc-case-id">#{c.caseId || "—"}</td>
+                        <td className="mc-topic">{c.caseTitle || c.caseType || "—"}</td>
+                        <td className="mc-participants">
+                          <div className="mc-participant">
+                            <span className="mc-participant-role">(Petitioner)</span>
+                            <span className="mc-participant-name">{c.petitionerDetails?.fullName || "—"}</span>
+                          </div>
+                          <div className="mc-participant">
+                            <span className="mc-participant-role">(Respondent)</span>
+                            <span className="mc-participant-name">{c.defendantDetails?.fullName || "—"}</span>
+                          </div>
+                        </td>
+                        <td className="mc-mediator">{c.mediator?.name || "—"}</td>
+                        <td>
+                          <span className="mc-status-badge" style={{ background: statusMeta.background, color: statusMeta.color }}>
+                            {statusMeta.label}
+                          </span>
+                        </td>
+                        <td className="mc-fee">{c.fee ? `₹${Number(c.fee).toLocaleString("en-IN")} /-` : "—"}</td>
+                        <td className="mc-date">
+                          {c.createdAt
+                            ? new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" })
+                            : "—"}
+                        </td>
+                        <td>
+                          <button className="mc-view-btn" onClick={() => navigate(`/user/case/${c._id}`)}>
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
+          {!loading && !error && <PaginationFooter />}
+        </div>
+
+        {/* ── MOBILE CARD LIST ──────────────────────────────────────────────────── */}
+        <div className="mc-mobile-list">
+          {loading ? (
+            <div className="mc-state-center"><div className="mc-spinner" /><p>Loading your cases…</p></div>
+          ) : error ? (
+            <div className="mc-state-center">
+              <p style={{ color: "#dc2626" }}>⚠️ {error}</p>
+              <button className="mc-retry-btn" onClick={fetchData}>Retry</button>
+            </div>
+          ) : paginatedCases.length === 0 ? (
+            <div className="mc-state-center"><p>No cases found</p></div>
+          ) : (
+            <>
+              <h2 className="mc-mobile-section-title">Recent Disputes</h2>
+              {paginatedCases.map((c, idx) => (
+                <MobileCard
+                  key={c._id}
+                  c={c}
+                  idx={(page - 1) * rowsPerPage + idx + 1}
+                  isSelected={selectedRows.includes(c._id)}
+                  onToggle={toggleRow}
+                  onNavigate={(id) => navigate(`/user/case/${id}`)}
+                />
+              ))}
+            </>
+          )}
+          {!loading && !error && <PaginationFooter />}
+        </div>
+
+      </main>
+    </div>
+  );
+};
 
 export default UserMyCases;
