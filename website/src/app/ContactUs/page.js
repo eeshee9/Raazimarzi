@@ -1,6 +1,6 @@
 
 import { getPageSeo } from '@/lib/getPageSeo';
-import ContactUsClientClient from './ContactUsClient';
+import ContactUsClient from './ContactUsClient';
 
 export async function generateMetadata() {
   return getPageSeo('contact-us', {
