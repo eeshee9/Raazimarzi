@@ -12,6 +12,6 @@ export async function generateMetadata() {
 }
 
 
-export default function AboutUsClient() {
+export default function AboutUs() {
   return <AboutUsClient />;
 }
