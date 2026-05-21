@@ -8,7 +8,7 @@ import { APP_BASE_PATH } from "@/config/appConfig";
 import "@/styles/aboutUs.css";
 
 
-export default function AboutUsClient() {
+export default function AboutUs() {
   const [activeTab, setActiveTab] = useState("Cases");
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [openWhatWeDoIndex, setOpenWhatWeDoIndex] = useState(null);
