@@ -38,13 +38,13 @@ const getStatusStyle = (status = "") => {
 const relativeTime = (dateStr) => {
   if (!dateStr) return "—";
   const diff = Date.now() - new Date(dateStr).getTime();
-  const mins  = Math.floor(diff / 60000);
+  const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
-  const days  = Math.floor(diff / 86400000);
-  if (mins  < 60)  return `Updated ${mins} minute${mins !== 1 ? "s" : ""} ago`;
-  if (hours < 24)  return `Updated ${hours} hour${hours !== 1 ? "s" : ""} ago`;
-  if (days  === 1) return "Updated Yesterday";
-  if (days  < 7)   return `Updated ${days} days ago`;
+  const days = Math.floor(diff / 86400000);
+  if (mins < 60) return `Updated ${mins} minute${mins !== 1 ? "s" : ""} ago`;
+  if (hours < 24) return `Updated ${hours} hour${hours !== 1 ? "s" : ""} ago`;
+  if (days === 1) return "Updated Yesterday";
+  if (days < 7) return `Updated ${days} days ago`;
   const weeks = Math.floor(days / 7);
   return days < 14 ? "Updated 1 week ago" : `Updated ${weeks} weeks ago`;
 };
@@ -79,7 +79,7 @@ const MobileCard = ({ c, idx, isSelected, onToggle, onNavigate }) => {
         >
           {isSelected && (
             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-              <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
         </div>
@@ -98,23 +98,23 @@ const UserMyCases = () => {
   const { logoutUser } = useAuth();
 
   // ── Data state ──
-  const [allCases, setAllCases]   = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [allCases, setAllCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // ── Filter state ──
-  const [statusFilter,   setStatusFilter]   = useState("All Statuses");
+  const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
-  const [roleFilter,     setRoleFilter]     = useState("All Cases");
-  const [amountFilter,   setAmountFilter]   = useState("All Ranges");
-  const [dateFrom,       setDateFrom]       = useState("");
-  const [dateTo,         setDateTo]         = useState("");
+  const [roleFilter, setRoleFilter] = useState("All Cases");
+  const [amountFilter, setAmountFilter] = useState("All Ranges");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [mediatorFilter, setMediatorFilter] = useState("All Status");
-  const [activeFilters,  setActiveFilters]  = useState([]);
+  const [activeFilters, setActiveFilters] = useState([]);
 
   // ── Pagination ──
-  const [page,         setPage]         = useState(1);
-  const [rowsPerPage,  setRowsPerPage]  = useState(10);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedRows, setSelectedRows] = useState([]);
 
   // ─── Fetch ────────────────────────────────────────────────────────────────────
@@ -125,11 +125,11 @@ const UserMyCases = () => {
     setError(null);
     try {
       const casesRes = await api.get("/cases/my-cases");
-      const raised   = casesRes.data?.raisedCases   ?? [];
-      const opponent = casesRes.data?.opponentCases  ?? [];
-      const merged   = [
-        ...raised.map(c   => ({ ...c, _myRole: "petitioner" })),
-        ...opponent.map(c => ({ ...c, _myRole: "respondent"  })),
+      const raised = casesRes.data?.raisedCases ?? [];
+      const opponent = casesRes.data?.opponentCases ?? [];
+      const merged = [
+        ...raised.map(c => ({ ...c, _myRole: "petitioner" })),
+        ...opponent.map(c => ({ ...c, _myRole: "respondent" })),
       ];
       setAllCases(merged);
     } catch (err) {
@@ -144,31 +144,31 @@ const UserMyCases = () => {
 
   // ─── Filtering ────────────────────────────────────────────────────────────────
   const filteredCases = allCases.filter(c => {
-    if (statusFilter   !== "All Statuses"   && c.status?.toLowerCase()  !== statusFilter.toLowerCase())   return false;
-    if (categoryFilter !== "All Categories" && c.caseType               !== categoryFilter)                return false;
-    if (roleFilter     === "As Petitioner"  && c._myRole                !== "petitioner")                  return false;
-    if (roleFilter     === "As Respondent"  && c._myRole                !== "respondent")                  return false;
+    if (statusFilter !== "All Statuses" && c.status?.toLowerCase() !== statusFilter.toLowerCase()) return false;
+    if (categoryFilter !== "All Categories" && c.caseType !== categoryFilter) return false;
+    if (roleFilter === "As Petitioner" && c._myRole !== "petitioner") return false;
+    if (roleFilter === "As Respondent" && c._myRole !== "respondent") return false;
     return true;
   });
 
-  const totalCases     = filteredCases.length;
-  const totalPages     = Math.max(1, Math.ceil(totalCases / rowsPerPage));
+  const totalCases = filteredCases.length;
+  const totalPages = Math.max(1, Math.ceil(totalCases / rowsPerPage));
   const paginatedCases = filteredCases.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   // ─── Active filter tags ────────────────────────────────────────────────────────
   useEffect(() => {
     const tags = [];
     if (categoryFilter !== "All Categories") tags.push({ key: "category", label: categoryFilter });
-    if (statusFilter   !== "All Statuses")   tags.push({ key: "status",   label: statusFilter   });
-    if (roleFilter     !== "All Cases")      tags.push({ key: "role",     label: roleFilter     });
+    if (statusFilter !== "All Statuses") tags.push({ key: "status", label: statusFilter });
+    if (roleFilter !== "All Cases") tags.push({ key: "role", label: roleFilter });
     setActiveFilters(tags);
     setPage(1);
   }, [statusFilter, categoryFilter, roleFilter]);
 
   const removeFilter = (key) => {
     if (key === "category") setCategoryFilter("All Categories");
-    if (key === "status")   setStatusFilter("All Statuses");
-    if (key === "role")     setRoleFilter("All Cases");
+    if (key === "status") setStatusFilter("All Statuses");
+    if (key === "role") setRoleFilter("All Cases");
   };
 
   const clearAllFilters = () => {
@@ -187,20 +187,20 @@ const UserMyCases = () => {
 
   // ─── Export CSV ────────────────────────────────────────────────────────────────
   const exportCSV = () => {
-    const headers = ["Case ID","Topic","Petitioner","Respondent","Mediator","Status","Filed Date"];
-    const rows    = filteredCases.map(c => [
+    const headers = ["Case ID", "Topic", "Petitioner", "Respondent", "Mediator", "Status", "Filed Date"];
+    const rows = filteredCases.map(c => [
       c.caseId,
       c.caseTitle || c.caseType || "-",
       c.petitionerDetails?.fullName || "-",
-      c.defendantDetails?.fullName  || "-",
+      c.defendantDetails?.fullName || "-",
       c.mediator?.name || "-",
       c.status || "Pending",
       c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "-",
     ]);
-    const csv  = [headers, ...rows].map(r => r.join(",")).join("\n");
+    const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
     a.href = url; a.download = "my-cases.csv"; a.click();
     URL.revokeObjectURL(url);
   };
@@ -226,7 +226,7 @@ const UserMyCases = () => {
       </div>
 
       <div className="mc-page-nav">
-        <button className="mc-page-btn" disabled={page <= 1}         onClick={() => setPage(p => p - 1)}><FaChevronLeft  size={11} /></button>
+        <button className="mc-page-btn" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><FaChevronLeft size={11} /></button>
         <button className="mc-page-btn" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><FaChevronRight size={11} /></button>
       </div>
 
@@ -250,11 +250,11 @@ const UserMyCases = () => {
             <span /><span /><span />
           </button>
           <div className="mc-mobile-search">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#9ca3af" strokeWidth="1.5"/><path d="M10 10l2 2" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#9ca3af" strokeWidth="1.5" /><path d="M10 10l2 2" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" /></svg>
             <span>Search cases, mediators or files...</span>
           </div>
           <button className="mc-mobile-bell" aria-label="notifications">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1a5 5 0 00-5 5v3l-1.5 2H15.5L14 9V6a5 5 0 00-5-5z" stroke="#374151" strokeWidth="1.5"/><path d="M7.5 15a1.5 1.5 0 003 0" stroke="#374151" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1a5 5 0 00-5 5v3l-1.5 2H15.5L14 9V6a5 5 0 00-5-5z" stroke="#374151" strokeWidth="1.5" /><path d="M7.5 15a1.5 1.5 0 003 0" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" /></svg>
           </button>
         </div>
 
@@ -324,7 +324,7 @@ const UserMyCases = () => {
             <div className="mc-date-range">
               <input type="date" className="mc-date-input" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
               <span className="mc-date-sep">–</span>
-              <input type="date" className="mc-date-input" value={dateTo}   onChange={e => setDateTo(e.target.value)}   />
+              <input type="date" className="mc-date-input" value={dateTo} onChange={e => setDateTo(e.target.value)} />
             </div>
           </div>
           <div className="mc-filter-group mc-filter-desktop-only">
@@ -380,7 +380,7 @@ const UserMyCases = () => {
                   <tr><td colSpan="9" className="mc-empty-row">No cases found</td></tr>
                 ) : (
                   paginatedCases.map((c, idx) => {
-                    const globalIdx  = (page - 1) * rowsPerPage + idx + 1;
+                    const globalIdx = (page - 1) * rowsPerPage + idx + 1;
                     const isSelected = selectedRows.includes(c._id);
                     const statusMeta = getStatusStyle(c.status || "pending");
                     return (
@@ -416,7 +416,7 @@ const UserMyCases = () => {
                             : "—"}
                         </td>
                         <td>
-                          <button className="mc-view-btn" onClick={() => navigate(`/user/case/${c._id}`)}>
+                          <button className="mc-view-btn" onClick={() => navigate(`/user/my-cases/details/${c._id}`)}>
                             View Details
                           </button>
                         </td>

@@ -418,7 +418,7 @@ body { font-family: 'DM Sans', sans-serif; }
    ============================================================ */
 .otp-row { display: flex; gap: 10px; margin: 8px 0; }
 .otp-box {
-  flex: 1;
+  flex: 0 0 48px;
   height: 56px;
   padding: 0;
   border: 1.5px solid var(--border);
@@ -573,4 +573,393 @@ body { font-family: 'DM Sans', sans-serif; }
     height: 100vh;
   }
   .auth-wrapper { height: auto; }
+}
+
+/* ============================================================
+   AUTH RESPONSIVE — FIXED VERSION
+   Paste this at the very bottom of Auth.css
+   ============================================================
+   ROOT CAUSE FIXES:
+   - Login.css has `background: #ffffff !important` on .auth-right
+   - Auth.css existing @media(768px) conflicts
+   - All critical layout rules use !important to win the cascade
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+  /* ── 1. WRAPPER: purple gradient background ──────────────── */
+  .auth-wrapper {
+    height: auto !important;
+    min-height: 100vh !important;
+    background: linear-gradient(150deg, #bfc3ff 0%, #cdc5ff 25%, #e0d3ff 55%, #c9c6fa 100%) !important;
+    overflow-y: auto !important;
+  }
+
+  /* ── 2. HIDE left image ───────────────────────────────────── */
+  .auth-left {
+    display: none !important;
+  }
+
+  /* ── 3. RIGHT PANEL: transparent, full width ─────────────── */
+  .auth-right {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    min-width: unset !important;
+    background: transparent !important;   /* beats Login.css !important */
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 52px 20px 48px !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    overflow-y: visible !important;
+    z-index: 1 !important;
+  }
+
+  /* ── 4. FORM CONTAINER ────────────────────────────────────── */
+  .auth-form-container {
+    width: 100% !important;
+    max-width: 360px !important;
+  }
+
+  /* ── 5. TITLE + SUBTITLE: outside card, on gradient ───────── */
+  .auth-title {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #12113A !important;
+    text-align: center !important;
+    margin-bottom: 4px !important;
+  }
+
+  .auth-subtitle {
+    font-size: 13px !important;
+    color: #4a4a72 !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* ── 6. STEP ICON: glass pill above heading ───────────────── */
+  .step-icon {
+    width: 52px !important;
+    height: 52px !important;
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 16px !important;
+    box-shadow: 0 4px 16px rgba(91, 107, 248, 0.18) !important;
+  }
+
+  .step-icon svg {
+    width: 24px !important;
+    height: 24px !important;
+    color: var(--primary) !important;
+  }
+
+  /* ── 7. GLASS CARD wrapping the form ─────────────────────── */
+  .auth-form {
+    background: rgba(255, 255, 255, 0.68) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.88) !important;
+    border-radius: 20px !important;
+    padding: 24px 18px 20px !important;
+    box-shadow: 0 8px 32px rgba(91, 107, 248, 0.13) !important;
+    gap: 16px !important;
+  }
+
+  /* ── 8. INPUTS inside card ────────────────────────────────── */
+  .input-wrap input {
+    height: 48px !important;
+    font-size: 14px !important;
+    background: rgba(255, 255, 255, 0.82) !important;
+    border-color: rgba(216, 219, 232, 0.75) !important;
+  }
+
+  .input-wrap input:focus {
+    background: #fff !important;
+    border-color: var(--primary) !important;
+  }
+
+  /* ── 9. 2-COL ROW → 1 col ─────────────────────────────────── */
+  .form-row-2 {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* ── 10. GOOGLE BUTTON ────────────────────────────────────── */
+  .google-btn {
+    background: rgba(255, 255, 255, 0.68) !important;
+    backdrop-filter: blur(10px) !important;
+    border-color: rgba(229, 231, 235, 0.85) !important;
+    margin-top: 0 !important;
+  }
+
+  /* ── 11. OR DIVIDER ───────────────────────────────────────── */
+  .auth-or {
+    margin: 16px 0 8px !important;
+    color: rgba(107, 114, 128, 0.85) !important;
+    font-size: 10px !important;
+    letter-spacing: 1.4px !important;
+  }
+
+  .auth-or::before,
+  .auth-or::after {
+    background: rgba(229, 231, 235, 0.7) !important;
+  }
+
+  /* ── 12. MEDIATOR CTA box ─────────────────────────────────── */
+  .mediator-cta {
+    background: rgba(255, 255, 255, 0.68) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.88) !important;
+    border-radius: 16px !important;
+    padding: 14px 16px !important;
+    margin-top: 14px !important;
+    box-shadow: 0 4px 16px rgba(91, 107, 248, 0.1) !important;
+    align-items: flex-start !important;
+  }
+
+  .mediator-cta-title { font-size: 13px !important; }
+  .mediator-cta-desc  { font-size: 11px !important; }
+  .mediator-cta-btn   { font-size: 12px !important; padding: 8px 14px !important; }
+
+  /* ── 13. FOOTER / LINKS ───────────────────────────────────── */
+  .auth-footer {
+    text-align: center !important;
+    margin-top: 18px !important;
+    font-size: 13px !important;
+  }
+
+  .back-link {
+    font-size: 13px !important;
+    text-align: center !important;
+  }
+
+  .support-link {
+    position: static !important;
+    margin-top: 20px !important;
+    font-size: 12px !important;
+    justify-content: center !important;
+  }
+
+  /* ── 14. OTP BOXES ────────────────────────────────────────── */
+  .otp-row {
+    display: flex !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    margin: 4px 0 8px !important;
+  }
+
+  .otp-box {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: 46px !important;
+    height: 52px !important;
+    font-size: 20px !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1.5px solid #D8DBE8 !important;
+  }
+
+  .otp-resend  { font-size: 13px !important; text-align: center !important; }
+  .otp-expires { font-size: 12px !important; text-align: center !important; }
+
+  /* ── 15. SUCCESS STATE ────────────────────────────────────── */
+  .success-icon-wrap {
+    width: 68px !important;
+    height: 68px !important;
+    margin: 0 auto 20px !important;
+  }
+
+  .success-title {
+    font-size: 22px !important;
+    text-align: center !important;
+  }
+
+  .success-desc {
+    font-size: 13px !important;
+    text-align: center !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* ── 16. FORGOT PASSWORD fp-* classes ───────────────────────*/
+  .fp-icon {
+    width: 52px !important;
+    height: 52px !important;
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 14px !important;
+    margin: 0 auto 16px !important;
+  }
+
+  .fp-title { font-size: 24px !important; text-align: center !important; }
+  .fp-desc  { font-size: 13px !important; text-align: center !important; margin-bottom: 20px !important; }
+
+  .fp-input-wrap { margin-bottom: 16px !important; }
+  .fp-input-wrap input {
+    height: 48px !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  .fp-hint   { border-radius: 12px !important; margin-bottom: 18px !important; }
+  .fp-back   { font-size: 13px !important; margin-top: 14px !important; }
+
+  .fp-support {
+    position: static !important;
+    margin-top: 20px !important;
+    font-size: 12px !important;
+  }
+
+  .fp-otp-row { gap: 8px !important; margin-bottom: 16px !important; }
+  .fp-otp-row input {
+    height: 52px !important;
+    font-size: 20px !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .fp-resend-row  { font-size: 13px !important; }
+  .fp-timer       { font-size: 12px !important; margin-top: 4px !important; }
+
+  .fp-success-icon  { width: 68px !important; height: 68px !important; margin-bottom: 22px !important; }
+  .fp-success-title { font-size: 22px !important; }
+  .fp-success-desc  { font-size: 13px !important; margin-bottom: 24px !important; }
+  .fp-error         { border-radius: 10px !important; font-size: 13px !important; }
+
+  .password-hint   { border-radius: 12px !important; padding: 11px 13px !important; }
+  .password-hint p { font-size: 11.5px !important; }
+
+  /* ── 17. ALERTS ───────────────────────────────────────────── */
+  .auth-error,
+  .auth-success { border-radius: 10px !important; font-size: 13px !important; }
+}
+
+/* ── VERY SMALL PHONES (≤ 374px) ──────────────────────────── */
+@media (max-width: 374px) {
+
+  .auth-right {
+    padding: 44px 14px 40px !important;
+  }
+
+  .auth-title,
+  .fp-title { font-size: 22px !important; }
+
+  .auth-btn { font-size: 14px !important; padding: 13px !important; }
+
+  .otp-box {
+    max-width: 40px !important;
+    height: 46px !important;
+    font-size: 17px !important;
+  }
+
+  .fp-otp-row input {
+    height: 46px !important;
+    font-size: 17px !important;
+  }
+}
+
+/* ============================================================
+   OTP BOX FIX — paste at very bottom of Auth.css
+   Fixes: boxes growing too large / overflowing on mobile
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+  /* ── OTP ROW: fixed small boxes, no stretching ────────────── */
+  .otp-row {
+    display: flex !important;
+    gap: 10px !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .otp-box {
+    flex: 0 0 44px !important;   /* fixed width — no grow, no shrink */
+    width: 44px !important;
+    height: 52px !important;
+    max-width: 44px !important;
+    min-width: unset !important;
+    font-size: 20px !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    text-align: center !important;
+  }
+
+  /* same fix for ForgotPassword fp-otp-row */
+  .fp-otp-row {
+    display: flex !important;
+    gap: 10px !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .fp-otp-row input {
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    height: 52px !important;
+    max-width: 44px !important;
+    min-width: unset !important;
+    font-size: 20px !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    text-align: center !important;
+  }
+}
+
+/* ── Very small phones ≤ 374px ────────────────────────────── */
+@media (max-width: 374px) {
+  .otp-box,
+  .fp-otp-row input {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    max-width: 38px !important;
+    height: 46px !important;
+    font-size: 17px !important;
+    gap: 7px !important;
+  }
+
+  .otp-row,
+  .fp-otp-row {
+    gap: 7px !important;
+  }
+}
+
+/* ============================================================
+   PHONE PREFIX FIX — paste at very bottom of Auth.css
+   Fixes: +91 | overlapping the input text on mobile
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+  /* Phone prefix position — aligned after the phone icon */
+  .phone-prefix {
+    left: 44px !important;        /* icon(18) + icon-left(14) + gap(12) */
+    font-size: 13px !important;
+    padding-right: 10px !important;
+    border-right: 1px solid var(--border) !important;
+    white-space: nowrap !important;
+    z-index: 3 !important;
+  }
+
+  /* Input text starts after icon + prefix + divider */
+  .input-wrap.has-prefix input {
+    padding-left: 102px !important;   /* enough room for "+91 |" */
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
 }

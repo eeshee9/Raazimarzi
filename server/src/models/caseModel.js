@@ -4,11 +4,15 @@ import mongoose from "mongoose";
    PR → Property
    RN → Rental
    CN → Consumer
+   IN → Individual
+   CM → Commercial
 ──────────────────────────────────── */
 export const CASE_PREFIXES = {
-  property: "PR",
-  rental:   "RN",
-  consumer: "CN",
+  property:   "PR",
+  rental:     "RN",
+  consumer:   "CN",
+  individual: "IN",
+  commercial: "CM",
 };
 
 /* ── Timeline / Audit entry ── */
@@ -51,23 +55,23 @@ const caseSchema = new mongoose.Schema(
   {
     /* ── Unique Case ID (e.g. PR-2026-A3F9) ── */
     caseId: {
-      type: String,
-      unique: true,
+      type:     String,
+      unique:   true,
       required: true,
-      index: true,
+      index:    true,
     },
 
     /* ── Case Type ── */
     caseType: {
       type: String,
-      enum: ["property", "rental", "consumer"],
+      enum: ["property", "rental", "consumer", "individual", "commercial"],
       index: true,
     },
 
     caseTitle:     { type: String, required: true },
     causeOfAction: { type: String },
     reliefSought:  { type: String },
-    caseValue:     { type: String }, // kept as String for backward compat
+    caseValue:     { type: String },
 
     /* ── Petitioner / Claimant Details (snapshot at filing) ── */
     petitionerDetails: {
@@ -107,67 +111,53 @@ const caseSchema = new mongoose.Schema(
 
     /* ── Claimant (linked user account) ── */
     claimant: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type:  mongoose.Schema.Types.ObjectId,
+      ref:   "User",
       index: true,
     },
 
-    /* ── Respondent invite system ─────────────────────────
-       When a case is filed, an invite is sent to respondent.
-       They can accept it to link their account to the case.
-       If they don't respond within notice period → ex-parte.
-    ──────────────────────────────────────────────────── */
+    /* ── Respondent invite system ── */
     respondent: {
       userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        type:    mongoose.Schema.Types.ObjectId,
+        ref:     "User",
         default: null,
-        index: true,
+        index:   true,
       },
       email:        { type: String, default: "" },
       phone:        { type: String, default: "" },
       name:         { type: String, default: "" },
       inviteToken:  { type: String, default: null },
       inviteStatus: {
-        type: String,
-        enum: ["pending", "accepted", "declined"],
+        type:    String,
+        enum:    ["pending", "accepted", "declined"],
         default: "pending",
       },
-      inviteSentAt:          { type: Date, default: null },
-      acceptedAt:            { type: Date, default: null },
-      responseText:          { type: String, default: "" },
-      responseSubmittedAt:   { type: Date, default: null },
+      inviteSentAt:        { type: Date, default: null },
+      acceptedAt:          { type: Date, default: null },
+      responseText:        { type: String, default: "" },
+      responseSubmittedAt: { type: Date, default: null },
     },
 
-    /* ── Notice Period & Ex-Parte ─────────────────────────
-       Legal ODR flow:
-       1. Admin accepts case → notice sent to respondent
-       2. 30-day response window starts
-       3. Reminders at day 7, 15, 30
-       4. No response → isExParte = true → arbitrator proceeds
-       5. Award issued → non-compliant → courtReferralIssued
-    ──────────────────────────────────────────────────── */
+    /* ── Notice Period & Ex-Parte ── */
     noticePeriodDays:    { type: Number, default: 30 },
-    noticePeriodStartAt: { type: Date, default: null },
-    noticePeriodEndAt:   { type: Date, default: null },
+    noticePeriodStartAt: { type: Date,   default: null },
+    noticePeriodEndAt:   { type: Date,   default: null },
     noticesSent:         [noticeSchema],
 
     isExParte:     { type: Boolean, default: false },
-    exParteAt:     { type: Date, default: null },
-    exParteReason: { type: String, default: "" },
+    exParteAt:     { type: Date,    default: null },
+    exParteReason: { type: String,  default: "" },
 
     courtReferralIssued: { type: Boolean, default: false },
-    courtReferralAt:     { type: Date, default: null },
+    courtReferralAt:     { type: Date,    default: null },
 
-    /* ── Admin Review ─────────────────────────────────────
-       Every filed case goes through admin review before
-       notice is sent to respondent.
-    ──────────────────────────────────────────────────── */
+    /* ── Admin Review ── */
     adminStatus: {
-      type: String,
-      enum: ["pending-review", "accepted", "rejected"],
+      type:    String,
+      enum:    ["pending-review", "accepted", "rejected"],
       default: "pending-review",
-      index: true,
+      index:   true,
     },
     adminNote:  { type: String, default: "" },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
@@ -177,7 +167,7 @@ const caseSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "Pending",       // filed, waiting admin acceptance (kept for backward compat)
+        "Pending",
         "pending-review",
         "In Review",
         "notice-sent",
@@ -197,49 +187,44 @@ const caseSchema = new mongoose.Schema(
         "closed",
       ],
       default: "Pending",
-      index: true,
+      index:   true,
     },
 
     /* ── Assignment ── */
     assignedCaseManager: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type:    mongoose.Schema.Types.ObjectId,
+      ref:     "User",
       default: null,
-      index: true,
+      index:   true,
     },
-
-    /* Legacy: kept for backward compat with existing data */
     assignedMediator: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type:    mongoose.Schema.Types.ObjectId,
+      ref:     "User",
       default: null,
-      index: true,
+      index:   true,
     },
-
-    /* New: single neutral — mediator OR arbitrator */
     assignedNeutral: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type:    mongoose.Schema.Types.ObjectId,
+      ref:     "User",
       default: null,
-      index: true,
+      index:   true,
     },
     neutralType: {
-      type: String,
-      enum: ["mediator", "arbitrator", null],
+      type:    String,
+      enum:    ["mediator", "arbitrator", null],
       default: null,
     },
-
     assignedAt: { type: Date, default: null },
 
     /* ── Priority ── */
     priority: {
-      type: String,
-      enum: ["Low", "Medium", "High", "Urgent"],
+      type:    String,
+      enum:    ["Low", "Medium", "High", "Urgent"],
       default: "Medium",
     },
 
     /* ── Hearing ── */
-    hearingDate:  { type: Date, default: null },
+    hearingDate:  { type: Date,   default: null },
     hearingLink:  { type: String, default: "" },
     hearingNotes: { type: String, default: "" },
 
@@ -247,17 +232,17 @@ const caseSchema = new mongoose.Schema(
     resolutionSummary: { type: String, default: "" },
     awardDocumentUrl:  { type: String, default: "" },
     awardType: {
-      type: String,
-      enum: ["settlement", "arbitration-award", "ex-parte-award", "court-referral", ""],
+      type:    String,
+      enum:    ["settlement", "arbitration-award", "ex-parte-award", "court-referral", ""],
       default: "",
     },
     resolvedAt: { type: Date, default: null },
 
     /* ── Global / Jurisdiction ── */
-    jurisdiction: { type: String, default: "IN" },
-    currency:     { type: String, default: "INR" },
-    filingFee:    { type: Number, default: 0 },
-    filingFeePaid:{ type: Boolean, default: false },
+    jurisdiction:  { type: String,  default: "IN" },
+    currency:      { type: String,  default: "INR" },
+    filingFee:     { type: Number,  default: 0 },
+    filingFeePaid: { type: Boolean, default: false },
 
     /* ── Embedded Documents / Evidence ── */
     documents: [documentSchema],
@@ -265,12 +250,12 @@ const caseSchema = new mongoose.Schema(
     /* ── Timeline / Audit Log ── */
     timeline: [timelineSchema],
 
-    /* ── Created By (kept for backward compat) ── */
+    /* ── Created By ── */
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type:     mongoose.Schema.Types.ObjectId,
+      ref:      "User",
       required: true,
-      index: true,
+      index:    true,
     },
   },
   { timestamps: true }
@@ -286,3 +271,4 @@ caseSchema.index({ adminStatus: 1, createdAt: -1 });
 caseSchema.index({ caseType: 1, status: 1 });
 
 export default mongoose.model("Case", caseSchema);
+

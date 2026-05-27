@@ -1,0 +1,128 @@
+/* src/pages/MeetingLobby.css */
+.lobby-main {
+  flex: 1; overflow-y: auto; padding: 28px 32px;
+  background: #f8f9fb; font-family: 'Inter', sans-serif;
+}
+.lobby-loading {
+  display: flex; justify-content: center; align-items: center; height: 300px;
+}
+.lobby-spinner {
+  width: 36px; height: 36px; border: 3px solid #e5e7eb;
+  border-top-color: #778aff; border-radius: 50%;
+  animation: lspin 0.8s linear infinite;
+}
+@keyframes lspin { to { transform: rotate(360deg); } }
+.lobby-error {
+  text-align: center; padding: 60px; color: #dc2626;
+}
+.lobby-error button {
+  margin-top: 16px; background: #778aff; color: #fff;
+  border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer;
+}
+
+.lobby-body {
+  display: flex; gap: 40px; align-items: flex-start;
+  max-width: 960px; margin: 0 auto;
+}
+
+/* ── Left ── */
+.lobby-left { flex: 1.2; display: flex; flex-direction: column; gap: 20px; }
+
+.lobby-preview {
+  background: #1f2937; border-radius: 16px; overflow: hidden;
+  position: relative; aspect-ratio: 16/9;
+}
+.lobby-preview-label {
+  position: absolute; top: 12px; left: 12px;
+  background: rgba(0,0,0,0.6); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  border-radius: 6px; padding: 4px 10px;
+}
+.lobby-cam-area, .lobby-cam-off {
+  width: 100%; height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; color: #6b7280;
+}
+.lobby-cam-area span, .lobby-cam-off span { font-size: 48px; }
+.lobby-cam-area p, .lobby-cam-off p { font-size: 14px; color: #9ca3af; }
+.lobby-cam-placeholder { background: #111827; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+}
+
+.lobby-ready h3 { font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 6px; }
+.lobby-ready p  { font-size: 14px; color: #6b7280; margin: 0; }
+
+.lobby-devices { display: flex; flex-direction: column; gap: 10px; }
+.lobby-device {
+  background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px;
+  padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+}
+.lobby-device-info { display: flex; align-items: center; gap: 12px; }
+.lobby-device-icon { font-size: 20px; }
+.lobby-device-name { font-size: 14px; font-weight: 600; color: #111827; margin: 0; }
+.lobby-device-sub  { font-size: 12px; color: #9ca3af; margin: 0; }
+
+.lobby-toggle {
+  width: 48px; height: 26px; border-radius: 13px; border: none; cursor: pointer;
+  position: relative; transition: background 0.2s;
+}
+.lobby-toggle.on  { background: #778aff; }
+.lobby-toggle.off { background: #d1d5db; }
+.lobby-toggle-knob {
+  position: absolute; top: 3px; width: 20px; height: 20px;
+  background: #fff; border-radius: 50%; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.lobby-toggle.on  .lobby-toggle-knob { left: 25px; }
+.lobby-toggle.off .lobby-toggle-knob { left: 3px; }
+
+/* ── Right ── */
+.lobby-right {
+  flex: 1; background: #fff; border-radius: 20px;
+  border: 1.5px solid #e5e7eb; padding: 32px 28px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.lobby-private-tag {
+  display: inline-block; background: #eef2ff; color: #4f46e5;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  border-radius: 6px; padding: 4px 12px; width: fit-content;
+}
+.lobby-session-id { font-size: 22px; font-weight: 800; color: #111827; margin: 0; }
+
+.lobby-mediator { display: flex; align-items: center; gap: 14px; }
+.lobby-mediator-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  object-fit: cover; border: 2px solid #e5e7eb;
+}
+.lobby-mediator-label { font-size: 11px; color: #9ca3af; font-weight: 600; letter-spacing: 0.05em; margin: 0 0 2px; }
+.lobby-mediator-name  { font-size: 15px; font-weight: 700; color: #111827; margin: 0; }
+
+.lobby-details-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  background: #f9fafb; border-radius: 12px; padding: 16px;
+}
+.lobby-detail-label { font-size: 11px; color: #9ca3af; font-weight: 600; letter-spacing: 0.05em; margin: 0 0 3px; }
+.lobby-detail-value { font-size: 14px; font-weight: 700; color: #111827; margin: 0; }
+
+.lobby-join-btn {
+  width: 100%; background: linear-gradient(135deg, #778aff, #5f72f5);
+  color: #fff; border: none; border-radius: 12px;
+  padding: 16px; font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+}
+.lobby-join-btn:hover   { opacity: 0.92; transform: translateY(-1px); }
+.lobby-join-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.lobby-disclaimer {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 10px; padding: 12px 14px;
+}
+.lobby-disclaimer p { font-size: 12px; color: #78350f; margin: 0; line-height: 1.5; }
+.lobby-disclaimer a { color: #d97706; font-weight: 600; }
+
+.lobby-back-btn {
+  background: none; border: none; color: #778aff;
+  font-size: 14px; font-weight: 600; cursor: pointer; padding: 0;
+  align-self: flex-start;
+}
+.lobby-back-btn:hover { text-decoration: underline; }

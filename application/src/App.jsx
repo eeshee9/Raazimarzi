@@ -14,12 +14,14 @@ import FileNewCaseStep2 from "./pages/FileNewCaseStep2";
 import FileNewCaseStep3 from "./pages/FileNewCaseStep3";
 import FileNewCaseStep4 from "./pages/FileNewCaseStep4";
 import UserMyCases from "./pages/UserMyCases";
+import UserCaseDetails from "./pages/UserCaseDetails";
 import AdminNewCases from "./pages/AdminNewCases";
 import AdminCaseDetails from "./pages/AdminCaseDetails";
 import AdminNewCasesNextPage from "./pages/AdminNewCasesNextPage";
 import UserCaseMeetings from "./pages/UserCaseMeetings";
 import UserCaseMeetingsNextPage from "./pages/UserCaseMeetingsNextPage";
 import UserChats from "./pages/UserChats";
+import UserDocuments from "./pages/UserDocuments";
 import AdminCaseMeetings from "./pages/AdminCaseMeetings";
 import CaseManagerNewCases from "./pages/CaseManagerNewCases";
 import CaseManagerCaseMeetings from "./pages/CaseManagerCaseMeetings";
@@ -54,7 +56,9 @@ function App() {
             <Route path="/user/file-new-case/step3" element={<FileNewCaseStep3 />} />
             <Route path="/user/file-new-case/step4" element={<FileNewCaseStep4 />} />
             <Route path="/user/my-cases" element={<UserMyCases />} />
+           <Route path="/user/my-cases/details/:id" element={<UserCaseDetails />} />
             <Route path="/user/case-meetings" element={<UserCaseMeetings />} />
+             <Route path="/user/documents" element={<UserDocuments />} />
             <Route path="/user/case-meetings/call" element={<UserCaseMeetingsNextPage />} />
             <Route path="/user/chats" element={<UserChats />} />
 
@@ -73,7 +77,7 @@ function App() {
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/new-cases" element={<AdminNewCases />} />
-            <Route path="/admin/view-details" element={<AdminCaseDetails />} />
+            <Route path="/admin/view-details/:id" element={<AdminCaseDetails />} />
             <Route path="/admin/new-cases-next-page" element={<AdminNewCasesNextPage />} />
             <Route path="/admin/case-meetings" element={<AdminCaseMeetings />} />   
           </Routes>

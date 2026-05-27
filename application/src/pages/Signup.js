@@ -164,7 +164,7 @@ const Signup = () => {
                   <p className="mediator-cta-title">Want to become a mediator?</p>
                   <p className="mediator-cta-desc">Join our network of certified legal professionals.</p>
                 </div>
-                <Link to="/mediator-signup" className="mediator-cta-btn">Apply as Mediator</Link>
+                <Link to="/mediator-signup" className="mediator-cta-btn">Apply as Arbitrator</Link>
               </div>
 
               <p className="auth-footer">Already have an account? <Link to="/login" className="auth-link">Sign In</Link></p>

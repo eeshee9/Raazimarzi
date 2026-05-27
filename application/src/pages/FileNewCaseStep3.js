@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import UserSidebar from "../components/UserSidebar";
+import api from "../api/axios";
 import "./FileNewCase.css";
 import "./FileNewCaseStep3.css";
 
@@ -22,15 +23,74 @@ const formatSize = (bytes) => {
 const truncateName = (name, max = 24) =>
   name.length > max ? name.slice(0, max - 3) + "..." : name;
 
+// ── Map localStorage shape → API shape ──────────────────────────────────────
+// localStorage.caseData = {
+//   petitioner: { fullName, mobile, email, dob, gender, address },
+//   defendants: [{ fullName, mobile, email, dob, gender, address }],
+//   step2: { category, caseTitle, isMoneyDispute, claimRange, description, incidentDate, incidentLocation }
+// }
+const buildPayload = (caseData) => {
+  const step2 = caseData.step2 || {};
+  const petitioner = caseData.petitioner || {};
+  const defendant = (caseData.defendants || [])[0] || {};
+
+  // Map category id → readable caseType
+  const CATEGORY_MAP = {
+    individual: "individual",
+    commercial:  "commercial",
+    consumer:    "consumer",
+  };
+
+  return {
+    caseType:      CATEGORY_MAP[step2.category] || step2.category || "Individual",
+    caseTitle:     step2.caseTitle || "",
+    causeOfAction: step2.description || "",
+    reliefSought:  "",           // not collected in current UI, send empty
+    caseValue:     step2.isMoneyDispute ? step2.claimRange : "non-monetary",
+    petitioner: {
+      fullName:  petitioner.fullName  || "",
+      gender:    petitioner.gender    || "",
+      dob:       petitioner.dob       || "",
+      mobile:    petitioner.mobile    || "",
+      email:     petitioner.email     || "",
+      address:   petitioner.address   || "",
+      fatherName: "",
+      idType:    "",
+      idProof:   "",
+    },
+    defendant: {
+      fullName:   defendant.fullName  || "",
+      gender:     defendant.gender    || "",
+      dob:        defendant.dob       || "",
+      mobile:     defendant.mobile    || "",
+      email:      defendant.email     || "",
+      fatherName: "",
+      idDetails:  "",
+    },
+    caseFacts: {
+      caseSummary:      step2.description        || "",
+      documentTitle:    "",
+      documentType:     "",
+      witnessDetails:   "",
+      place:            step2.incidentLocation   || "",
+      date:             step2.incidentDate       || "",
+      digitalSignature: petitioner.fullName      || "",
+      declaration:      true,   // user reached step 3 = implicitly accepted
+    },
+  };
+};
+
 const FileNewCaseStep3 = () => {
   const navigate = useNavigate();
   const inputRef = useRef();
 
-  const [files, setFiles] = useState([]);
+  const [files, setFiles]       = useState([]);
   const [dragOver, setDragOver] = useState(false);
-  const [error, setError] = useState("");
+  const [fileError, setFileError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  // Restore from localStorage (metadata only — not actual File objects)
+  // Restore file metadata from localStorage
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("caseData")) || {};
     if (stored.step3Files) setFiles(stored.step3Files);
@@ -43,15 +103,15 @@ const FileNewCaseStep3 = () => {
   };
 
   const addFiles = (incoming) => {
-    setError("");
+    setFileError("");
     const valid = [];
     for (const f of incoming) {
       if (!ACCEPTED.includes(f.type)) {
-        setError(`"${f.name}" is not supported. Use PDF, JPG, or PNG.`);
+        setFileError(`"${f.name}" is not supported. Use PDF, JPG, or PNG.`);
         continue;
       }
       if (f.size > MAX_SIZE) {
-        setError(`"${f.name}" exceeds 10 MB limit.`);
+        setFileError(`"${f.name}" exceeds 10 MB limit.`);
         continue;
       }
       if (files.find((x) => x.name === f.name && x.size === f.size)) continue;
@@ -84,9 +144,50 @@ const FileNewCaseStep3 = () => {
     alert("Draft saved!");
   };
 
-  const handleNext = () => {
-    persistMeta(files);
-    navigate("/user/file-new-case/step4");
+  // ── Submit case to backend ───────────────────────────────────────────────────
+  const handleSubmit = async () => {
+    setSubmitError("");
+
+    const caseData = JSON.parse(localStorage.getItem("caseData")) || {};
+
+    // Basic guard — ensure step1 & step2 data exist
+    if (!caseData.petitioner?.fullName || !caseData.step2?.caseTitle) {
+      setSubmitError("Some required case information is missing. Please go back and complete all steps.");
+      return;
+    }
+
+    const payload = buildPayload(caseData);
+
+    // Validate required fields before hitting the API
+    if (!payload.petitioner.email) {
+      setSubmitError("Petitioner email is required. Please go back to Step 1.");
+      return;
+    }
+    if (!payload.defendant.email) {
+      setSubmitError("Respondent email is required. Please go back to Step 1.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.post("/cases/file", payload);
+
+      // Clear draft from localStorage on success
+      localStorage.removeItem("caseData");
+
+      // Navigate to My Cases dashboard
+      navigate("/user/my-cases");
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        (Array.isArray(err.response?.data?.errors)
+          ? err.response.data.errors.join(", ")
+          : null) ||
+        "Failed to file case. Please try again.";
+      setSubmitError(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -94,13 +195,12 @@ const FileNewCaseStep3 = () => {
       <UserSidebar activePage="file-case" />
 
       <section className="fnc-main">
-        {/* Step Progress Bar */}
+        {/* Step Progress Bar — step 4 now shows as inactive/disabled */}
         <div className="fnc-steps">
           {[
             { label: "Personal Details", icon: "👤", step: 1 },
             { label: "Case Details",     icon: "📋", step: 2 },
             { label: "Documents",        icon: "📄", step: 3 },
-            { label: "Review & Payment", icon: "💳", step: 4 },
           ].map(({ label, icon, step }, i) => (
             <React.Fragment key={step}>
               <div
@@ -113,7 +213,7 @@ const FileNewCaseStep3 = () => {
                 </div>
                 <span>{label}</span>
               </div>
-              {i < 3 && (
+              {i < 2 && (
                 <div className={`fnc-step-line ${step < 3 ? "completed" : ""}`} />
               )}
             </React.Fragment>
@@ -124,14 +224,16 @@ const FileNewCaseStep3 = () => {
         <div className="fnc-body">
           <h2 className="fnc-title">Upload Documents</h2>
           <p className="fnc-subtitle">
-            Support your case with relevant documents, images, or records. This information remains confidential within the sanctuary.
+            Support your case with relevant documents, images, or records. This
+            information remains confidential within the sanctuary.
           </p>
 
           {/* Info banner */}
           <div className="s3-info-banner">
             <span className="s3-banner-icon">❗</span>
             <p>
-              "Please upload a valid ID proof (Aadhaar, PAN, or Driving License) of petitioner. Aadhaar is recommended for faster verification."
+              Please upload a valid ID proof (Aadhaar, PAN, or Driving License)
+              of petitioner. Aadhaar is recommended for faster verification.
             </p>
           </div>
 
@@ -151,25 +253,24 @@ const FileNewCaseStep3 = () => {
               style={{ display: "none" }}
               onChange={handleBrowse}
             />
-
             <div className="s3-drop-icon-wrap">
               <span className="s3-drop-icon">📁</span>
             </div>
             <p className="s3-drop-title">Drag and drop files here</p>
-            <p className="s3-drop-sub">Supports PDF, JPG, and PNG files to build your case foundation.</p>
-
+            <p className="s3-drop-sub">
+              Supports PDF, JPG, and PNG files to build your case foundation.
+            </p>
             <button
               className="s3-browse-btn"
               onClick={(e) => { e.stopPropagation(); inputRef.current.click(); }}
             >
               + Browse
             </button>
-
             <p className="s3-drop-limit">Maximum file size: 10MB</p>
           </div>
 
-          {/* Error */}
-          {error && <p className="s3-error">{error}</p>}
+          {/* File validation error */}
+          {fileError && <p className="s3-error">{fileError}</p>}
 
           {/* Uploaded Files */}
           {files.length > 0 && (
@@ -199,6 +300,13 @@ const FileNewCaseStep3 = () => {
               </div>
             </div>
           )}
+
+          {/* API submit error */}
+          {submitError && (
+            <div className="s3-error" style={{ marginTop: 16 }}>
+              ⚠️ {submitError}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -206,15 +314,20 @@ const FileNewCaseStep3 = () => {
           <button className="fnc-draft-btn" onClick={handleSaveDraft}>
             ⊞ Save as Draft
           </button>
-          
           <button
             className="fnc-cancel-btn"
             onClick={() => navigate("/user/file-new-case/step2")}
+            disabled={submitting}
           >
             ← Back
           </button>
-          <button className="fnc-next-btn" style={{ marginLeft: "auto" }} onClick={handleNext}>
-            Continue to Review →
+          <button
+            className="fnc-next-btn"
+            style={{ marginLeft: "auto" }}
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Filing Case…" : "Submit Case ✓"}
           </button>
         </div>
       </section>

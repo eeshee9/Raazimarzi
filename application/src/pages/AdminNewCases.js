@@ -56,7 +56,7 @@ const ALL_SUBS = CATEGORY_TREE.flatMap(g => g.sub);
 /* ─────────────────────────────────────────
    CONSTANTS
 ───────────────────────────────────────── */
-const STATUS_OPTIONS   = ["All Statuses", "Pending Review", "Mediation", "Rejected", "Resolved", "Closed"];
+const STATUS_OPTIONS   = ["All Status", "Pending Review", "Mediation", "Rejected", "Resolved", "Closed"];
 const MEDIATOR_OPTIONS = ["All Status", "Assigned", "Unassigned"];
 const AMOUNT_OPTIONS   = ["All Ranges", "₹499 /-", "₹999 /-", "₹1499 /-", "₹1999 /-", "₹2499 /-"];
 const ROWS_OPTIONS     = [5, 10, 20, 50];
@@ -133,7 +133,7 @@ const Dropdown = ({ options, value, onChange }) => {
 };
 
 /* ─────────────────────────────────────────
-   DATE RANGE PICKER — single input, no duplicate calendar
+   DATE RANGE PICKER — s
 ───────────────────────────────────────── */
 const DateRangePicker = ({ dateFrom, dateTo, onFromChange, onToChange }) => {
   return (
