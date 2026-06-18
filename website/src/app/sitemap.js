@@ -10,17 +10,18 @@ export default async function sitemap() {
   // Static pages — always included
   const staticPages = [
     { url: SITE_URL,              lastModified: new Date(), changeFrequency: 'weekly',  priority: 1.0 },
-    { url: `${SITE_URL}/AboutUs`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${SITE_URL}/ContactUs`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${SITE_URL}/AboutUs`,        lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${SITE_URL}/ContactUs`,      lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${SITE_URL}/terms`,          lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.4 },
+    { url: `${SITE_URL}/privacy-policy`, lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.4 },
     { url: `${SITE_URL}/Services`,  lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${SITE_URL}/Services/IndividualDisputes`,   lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${SITE_URL}/Services/ConsumerDisputes`,     lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${SITE_URL}/Services/CommercialDisputes`,   lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${SITE_URL}/Services/FamilyDisputes`,       lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${SITE_URL}/Services/NeighborDisputes`,     lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${SITE_URL}/Services/PropertyRentalDisputes`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${SITE_URL}/Services/ContractDisputes`,     lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${SITE_URL}/Services/PartnershipDisputes`,  lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/Services/FamilyDisputes`,             lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/Services/NeighborDisputes`,           lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/Services/Property%26RentalDisputes`,  lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/Services/ContractDisputes`,           lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
   ];
 
   // Dynamic pages from CMS

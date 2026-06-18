@@ -45,19 +45,35 @@ const documentSchema = new mongoose.Schema(
       unique: true,
     },
 
-    // ✅ UPDATED: Cloudinary URL instead of local path
+    // Legacy permanent URL — objects are now private; documents are served
+    // via short-lived presigned URLs only. Optional, unused for new uploads.
     fileUrl: {
       type: String,
-      required: true,
+      default: "",
     },
 
-    // ✅ UPDATED: Cloudinary public_id (needed for deletion)
+    // Storage provider that holds this file
+    provider: {
+      type: String,
+      enum: ["neev", "cloudinary"],
+      default: "neev",
+    },
+
+    // NeevCloud object key — required for Neev-backed documents (needed to
+    // generate presigned URLs and for deletion).
+    storageKey: {
+      type: String,
+      required: function () { return this.provider === "neev"; },
+      default: "",
+    },
+
+    // Legacy Cloudinary public_id — kept for backward compat, no longer required
     cloudinaryPublicId: {
       type: String,
-      required: true,
+      default: "",
     },
 
-    // ✅ UPDATED: Cloudinary resource type (image / raw)
+    // Legacy Cloudinary resource type
     cloudinaryResourceType: {
       type: String,
       enum: ["image", "raw"],

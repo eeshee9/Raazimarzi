@@ -29,10 +29,21 @@ const userSchema = new mongoose.Schema(
     ─────────────────────────────────────────────────── */
     role: {
       type: String,
-      enum: ["user", "admin", "mediator", "arbitrator", "case-manager"],
+      enum: ["user", "admin", "mediator", "arbitrator", "case-manager", "sub-admin"],
       default: "user",
       index: true,
     },
+
+    /* ── Sub-Admin fields (role:"sub-admin") ── */
+    username: { type: String, unique: true, sparse: true, trim: true },
+    team:      { type: String, default: "" },
+    permissions: { type: Object, default: {} }, // { users:[...], mediators:[...], cases:[...], payments:[...], support:[...], settings:[...] }
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+
+    /* ── Login / Security metadata ── */
+    twoFactorEnabled: { type: Boolean, default: false },
+    lastLoginAt:      { type: Date, default: null },
+    lastLoginIP:       { type: String, default: "" },
 
     verified: { type: Boolean, default: true },
 
@@ -59,12 +70,40 @@ const userSchema = new mongoose.Schema(
     suspendedAt:     { type: Date, default: null },
     suspendedReason: { type: String, default: "" },
 
+    /* ── Mediator / Professional Profile (role:"mediator"|"arbitrator") ── */
+    approvalStatus: {
+      type:    String,
+      enum:    ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    approvalNote:   { type: String, default: "" },
+    bio:            { type: String, default: "" },
+    qualifications: { type: String, default: "" },
+    experience:     { type: String, default: "" },
+    languages:      [{ type: String }],
+    expertiseAreas: [{ type: String }],
+    verificationDocs: [
+      {
+        docType:    { type: String, default: "" },
+        fileUrl:    { type: String, default: "" },
+        status:     { type: String, enum: ["pending", "verified", "rejected"], default: "pending" },
+        uploadedAt: { type: Date, default: null },
+      },
+    ],
+
     /* ── Mobile / Push Notifications (future mobile app) ── */
     fcmToken:   { type: String, default: "" },
     deviceType: {
       type: String,
       enum: ["web", "ios", "android"],
       default: "web",
+    },
+
+    /* ── Notification Preferences ── */
+    notifications: {
+      email:    { type: Boolean, default: true },
+      sms:      { type: Boolean, default: true },
+      realtime: { type: Boolean, default: true },
     },
 
     /* ── Forgot Password ── */

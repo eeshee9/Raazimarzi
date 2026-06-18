@@ -9,26 +9,7 @@ import "@/styles/aboutUs.css";
 
 
 export default function AboutUs() {
-  const [activeTab, setActiveTab] = useState("Cases");
-  const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [openWhatWeDoIndex, setOpenWhatWeDoIndex] = useState(null);
-
-  const tabs = [
-    "Cases",
-    "Money",
-    "Policies",
-    "Resolve Cases",
-    "Victory %",
-    "Ordinary",
-  ];
-
-  const questions = [
-    "What should I do if I think the contract has been breached?",
-    "How do I resolve disputes with landlords or tenants?",
-    "Can small business disputes be resolved online?",
-    "What documents are required for filing a complaint?",
-    "How long does it take to resolve a dispute online?",
-  ];
 
   const whatWeDoItems = [
     {
@@ -106,11 +87,6 @@ export default function AboutUs() {
       window.location.href = `${APP_BASE_PATH}/login`;
     }
   }, []);
-
-  /* FAQ TOGGLE */
-  const toggleFaq = (index) => {
-    setOpenFaqIndex(openFaqIndex === index ? null : index);
-  };
 
   /* WHAT WE DO TOGGLE */
   const toggleWhatWeDo = (index) => {
@@ -297,79 +273,6 @@ export default function AboutUs() {
                 <p className="our-value-label">{label}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ – EXPAND / COLLAPSE */}
-      <section className="faq-section">
-        <div className="pd-container">
-          <h2 className="faq-title">Frequently Asked Questions (FAQ)</h2>
-          <p className="faq-subtitle">
-            Resolve business, customer, or personal conflicts through a secure,
-            transparent online platform.
-          </p>
-
-          <div className="faq-container">
-            <div className="faq-tabs" role="tablist" aria-label="FAQ categories">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  className={`faq-tab ${activeTab === tab ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveTab(tab);
-                    setOpenFaqIndex(null);
-                  }}
-                  role="tab"
-                  aria-selected={activeTab === tab}
-                  aria-controls={`faq-panel-${tab}`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            <div 
-              className="faq-list"
-              role="tabpanel"
-              id={`faq-panel-${activeTab}`}
-            >
-              {questions.map((q, index) => (
-                <div key={index}>
-                  <div
-                    className="faq-item"
-                    onClick={() => toggleFaq(index)}
-                    onKeyDown={(e) => handleKeyDown(e, index, toggleFaq)}
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={openFaqIndex === index}
-                    aria-label={q}
-                  >
-                    <span>{q}</span>
-                    <span className="faq-arrow" aria-hidden="true">
-                      {openFaqIndex === index ? "−" : "›"}
-                    </span>
-                  </div>
-
-                  {openFaqIndex === index && (
-                    <div
-                      className="faq-answer"
-                      style={{
-                        padding: "12px 10px",
-                        fontSize: "13px",
-                        color: "#4b5563",
-                        lineHeight: "1.6",
-                      }}
-                      role="region"
-                      aria-label="Answer"
-                    >
-                      This is the answer for: <strong>{q}</strong>. Replace with actual
-                      FAQ content.
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>

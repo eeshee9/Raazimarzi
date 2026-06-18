@@ -144,10 +144,36 @@ const UserMyCases = () => {
 
   // ─── Filtering ────────────────────────────────────────────────────────────────
   const filteredCases = allCases.filter(c => {
-    if (statusFilter !== "All Statuses" && c.status?.toLowerCase() !== statusFilter.toLowerCase()) return false;
-    if (categoryFilter !== "All Categories" && c.caseType !== categoryFilter) return false;
-    if (roleFilter === "As Petitioner" && c._myRole !== "petitioner") return false;
-    if (roleFilter === "As Respondent" && c._myRole !== "respondent") return false;
+    // Status
+    if (statusFilter !== "All Statuses") {
+      const s = (c.status || "").toLowerCase();
+      if (statusFilter === "Pending Review" && !["pending", "pending-review", "in review", "in-review"].includes(s)) return false;
+      if (statusFilter === "Mediation"      && !["mediation", "in-progress", "assigned", "notice-sent", "arbitration"].includes(s)) return false;
+      if (statusFilter === "Rejected"       && !["rejected"].includes(s)) return false;
+      if (statusFilter === "Resolved"       && !["resolved", "awarded"].includes(s)) return false;
+      if (statusFilter === "Closed"         && !["closed", "withdrawn"].includes(s)) return false;
+    }
+    // Category
+    if (categoryFilter !== "All Categories" && c.caseType?.toLowerCase() !== categoryFilter.toLowerCase()) return false;
+    // Role
+    if (roleFilter === "Petitioner" && c._myRole !== "petitioner") return false;
+    if (roleFilter === "Respondent" && c._myRole !== "respondent") return false;
+    // Amount (filing fee buckets)
+    if (amountFilter !== "All Ranges") {
+      const fee = c.filingFee || 0;
+      const bucketMap = { "₹499 /-": 499, "₹999 /-": 999, "₹1499 /-": 1499, "₹1999 /-": 1999, "₹2499 /-": 2499 };
+      const bucket = bucketMap[amountFilter];
+      if (bucket !== undefined && fee !== bucket) return false;
+    }
+    // Date range
+    if (dateFrom || dateTo) {
+      const cDate = new Date(c.createdAt);
+      if (dateFrom && cDate < new Date(dateFrom)) return false;
+      if (dateTo   && cDate > new Date(dateTo + "T23:59:59")) return false;
+    }
+    // Mediator assigned/unassigned
+    if (mediatorFilter === "Assigned"   && !c.assignedNeutral) return false;
+    if (mediatorFilter === "Unassigned" && c.assignedNeutral)  return false;
     return true;
   });
 
@@ -158,17 +184,23 @@ const UserMyCases = () => {
   // ─── Active filter tags ────────────────────────────────────────────────────────
   useEffect(() => {
     const tags = [];
-    if (categoryFilter !== "All Categories") tags.push({ key: "category", label: categoryFilter });
-    if (statusFilter !== "All Statuses") tags.push({ key: "status", label: statusFilter });
-    if (roleFilter !== "All Cases") tags.push({ key: "role", label: roleFilter });
+    if (statusFilter    !== "All Statuses")    tags.push({ key: "status",   label: statusFilter });
+    if (categoryFilter  !== "All Categories")  tags.push({ key: "category", label: categoryFilter });
+    if (roleFilter      !== "All Cases")       tags.push({ key: "role",     label: roleFilter });
+    if (amountFilter    !== "All Ranges")      tags.push({ key: "amount",   label: amountFilter });
+    if (dateFrom || dateTo) tags.push({ key: "date", label: [dateFrom, dateTo].filter(Boolean).join(" – ") });
+    if (mediatorFilter  !== "All Status")      tags.push({ key: "mediator", label: mediatorFilter });
     setActiveFilters(tags);
     setPage(1);
-  }, [statusFilter, categoryFilter, roleFilter]);
+  }, [statusFilter, categoryFilter, roleFilter, amountFilter, dateFrom, dateTo, mediatorFilter]);
 
   const removeFilter = (key) => {
+    if (key === "status")   setStatusFilter("All Statuses");
     if (key === "category") setCategoryFilter("All Categories");
-    if (key === "status") setStatusFilter("All Statuses");
-    if (key === "role") setRoleFilter("All Cases");
+    if (key === "role")     setRoleFilter("All Cases");
+    if (key === "amount")   setAmountFilter("All Ranges");
+    if (key === "date")     { setDateFrom(""); setDateTo(""); }
+    if (key === "mediator") setMediatorFilter("All Status");
   };
 
   const clearAllFilters = () => {
@@ -232,7 +264,11 @@ const UserMyCases = () => {
 
       {selectedRows.length > 0 && (
         <span className="mc-selected-info mc-selected-below">
-          Selected row(s) - {selectedRows.join(", ")}
+          Selected row(s) -{" "}
+          {filteredCases
+            .map((c, i) => (selectedRows.includes(c._id) ? i + 1 : null))
+            .filter(Boolean)
+            .join(", ")}
         </span>
       )}
     </div>
@@ -281,11 +317,10 @@ const UserMyCases = () => {
             <label className="mc-filter-label">STATUS</label>
             <select className="mc-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option>All Statuses</option>
-              <option>Pending</option>
+              <option>Pending Review</option>
               <option>Mediation</option>
-              <option>Active</option>
-              <option>Resolved</option>
               <option>Rejected</option>
+              <option>Resolved</option>
               <option>Closed</option>
             </select>
           </div>
@@ -294,18 +329,18 @@ const UserMyCases = () => {
             <select className="mc-select" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
               <option>All Categories</option>
               <option>Property</option>
-              <option>Family</option>
-              <option>Commercial</option>
-              <option>Employment</option>
+              <option>Rental</option>
               <option>Consumer</option>
+              <option>Individual</option>
+              <option>Commercial</option>
             </select>
           </div>
           <div className="mc-filter-group">
             <label className="mc-filter-label">MY ROLE</label>
             <select className="mc-select" value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
               <option>All Cases</option>
-              <option>As Petitioner</option>
-              <option>As Respondent</option>
+              <option>Petitioner</option>
+              <option>Respondent</option>
             </select>
           </div>
           {/* Amount + Date Range + Mediator hidden on mobile via CSS */}
@@ -313,10 +348,11 @@ const UserMyCases = () => {
             <label className="mc-filter-label">AMOUNT</label>
             <select className="mc-select" value={amountFilter} onChange={e => setAmountFilter(e.target.value)}>
               <option>All Ranges</option>
-              <option>Under ₹10,000</option>
-              <option>₹10,000 – ₹50,000</option>
-              <option>₹50,000 – ₹1,00,000</option>
-              <option>Above ₹1,00,000</option>
+              <option>₹499 /-</option>
+              <option>₹999 /-</option>
+              <option>₹1499 /-</option>
+              <option>₹1999 /-</option>
+              <option>₹2499 /-</option>
             </select>
           </div>
           <div className="mc-filter-group mc-filter-desktop-only">
@@ -451,7 +487,7 @@ const UserMyCases = () => {
                   idx={(page - 1) * rowsPerPage + idx + 1}
                   isSelected={selectedRows.includes(c._id)}
                   onToggle={toggleRow}
-                  onNavigate={(id) => navigate(`/user/case/${id}`)}
+                  onNavigate={(id) => navigate(`/user/my-cases/details/${id}`)}
                 />
               ))}
             </>

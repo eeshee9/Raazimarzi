@@ -1,103 +1,49 @@
 // src/pages/AdminCaseDetails.js
-// CHANGES vs original:
-//   1. Import ScheduleMeetingModal
-//   2. Add `showSchedule` state
-//   3. Wire "Schedule Meeting" button to open the modal
-//   4. Render <ScheduleMeetingModal> at bottom of JSX
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  FaBell, FaSearch, FaChevronRight, FaVideo,
+  FaBell, FaChevronRight, FaVideo,
   FaFileAlt, FaImage, FaFilePdf, FaDownload, FaEye,
-  FaCheckCircle, FaClock, FaPlus,
+  FaCheckCircle, FaClock, FaFileUpload, FaUserPlus, FaSync,
 } from "react-icons/fa";
 import api from "../api/axios";
 import AdminSidebar from "../components/AdminSidebar";
-import ScheduleMeetingModal from "../components/ScheduleMeetingModal"; // ← NEW
+import ScheduleMeetingModal   from "../components/ScheduleMeetingModal";
+import AssignMediatorModal    from "../components/AssignMediatorModal";
+import RequestDocumentModal   from "../components/RequestDocumentModal";
 import "./AdminCaseDetails.css";
 
-/* ─────────────────────────────────────────
-   MOCK DATA
-───────────────────────────────────────── */
-const MOCK_CASE = {
-  _id: "1",
-  caseId: "#4357",
-  caseTitle: "Commercial Lease Dispute - Retail Property",
-  status: "In Mediation",
-  totalClaimAmount: "₹50K - 1L",
-  filedDate: "2023-10-12",
-  lastActivity: "2 hours ago",
-  lastActivityDetail: "Document viewed by Mediator",
-  nextSession: "Oct 25, 2023",
-  nextSessionTime: "10:00 AM IST",
-  caseType: "Commercial Property Disputes",
-  caseCategory: "Commercial",
-  locationOfIncident: "Colaba, Mumbai",
-  approximateDate: "10/06/2026",
-  caseSummary:
-    "The dispute pertains to a commercial lease agreement for a retail outlet located in Colaba, Mumbai. The claimant (A. Sharma) alleges that the respondent (M. Rahul) has failed to clear outstanding rent for a period of four months, alongside a significant maintenance fee backlog dating back to June 2025. The total claim includes late payment penalties as per the original contract terms.",
-  petitioner: {
-    fullName: "A. Sharma",
-    role: "Petitioner",
-    phone: "+91 98765 43210",
-    email: "sharma@gmail.com",
-    address: "B-402, Sea View Apartments, Colaba Causeway, Mumbai 400005",
-    gender: "Male",
-    dob: "March 14, 1988",
-    avatar: "https://ui-avatars.com/api/?name=A+Sharma&background=7c8ff5&color=fff&size=80",
-  },
-  respondent: {
-    fullName: "M. Rahul",
-    role: "Respondent",
-    phone: "+91 91234 56789",
-    email: "rahul@gmail.com",
-    address: "Penthouse, Corporate Towers, BKC G Block, Mumbai 400051",
-    gender: "Male",
-    dob: "August 22, 1975",
-    avatar: null,
-  },
-  mediator: {
-    fullName: "S. Mehra",
-    role: "Mediator (Certified Neutral)",
-    avatar: "https://ui-avatars.com/api/?name=S+Mehra&background=e8eaff&color=778aff&size=80",
-  },
-  timeline: [
-    { id: 1, title: "Case Filed",                     date: "Oct 12, 2026", description: "Initial submission of dispute details and supporting documents.", status: "done" },
-    { id: 2, title: "Respondent Accepted Case",        date: "Oct 13, 2026", description: "Digital legal notice served to M. Rahul via verified email/SMS.", status: "done" },
-    { id: 3, title: "Mediator Assigned - S. Mehra",   date: "Oct 15, 2026", description: "A mediator has been assigned to guide both parties toward a resolution.", status: "done" },
-    { id: 4, title: "First Mediation Session",         date: "Oct 20, 2023", description: "Joint session held. Key issues identified: Maintenance backlog & notice period.", status: "done" },
-    { id: 5, title: "Upcoming: Second Mediation Session", date: "Oct 25, 2023", description: "Scheduled focus: Settlement negotiation on unpaid rent amounts.", status: "upcoming" },
-  ],
-  feeSummary: {
-    mediationFee: 15000,
-    filingPlatformFee: 150,
-    estimatedTaxes: 54.64,
-    totalPaid: 17500,
-    pendingBalance: 0,
-    allDuesCleared: true,
-  },
-  documents: [
-    { id: 1, name: "Lease Agreement.pdf",   size: "2.4 MB", uploadedDate: "Oct 12", uploadedBy: "Petitioner",  type: "pdf" },
-    { id: 2, name: "Payment Receipt.jpg",   size: "1.1 MB", uploadedDate: "Oct 12", uploadedBy: "Petitioner",  type: "image" },
-    { id: 3, name: "Notice_to_Tenant.pdf", size: "450 KB", uploadedDate: "Oct 13", uploadedBy: "Respondent", type: "pdf" },
-  ],
-  nextMeeting: {
-    label: "SCHEDULED",
-    title: "Next Video Session",
-    date: "Oct 25, 10:00 AM",
-    focus: "Resolution terms and lease amendment finalization.",
-  },
-};
-
-/* ─────────────────────────────────────────
-   HELPERS
-───────────────────────────────────────── */
+/* ── helpers ── */
 const fmtDate = d =>
   d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) : "—";
 
+const fmtRelative = d => {
+  if (!d) return "—";
+  const diff = (Date.now() - new Date(d)) / 1000;
+  if (diff < 60)   return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+  return `${Math.floor(diff / 86400)} days ago`;
+};
+
 const fmtINR = n =>
-  n !== undefined ? `₹${Number(n).toLocaleString("en-IN")}` : "—";
+  n !== undefined && n !== null ? `₹${Number(n).toLocaleString("en-IN")}` : "—";
+
+const getStatusClass = (s = "") => {
+  const v = s.toLowerCase();
+  if (["resolved","awarded"].includes(v))           return "acd-status-badge--resolved";
+  if (["mediation","in-progress","hearing"].includes(v)) return "acd-status-badge--mediation";
+  if (["pending","pending-review","notice-sent","in review"].includes(v)) return "acd-status-badge--pending";
+  if (["rejected","withdrawn","closed"].includes(v)) return "acd-status-badge--rejected";
+  return "acd-status-badge--mediation";
+};
+
+const guessDocType = (fileType = "", title = "") => {
+  const t = (fileType + title).toLowerCase();
+  if (t.includes("pdf"))                    return "pdf";
+  if (t.includes("jpg") || t.includes("jpeg") || t.includes("png") || t.includes("image")) return "image";
+  return "file";
+};
 
 const DocIcon = ({ type }) => {
   if (type === "image") return <FaImage className="acd-doc__icon acd-doc__icon--img" />;
@@ -105,43 +51,109 @@ const DocIcon = ({ type }) => {
   return <FaFileAlt className="acd-doc__icon" />;
 };
 
-/* ─────────────────────────────────────────
+/* ════════════════════════════════════════
    MAIN COMPONENT
-───────────────────────────────────────── */
+════════════════════════════════════════ */
 const AdminCaseDetails = () => {
   const { id }   = useParams();
   const navigate = useNavigate();
 
-  const [caseData,      setCaseData]      = useState(null);
-  const [loading,       setLoading]       = useState(true);
-  const [search,        setSearch]        = useState("");
-  const [showSchedule,  setShowSchedule]  = useState(false); // ← NEW
+  const [caseData,          setCaseData]         = useState(null);
+  const [meetings,          setMeetings]          = useState([]);
+  const [loading,           setLoading]           = useState(true);
+  const [fetchError,        setFetchError]        = useState("");
+  const [adminName,         setAdminName]         = useState("Admin");
+  const [adminAvatar,       setAdminAvatar]       = useState("");
+  const [showSchedule,      setShowSchedule]      = useState(false);
+  const [showAssignMediator,setShowAssignMediator] = useState(false);
+  const [showRequestDoc,    setShowRequestDoc]    = useState(false);
 
-  const fetchCase = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
+    setFetchError("");
     try {
-      const res = await api.get(`/cases/${id}`);
-      setCaseData(res.data.case || res.data);
-    } catch {
-      setCaseData(MOCK_CASE);
+      const [caseRes, meetingsRes] = await Promise.allSettled([
+        api.get(`/admin/cases/${id}`),
+        api.get(`/meetings/case/${id}`),
+      ]);
+      if (caseRes.status === "fulfilled") {
+        setCaseData(caseRes.value.data.case || caseRes.value.data);
+      } else {
+        setFetchError("Could not load case details. Check your connection and try again.");
+      }
+      if (meetingsRes.status === "fulfilled") {
+        setMeetings(meetingsRes.value.data.meetings || meetingsRes.value.data || []);
+      }
+    } catch (err) {
+      console.error("AdminCaseDetails fetch error:", err);
+      setFetchError("Could not load case details. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
   }, [id]);
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) { navigate("/login"); return; }
-    fetchCase();
-  }, [navigate, fetchCase]);
+    const token = localStorage.getItem("token");
+    if (!token) { navigate("/login"); return; }
+    setAdminName(localStorage.getItem("name") || "Admin");
+    setAdminAvatar(localStorage.getItem("avatar") || "");
+    fetchAll();
+  }, [navigate, fetchAll]);
 
-  if (loading || !caseData) return (
+  const handleMediatorAssigned = (mediator) => {
+    setCaseData(prev => prev ? { ...prev, assignedNeutral: mediator } : prev);
+  };
+
+  if (loading) return (
     <div className="acd-root">
       <AdminSidebar />
       <div className="acd-loading">Loading case details…</div>
     </div>
   );
 
-  const { petitioner, respondent, mediator, timeline, feeSummary, documents, nextMeeting } = caseData;
+  if (fetchError || !caseData) return (
+    <div className="acd-root">
+      <AdminSidebar />
+      <div className="acd-error-state">
+        <p className="acd-error-state__msg">{fetchError || "Case not found."}</p>
+        <button className="acd-error-state__retry" onClick={fetchAll}>
+          <FaSync style={{ marginRight: 8 }} /> Retry
+        </button>
+      </div>
+    </div>
+  );
+
+  /* ── Derived values from real data ── */
+  const petitioner = caseData.petitionerDetails || {};
+  const defendant  = caseData.defendantDetails  || {};
+  const respondent = caseData.respondent        || {};
+  const neutral    = caseData.assignedNeutral;
+  const timeline   = caseData.timeline          || [];
+  const documents  = caseData.documents         || [];
+  const facts      = caseData.caseFacts         || {};
+
+  const petitionerName = petitioner.fullName || caseData.claimant?.name || "Petitioner";
+  const respondentName = defendant.fullName  || respondent.name          || "Respondent";
+
+  const lastTimelineEntry = timeline.length > 0 ? timeline[timeline.length - 1] : null;
+  const lastActivity      = lastTimelineEntry ? fmtRelative(lastTimelineEntry.createdAt) : "—";
+  const lastActivityNote  = lastTimelineEntry?.action || "";
+
+  /* Bug 2 fix: real meeting model field is scheduledDate */
+  const upcomingMeeting = meetings
+    .filter(m => m.status !== "completed" && new Date(m.scheduledDate) > new Date())
+    .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))[0];
+
+  const nextSessionLabel = upcomingMeeting
+    ? new Date(upcomingMeeting.scheduledDate).toLocaleString("en-IN", {
+        day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+      })
+    : "—";
+
+  const hasMediator = !!neutral;
+
+  const avatarSrc = adminAvatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=778aff&color=fff&size=80`;
 
   return (
     <div className="acd-root">
@@ -151,22 +163,9 @@ const AdminCaseDetails = () => {
 
         {/* ── Topbar ── */}
         <header className="acd-topbar">
-          <div className="acd-search">
-            <FaSearch className="acd-search__icon" />
-            <input
-              className="acd-search__input"
-              placeholder="Search cases, mediators or files…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
           <div className="acd-topbar__right">
             <button className="acd-topbar__bell"><FaBell /></button>
-            <img
-              src="https://ui-avatars.com/api/?name=Admin&background=778aff&color=fff&size=80"
-              alt="admin"
-              className="acd-topbar__avatar"
-            />
+            <img src={avatarSrc} alt={adminName} className="acd-topbar__avatar" />
           </div>
         </header>
 
@@ -181,24 +180,18 @@ const AdminCaseDetails = () => {
             <span className="acd-breadcrumb__current">{caseData.caseId}</span>
           </div>
 
-          {/* ── Case Title & Actions ── */}
+          {/* ── Hero ── */}
           <div className="acd-hero">
             <div className="acd-hero__left">
               <h1 className="acd-hero__title">{caseData.caseTitle}</h1>
               <div className="acd-hero__meta">
-                <span className="acd-status-badge acd-status-badge--mediation">
+                <span className={`acd-status-badge ${getStatusClass(caseData.status)}`}>
                   {caseData.status}
                 </span>
-                <span className="acd-hero__updated">Updated {caseData.lastActivity}</span>
+                <span className="acd-hero__updated">Updated {lastActivity}</span>
               </div>
             </div>
             <div className="acd-hero__actions">
-              <button className="acd-action-btn acd-action-btn--outline">
-                <FaSearch style={{ fontSize: 13 }} />
-                Message Mediator
-              </button>
-
-              {/* ↓ CHANGED: opens modal instead of doing nothing */}
               <button
                 className="acd-action-btn acd-action-btn--outline"
                 onClick={() => setShowSchedule(true)}
@@ -206,10 +199,12 @@ const AdminCaseDetails = () => {
                 <FaVideo style={{ fontSize: 13 }} />
                 Schedule Meeting
               </button>
-
-              <button className="acd-action-btn acd-action-btn--primary">
-                <FaPlus style={{ fontSize: 12 }} />
-                Upload New Document
+              <button
+                className="acd-action-btn acd-action-btn--outline"
+                onClick={() => setShowRequestDoc(true)}
+              >
+                <FaFileUpload style={{ fontSize: 13 }} />
+                Request New Document
               </button>
             </div>
           </div>
@@ -217,27 +212,25 @@ const AdminCaseDetails = () => {
           {/* ── Stats row ── */}
           <div className="acd-stats">
             <div className="acd-stat">
-              <span className="acd-stat__label">TOTAL CLAIM AMOUNT</span>
-              <span className="acd-stat__value">{caseData.totalClaimAmount}</span>
+              <span className="acd-stat__label">CLAIM AMOUNT</span>
+              <span className="acd-stat__value">{caseData.caseValue || "—"}</span>
             </div>
             <div className="acd-stat">
               <span className="acd-stat__label">FILED DATE</span>
-              <span className="acd-stat__value">{fmtDate(caseData.filedDate)}</span>
-              <span className="acd-stat__sub">12 days ago</span>
+              <span className="acd-stat__value">{fmtDate(caseData.createdAt)}</span>
             </div>
             <div className="acd-stat">
               <span className="acd-stat__label">LAST ACTIVITY</span>
-              <span className="acd-stat__value acd-stat__value--lg">{caseData.lastActivity}</span>
-              <span className="acd-stat__sub">{caseData.lastActivityDetail}</span>
+              <span className="acd-stat__value acd-stat__value--lg">{lastActivity}</span>
+              <span className="acd-stat__sub">{lastActivityNote}</span>
             </div>
             <div className="acd-stat">
               <span className="acd-stat__label">NEXT SESSION</span>
-              <span className="acd-stat__value acd-stat__value--accent">{caseData.nextSession}</span>
-              <span className="acd-stat__sub">{caseData.nextSessionTime}</span>
+              <span className="acd-stat__value acd-stat__value--accent">{nextSessionLabel}</span>
             </div>
           </div>
 
-          {/* ── Main two-col layout ── */}
+          {/* ── Two-col layout ── */}
           <div className="acd-layout">
 
             {/* LEFT COLUMN */}
@@ -250,21 +243,22 @@ const AdminCaseDetails = () => {
                   <h3 className="acd-card__title">Case Progression Timeline</h3>
                 </div>
                 <div className="acd-timeline">
+                  {timeline.length === 0 && (
+                    <p className="acd-empty-msg">No timeline entries yet.</p>
+                  )}
                   {timeline.map((step, idx) => (
-                    <div
-                      key={step.id}
-                      className={`acd-timeline__item ${step.status === "upcoming" ? "acd-timeline__item--upcoming" : ""}`}
-                    >
+                    <div key={step._id || idx} className="acd-timeline__item">
                       <div className="acd-timeline__dot-col">
-                        <div className={`acd-timeline__dot ${step.status === "done" ? "acd-timeline__dot--done" : "acd-timeline__dot--upcoming"}`} />
+                        <div className="acd-timeline__dot acd-timeline__dot--done" />
                         {idx < timeline.length - 1 && <div className="acd-timeline__line" />}
                       </div>
                       <div className="acd-timeline__content">
-                        <div className={`acd-timeline__title ${step.status === "upcoming" ? "acd-timeline__title--upcoming" : ""}`}>
-                          {step.title}
-                        </div>
-                        <div className="acd-timeline__date">{step.date}</div>
-                        <div className="acd-timeline__desc">{step.description}</div>
+                        <div className="acd-timeline__title">{step.action}</div>
+                        <div className="acd-timeline__date">{fmtDate(step.createdAt)}</div>
+                        {step.note && <div className="acd-timeline__desc">{step.note}</div>}
+                        {step.performedBy?.name && (
+                          <div className="acd-timeline__by">By {step.performedBy.name}</div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -275,57 +269,96 @@ const AdminCaseDetails = () => {
               <div className="acd-card">
                 <h3 className="acd-card__title" style={{ marginBottom: 20 }}>Detailed Participant Profiles</h3>
                 <div className="acd-participants">
-                  {[petitioner, respondent].map(person => (
-                    <div key={person.role} className="acd-participant">
-                      <div className="acd-participant__header">
-                        {person.avatar
-                          ? <img src={person.avatar} alt={person.fullName} className="acd-participant__avatar" />
-                          : <div className="acd-participant__avatar acd-participant__avatar--placeholder"><span>{person.fullName[0]}</span></div>
-                        }
-                        <div>
-                          <div className="acd-participant__name">{person.fullName}</div>
-                          <div className="acd-participant__role">{person.role.toUpperCase()}</div>
-                        </div>
+
+                  {/* Petitioner */}
+                  <div className="acd-participant">
+                    <div className="acd-participant__header">
+                      <div className="acd-participant__avatar acd-participant__avatar--placeholder">
+                        <span>{petitionerName[0]}</span>
                       </div>
-                      <div className="acd-participant__fields">
-                        <div className="acd-field">
-                          <span className="acd-field__label">PHONE NUMBER</span>
-                          <span className="acd-field__value">{person.phone}</span>
-                        </div>
-                        <div className="acd-field">
-                          <span className="acd-field__label">EMAIL ADDRESS</span>
-                          <span className="acd-field__value">{person.email}</span>
-                        </div>
-                        <div className="acd-field acd-field--full">
-                          <span className="acd-field__label">FULL ADDRESS</span>
-                          <span className="acd-field__value">{person.address}</span>
-                        </div>
-                        <div className="acd-field">
-                          <span className="acd-field__label">GENDER</span>
-                          <span className="acd-field__value">{person.gender}</span>
-                        </div>
-                        <div className="acd-field">
-                          <span className="acd-field__label">DATE OF BIRTH</span>
-                          <span className="acd-field__value">{person.dob}</span>
-                        </div>
+                      <div>
+                        <div className="acd-participant__name">{petitionerName}</div>
+                        <div className="acd-participant__role">PETITIONER</div>
                       </div>
                     </div>
-                  ))}
+                    <div className="acd-participant__fields">
+                      <div className="acd-field">
+                        <span className="acd-field__label">PHONE NUMBER</span>
+                        <span className="acd-field__value">{petitioner.mobile || caseData.claimant?.phone || "—"}</span>
+                      </div>
+                      <div className="acd-field">
+                        <span className="acd-field__label">EMAIL ADDRESS</span>
+                        <span className="acd-field__value">{petitioner.email || caseData.claimant?.email || "—"}</span>
+                      </div>
+                      <div className="acd-field acd-field--full">
+                        <span className="acd-field__label">FULL ADDRESS</span>
+                        <span className="acd-field__value">{petitioner.address || "—"}</span>
+                      </div>
+                      <div className="acd-field">
+                        <span className="acd-field__label">GENDER</span>
+                        <span className="acd-field__value">{petitioner.gender || "—"}</span>
+                      </div>
+                      <div className="acd-field">
+                        <span className="acd-field__label">DATE OF BIRTH</span>
+                        <span className="acd-field__value">{petitioner.dob || "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Respondent */}
+                  <div className="acd-participant">
+                    <div className="acd-participant__header">
+                      <div className="acd-participant__avatar acd-participant__avatar--placeholder">
+                        <span>{respondentName[0]}</span>
+                      </div>
+                      <div>
+                        <div className="acd-participant__name">{respondentName}</div>
+                        <div className="acd-participant__role">RESPONDENT</div>
+                      </div>
+                    </div>
+                    <div className="acd-participant__fields">
+                      <div className="acd-field">
+                        <span className="acd-field__label">PHONE NUMBER</span>
+                        <span className="acd-field__value">
+                          {defendant.mobile || respondent.phone || caseData.respondent?.userId?.phone || "—"}
+                        </span>
+                      </div>
+                      <div className="acd-field">
+                        <span className="acd-field__label">EMAIL ADDRESS</span>
+                        <span className="acd-field__value">
+                          {defendant.email || respondent.email || "—"}
+                        </span>
+                      </div>
+                      <div className="acd-field acd-field--full">
+                        <span className="acd-field__label">FULL ADDRESS</span>
+                        <span className="acd-field__value">—</span>
+                      </div>
+                      <div className="acd-field">
+                        <span className="acd-field__label">GENDER</span>
+                        <span className="acd-field__value">{defendant.gender || "—"}</span>
+                      </div>
+                      <div className="acd-field">
+                        <span className="acd-field__label">DATE OF BIRTH</span>
+                        <span className="acd-field__value">{defendant.dob || "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
               {/* Case Summary */}
               <div className="acd-card">
                 <h3 className="acd-card__title" style={{ marginBottom: 14 }}>Case Summary</h3>
-                <p className="acd-summary__text">{caseData.caseSummary}</p>
+                <p className="acd-summary__text">{facts.caseSummary || caseData.causeOfAction || "No summary available."}</p>
                 <div className="acd-summary__meta">
                   <div className="acd-field">
                     <span className="acd-field__label">LOCATION OF INCIDENT</span>
-                    <span className="acd-field__value">{caseData.locationOfIncident}</span>
+                    <span className="acd-field__value">{facts.place || "—"}</span>
                   </div>
                   <div className="acd-field">
                     <span className="acd-field__label">APPROXIMATE DATE</span>
-                    <span className="acd-field__value">{caseData.approximateDate}</span>
+                    <span className="acd-field__value">{facts.date || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -333,24 +366,47 @@ const AdminCaseDetails = () => {
               {/* Legal Documents */}
               <div className="acd-card">
                 <h3 className="acd-card__title" style={{ marginBottom: 20 }}>Legal Documents</h3>
-                <div className="acd-documents">
-                  {documents.map(doc => (
-                    <div key={doc.id} className="acd-doc">
-                      <div className="acd-doc__icon-wrap">
-                        <DocIcon type={doc.type} />
-                      </div>
-                      <div className="acd-doc__info">
-                        <div className="acd-doc__name">{doc.name}</div>
-                        <div className="acd-doc__meta">{doc.size} • Uploaded {doc.uploadedDate}</div>
-                        <div className="acd-doc__by">By {doc.uploadedBy}</div>
-                      </div>
-                      <div className="acd-doc__actions">
-                        <button className="acd-doc__btn"><FaEye style={{ marginRight: 5, fontSize: 11 }} />View</button>
-                        <button className="acd-doc__btn"><FaDownload style={{ marginRight: 5, fontSize: 11 }} />Download</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {documents.length === 0 ? (
+                  <p className="acd-empty-msg">No documents uploaded yet.</p>
+                ) : (
+                  <div className="acd-documents">
+                    {documents.map((doc, idx) => {
+                      const docType = guessDocType(doc.fileType, doc.title);
+                      return (
+                        <div key={doc._id || idx} className="acd-doc">
+                          <div className="acd-doc__icon-wrap">
+                            <DocIcon type={docType} />
+                          </div>
+                          <div className="acd-doc__info">
+                            <div className="acd-doc__name">{doc.title}</div>
+                            <div className="acd-doc__meta">Uploaded {fmtDate(doc.createdAt)}</div>
+                          </div>
+                          <div className="acd-doc__actions">
+                            {doc.fileUrl && (
+                              <a
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="acd-doc__btn"
+                              >
+                                <FaEye style={{ marginRight: 5, fontSize: 11 }} />View
+                              </a>
+                            )}
+                            {doc.fileUrl && (
+                              <a
+                                href={doc.fileUrl}
+                                download
+                                className="acd-doc__btn"
+                              >
+                                <FaDownload style={{ marginRight: 5, fontSize: 11 }} />Download
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
             </div>
@@ -362,66 +418,114 @@ const AdminCaseDetails = () => {
               <div className="acd-card">
                 <h3 className="acd-card__title" style={{ marginBottom: 16 }}>CASE PARTICIPANTS</h3>
                 <div className="acd-case-participants">
-                  {[petitioner, respondent, mediator].map(p => (
-                    <div key={p.role} className="acd-case-participant">
-                      {p.avatar
-                        ? <img src={p.avatar} alt={p.fullName} className="acd-case-participant__avatar" />
-                        : <div className="acd-case-participant__avatar acd-case-participant__avatar--ph"><span>{p.fullName[0]}</span></div>
+
+                  {/* Petitioner */}
+                  <div className="acd-case-participant">
+                    <div className="acd-case-participant__avatar acd-case-participant__avatar--ph">
+                      <span>{petitionerName[0]}</span>
+                    </div>
+                    <div>
+                      <div className="acd-case-participant__name">{petitionerName}</div>
+                      <div className="acd-case-participant__role">Petitioner</div>
+                    </div>
+                  </div>
+
+                  {/* Respondent */}
+                  <div className="acd-case-participant">
+                    <div className="acd-case-participant__avatar acd-case-participant__avatar--ph">
+                      <span>{respondentName[0]}</span>
+                    </div>
+                    <div>
+                      <div className="acd-case-participant__name">{respondentName}</div>
+                      <div className="acd-case-participant__role">Respondent</div>
+                    </div>
+                  </div>
+
+                  {/* Mediator — or assign button when none */}
+                  {hasMediator ? (
+                    <div className="acd-case-participant">
+                      {neutral.avatar
+                        ? <img src={neutral.avatar} alt={neutral.name} className="acd-case-participant__avatar" />
+                        : <div className="acd-case-participant__avatar acd-case-participant__avatar--ph">
+                            <span>{neutral.name?.[0]}</span>
+                          </div>
                       }
                       <div>
-                        <div className="acd-case-participant__name">{p.fullName}</div>
-                        <div className={`acd-case-participant__role ${p.role.includes("Mediator") ? "acd-case-participant__role--mediator" : ""}`}>
-                          {p.role}
+                        <div className="acd-case-participant__name">{neutral.name}</div>
+                        <div className="acd-case-participant__role acd-case-participant__role--mediator">
+                          {caseData.neutralType
+                            ? caseData.neutralType.charAt(0).toUpperCase() + caseData.neutralType.slice(1)
+                            : "Mediator"}
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    /* Dev comment: "When mediator is not assigned, show that button" */
+                    <button
+                      className="acd-assign-mediator-btn"
+                      onClick={() => setShowAssignMediator(true)}
+                    >
+                      <FaUserPlus className="acd-assign-mediator-btn__icon" />
+                      Assign Mediator
+                    </button>
+                  )}
+
                 </div>
               </div>
 
               {/* Next Meeting Card */}
-              <div className="acd-meeting-card">
-                <div className="acd-meeting-card__header">
-                  <span className="acd-meeting-card__badge">SCHEDULED</span>
-                  <button className="acd-meeting-card__expand">⤢</button>
+              {upcomingMeeting ? (
+                <div className="acd-meeting-card">
+                  <div className="acd-meeting-card__header">
+                    <span className="acd-meeting-card__badge">SCHEDULED</span>
+                  </div>
+                  <div className="acd-meeting-card__label">Next Video Session</div>
+                  <div className="acd-meeting-card__date">{nextSessionLabel}</div>
+                  <div className="acd-meeting-card__focus">
+                    {upcomingMeeting.meetingTitle || upcomingMeeting.description || "Session details pending."}
+                  </div>
+                  <button
+                    className="acd-meeting-card__join"
+                    onClick={() => navigate(`/admin/meetings/lobby/${upcomingMeeting._id}`)}
+                  >
+                    <FaVideo style={{ marginRight: 8 }} />
+                    Join Meeting
+                  </button>
                 </div>
-                <div className="acd-meeting-card__label">{nextMeeting.title}</div>
-                <div className="acd-meeting-card__date">{nextMeeting.date}</div>
-                <div className="acd-meeting-card__focus">Focus: {nextMeeting.focus}</div>
-                <button className="acd-meeting-card__join">
-                  <FaVideo style={{ marginRight: 8 }} />
-                  Join Meeting
-                </button>
-              </div>
+              ) : (
+                <div className="acd-card acd-meeting-card--empty">
+                  <p className="acd-empty-msg" style={{ textAlign: "center" }}>No upcoming sessions.</p>
+                  <button
+                    className="acd-action-btn acd-action-btn--outline"
+                    style={{ width: "100%", marginTop: 12, justifyContent: "center" }}
+                    onClick={() => setShowSchedule(true)}
+                  >
+                    <FaVideo style={{ fontSize: 13 }} />
+                    Schedule Meeting
+                  </button>
+                </div>
+              )}
 
               {/* Fee Summary */}
               <div className="acd-card">
                 <h3 className="acd-card__title" style={{ marginBottom: 16 }}>FEE SUMMARY</h3>
                 <div className="acd-fee">
                   <div className="acd-fee__row">
-                    <span>Mediation Fee</span>
-                    <span>{fmtINR(feeSummary.mediationFee)}</span>
-                  </div>
-                  <div className="acd-fee__row">
-                    <span>Filing Platform Fee</span>
-                    <span>{fmtINR(feeSummary.filingPlatformFee)}</span>
-                  </div>
-                  <div className="acd-fee__row">
-                    <span>Estimated Taxes (8%)</span>
-                    <span>{fmtINR(feeSummary.estimatedTaxes)}</span>
+                    <span>Filing Fee</span>
+                    <span>{fmtINR(caseData.filingFee)}</span>
                   </div>
                   <div className="acd-fee__divider" />
                   <div className="acd-fee__row acd-fee__row--bold">
-                    <span>Total Paid</span>
-                    <span>{fmtINR(feeSummary.totalPaid)}</span>
+                    <span>Total</span>
+                    <span>{fmtINR(caseData.filingFee)}</span>
                   </div>
                   <div className="acd-fee__row acd-fee__row--pending">
-                    <span>Pending Balance</span>
+                    <span>Balance</span>
                     <span className="acd-fee__pending-val">
-                      {feeSummary.pendingBalance === 0 ? "₹0.00" : fmtINR(feeSummary.pendingBalance)}
+                      {caseData.filingFeePaid ? "₹0.00" : fmtINR(caseData.filingFee)}
                     </span>
                   </div>
-                  {feeSummary.allDuesCleared && (
+                  {caseData.filingFeePaid && (
                     <div className="acd-fee__cleared">
                       <FaCheckCircle className="acd-fee__cleared-icon" />
                       ALL DUES CLEARED
@@ -435,11 +539,26 @@ const AdminCaseDetails = () => {
         </div>
       </main>
 
-      {/* ── Schedule Meeting Modal ── */}
+      {/* ── Modals ── */}
       <ScheduleMeetingModal
         isOpen={showSchedule}
         onClose={() => setShowSchedule(false)}
         caseData={caseData}
+      />
+
+      <AssignMediatorModal
+        isOpen={showAssignMediator}
+        onClose={() => setShowAssignMediator(false)}
+        caseId={id}
+        onAssigned={handleMediatorAssigned}
+      />
+
+      <RequestDocumentModal
+        isOpen={showRequestDoc}
+        onClose={() => setShowRequestDoc(false)}
+        caseId={id}
+        petitionerName={petitionerName}
+        respondentName={respondentName}
       />
     </div>
   );

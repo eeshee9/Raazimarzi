@@ -1,0 +1,363 @@
+/* ══════════════════════════════════════════
+   ADMIN DOCUMENTS GRID — adoc- namespace
+══════════════════════════════════════════ */
+* { box-sizing: border-box; }
+
+.adoc-root {
+  display: flex;
+  height: 100vh;
+  background: #f7f8fc;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+.adoc-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── Topbar ── */
+.adoc-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  background: #fff;
+  border-bottom: 1px solid #ebebf5;
+  gap: 20px;
+  flex-shrink: 0;
+}
+.adoc-search { position: relative; flex: 1; max-width: 420px; }
+.adoc-search-icon {
+  position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%); color: #bbb; font-size: 13px; pointer-events: none;
+}
+.adoc-search-input {
+  width: 100%; height: 38px; padding: 0 14px 0 38px;
+  border: 1px solid #e8e8f0; border-radius: 99px;
+  font-size: 13px; color: #333; background: #f7f7fc;
+  outline: none; font-family: 'Inter', sans-serif;
+}
+.adoc-topbar-right { display: flex; align-items: center; gap: 12px; }
+.adoc-bell-btn {
+  background: none; border: none; font-size: 18px;
+  color: #888; cursor: pointer; padding: 5px; border-radius: 8px;
+  display: flex; align-items: center;
+}
+.adoc-admin-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover; border: 2px solid rgba(119,138,255,0.3);
+}
+
+/* ── Body ── */
+.adoc-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Page header ── */
+.adoc-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.adoc-page-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 4px;
+}
+.adoc-page-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+.adoc-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.adoc-refresh-btn {
+  width: 36px; height: 36px;
+  background: #f4f5fb; border: 1px solid #e5e7eb; border-radius: 8px;
+  color: #6b7280; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.adoc-refresh-btn:hover { background: #eaebf8; color: rgba(119,138,255,1); }
+
+.adoc-export-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 18px; height: 38px;
+  background: rgba(119,138,255,1); color: #fff;
+  border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+.adoc-export-btn:hover:not(:disabled) { background: #5f72f5; }
+.adoc-export-btn:disabled {
+  background: #d1d5db; color: #9ca3af; cursor: not-allowed;
+}
+
+/* ── Filters ── */
+.adoc-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.adoc-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.adoc-filter-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+.adoc-filter-sel {
+  height: 36px;
+  min-width: 140px;
+  padding: 0 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  appearance: auto;
+}
+.adoc-filter-sel:disabled { background: #f9fafb; cursor: not-allowed; color: #9ca3af; }
+.adoc-date-range { display: flex; align-items: center; gap: 6px; }
+.adoc-date-input {
+  height: 36px; width: 130px;
+  padding: 0 10px;
+  border: 1px solid #e5e7eb; border-radius: 8px;
+  font-size: 12px; color: #374151; background: #fff;
+  outline: none; font-family: 'Inter', sans-serif;
+}
+.adoc-date-sep { font-size: 13px; color: #9ca3af; }
+
+/* ── Active chips ── */
+.adoc-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.adoc-chips-lbl {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+.adoc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: rgba(119,138,255,0.1);
+  color: rgba(119,138,255,1);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.adoc-chip-x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(119,138,255,0.7);
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+.adoc-chip-x:hover { color: rgba(119,138,255,1); }
+.adoc-clear-all {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.adoc-clear-all:hover { text-decoration: underline; }
+
+/* ── Error row ── */
+.adoc-error-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #dc2626;
+}
+.adoc-error-row button {
+  background: #dc2626; color: #fff; border: none;
+  border-radius: 6px; padding: 4px 12px; font-size: 12px;
+  font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+
+/* ── Folder grid ── */
+.adoc-folder-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+}
+
+/* ── Folder card ── */
+.adoc-folder-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #e5e7eb;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
+}
+.adoc-folder-card:hover {
+  box-shadow: 0 6px 24px rgba(119,138,255,0.12);
+  border-color: rgba(119,138,255,0.35);
+  transform: translateY(-2px);
+}
+
+/* Illustration area */
+.adoc-folder-illus {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: linear-gradient(145deg, rgba(119,138,255,0.16) 0%, rgba(119,138,255,0.06) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.adoc-folder-illus-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.adoc-folder-illus-icon {
+  font-size: 64px;
+  color: rgba(119,138,255,0.7);
+  position: relative;
+  z-index: 2;
+}
+.adoc-folder-page {
+  position: absolute;
+  background: rgba(255,255,255,0.75);
+  border-radius: 4px;
+  width: 32px;
+  height: 42px;
+}
+.adoc-folder-page--1 {
+  transform: rotate(-8deg) translate(-22px, -6px);
+  z-index: 1;
+}
+.adoc-folder-page--2 {
+  transform: rotate(6deg) translate(18px, -10px);
+  z-index: 1;
+}
+
+/* Info area */
+.adoc-folder-info {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.adoc-folder-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adoc-folder-caseid {
+  font-size: 12px;
+  color: rgba(119,138,255,1);
+  font-weight: 600;
+}
+
+/* Status badges */
+.adoc-status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  width: fit-content;
+}
+.adoc-status--pending   { background: rgba(251,191,36,0.12); color: #b45309; }
+.adoc-status--mediation { background: rgba(119,138,255,0.12); color: rgba(89,108,225,1); }
+.adoc-status--resolved  { background: rgba(16,185,129,0.12); color: #059669; }
+.adoc-status--closed    { background: rgba(107,114,128,0.12); color: #6b7280; }
+.adoc-status--rejected  { background: rgba(239,68,68,0.12); color: #dc2626; }
+
+/* Folder meta */
+.adoc-folder-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.adoc-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+.adoc-meta-icon { font-size: 10px; }
+
+/* Skeleton */
+.adoc-folder-card--skeleton {
+  background: #f3f4f6;
+  border-color: #f3f4f6;
+  aspect-ratio: 3/4;
+  animation: adoc-pulse 1.4s ease-in-out infinite;
+  cursor: default;
+}
+@keyframes adoc-pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
+
+/* ── Empty state ── */
+.adoc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: #9ca3af;
+}
+.adoc-empty-icon { font-size: 48px; opacity: 0.35; }
+.adoc-empty p { font-size: 14px; margin: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 1280px) {
+  .adoc-folder-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 900px) {
+  .adoc-folder-grid { grid-template-columns: repeat(3, 1fr); }
+}

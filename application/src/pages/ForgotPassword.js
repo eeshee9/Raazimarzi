@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import "./ForgotPassword.css";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
-import loginBg from "../assets/icons/login.png"; // 
-
-const API = "http://localhost:5000/api";
+import api from "../api/axios";
+import loginBg from "../assets/icons/login.png";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
@@ -40,7 +38,7 @@ const ForgotPassword = () => {
     if (!email.trim()) { setError("Please enter your email"); return; }
     setLoading(true); setError(""); setMessage("");
     try {
-      await axios.post(`${API}/otp/send-otp`, { email, type: "forgot-password" });
+      await api.post("/otp/send-otp", { email, type: "forgot-password" });
       setMessage("OTP sent to your email");
       setStep(2);
       startTimer();
@@ -55,7 +53,7 @@ const ForgotPassword = () => {
     if (otpVal.length < 6) { setError("Please enter all 6 digits"); return; }
     setLoading(true); setError(""); setMessage("");
     try {
-      await axios.post(`${API}/otp/verify-otp`, { email, otp: otpVal, type: "forgot-password" });
+      await api.post("/otp/verify-otp", { email, otp: otpVal, type: "forgot-password" });
       setMessage("OTP verified. Set your new password.");
       setStep(3);
     } catch (err) {
@@ -69,7 +67,7 @@ const ForgotPassword = () => {
     if (newPassword !== confirm) { setError("Passwords do not match"); return; }
     setLoading(true); setError(""); setMessage("");
     try {
-      await axios.post(`${API}/password/reset`, { email, newPassword });
+      await api.post("/password/reset", { email, newPassword });
       setStep(4);
     } catch (err) {
       setError(err.response?.data?.message || "Error resetting password");

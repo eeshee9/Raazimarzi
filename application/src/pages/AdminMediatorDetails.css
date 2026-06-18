@@ -1,0 +1,313 @@
+/* ══════════════════════════════════════
+   ADMIN MEDIATOR DETAILS — amd- namespace
+══════════════════════════════════════ */
+* { box-sizing: border-box; }
+
+/* ── Root layout ── */
+.amd-root {
+  display: flex; min-height: 100vh;
+  background: #f8f9fb; font-family: 'Inter', sans-serif;
+}
+.amd-main {
+  flex: 1; display: flex; flex-direction: column;
+  min-width: 0; overflow-y: auto;
+}
+
+/* ── Loading / error states ── */
+.amd-loading {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 60vh; font-size: 14px; color: #9ca3af;
+}
+.amd-error {
+  margin: 40px auto; max-width: 480px; text-align: center;
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 16px; padding: 32px 24px;
+}
+.amd-error p { font-size: 14px; color: #dc2626; margin: 0 0 16px; }
+.amd-error button {
+  height: 38px; padding: 0 20px; border-radius: 10px;
+  background: rgba(119,138,255,1); color: #fff; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+
+/* ── Body ── */
+.amd-body { padding: 28px 32px; max-width: 1200px; }
+
+/* ── Back button ── */
+.amd-back-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: none; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  height: 36px; padding: 0 16px; font-size: 13px; font-weight: 700;
+  color: #6b7280; cursor: pointer; font-family: 'Inter', sans-serif;
+  margin-bottom: 20px; transition: all 0.15s;
+}
+.amd-back-btn:hover { color: rgba(119,138,255,1); border-color: rgba(119,138,255,0.4); }
+
+/* ── Pending approval banner ── */
+.amd-approval-banner {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+  background: rgba(251,191,36,0.07); border: 1.5px solid rgba(245,158,11,0.3);
+  border-radius: 14px; padding: 16px 20px; margin-bottom: 20px;
+}
+.amd-banner-left { display: flex; align-items: center; gap: 12px; }
+.amd-banner-icon { font-size: 20px; color: #f59e0b; flex-shrink: 0; }
+.amd-banner-title { font-size: 14px; font-weight: 700; color: #92400e; margin: 0 0 2px; }
+.amd-banner-sub   { font-size: 12px; color: #b45309; margin: 0; }
+.amd-banner-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.amd-btn-approve {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 36px; padding: 0 18px; border-radius: 10px;
+  background: #22c55e; color: #fff; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: background 0.15s;
+}
+.amd-btn-approve:hover:not(:disabled) { background: #16a34a; }
+.amd-btn-approve:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.amd-btn-reject {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 36px; padding: 0 18px; border-radius: 10px;
+  background: #fff; color: #ef4444; border: 1.5px solid #ef4444;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.amd-btn-reject:hover { background: rgba(239,68,68,0.05); }
+
+.amd-reject-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.amd-reject-input {
+  height: 36px; padding: 0 12px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+  min-width: 220px; transition: border-color 0.15s;
+}
+.amd-reject-input:focus { border-color: rgba(119,138,255,0.5); }
+.amd-btn-reject-confirm {
+  height: 36px; padding: 0 16px; border-radius: 10px;
+  background: #ef4444; color: #fff; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: background 0.15s;
+}
+.amd-btn-reject-confirm:hover:not(:disabled) { background: #dc2626; }
+.amd-btn-reject-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+.amd-btn-cancel {
+  height: 36px; padding: 0 16px; border-radius: 10px;
+  background: #fff; color: #6b7280; border: 1.5px solid #e5e7eb;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.amd-btn-cancel:hover { background: #f9fafb; }
+
+/* ── Header card ── */
+.amd-header-card {
+  background: #fff; border-radius: 16px; padding: 24px;
+  border: 1px solid #f3f4f6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+  flex-wrap: wrap; margin-bottom: 20px;
+}
+.amd-header-left { display: flex; align-items: flex-start; gap: 18px; }
+.amd-avatar {
+  width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+  border: 3px solid rgba(119,138,255,0.2); flex-shrink: 0;
+}
+.amd-avatar--init {
+  background: rgba(119,138,255,0.1); color: rgba(119,138,255,1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800;
+}
+.amd-header-info  { display: flex; flex-direction: column; gap: 4px; }
+.amd-name         { font-size: 20px; font-weight: 800; color: #111827; margin: 0; }
+.amd-mediator-id  { font-size: 13px; font-weight: 600; color: rgba(119,138,255,1); margin: 0; }
+.amd-location     { font-size: 12px; color: #9ca3af; margin: 0; }
+
+.amd-approval-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 26px; padding: 0 12px; border-radius: 99px;
+  font-size: 12px; font-weight: 700; width: fit-content;
+  margin-top: 4px;
+}
+
+/* Header action buttons */
+.amd-header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.amd-action-btn {
+  height: 38px; padding: 0 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif; border: none;
+  transition: all 0.15s; white-space: nowrap;
+}
+.amd-action-btn--primary {
+  background: rgba(119,138,255,1); color: #fff;
+}
+.amd-action-btn--primary:hover { background: #5f72f5; }
+.amd-action-btn--ghost {
+  background: #fff; color: #6b7280; border: 1.5px solid #e5e7eb;
+}
+.amd-action-btn--ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.amd-action-btn--danger {
+  background: rgba(239,68,68,0.08); color: #ef4444; border: 1.5px solid rgba(239,68,68,0.2);
+}
+.amd-action-btn--danger:hover:not(:disabled) { background: rgba(239,68,68,0.12); }
+.amd-action-btn--success {
+  background: rgba(34,197,94,0.08); color: #22c55e; border: 1.5px solid rgba(34,197,94,0.2);
+}
+.amd-action-btn--success:hover:not(:disabled) { background: rgba(34,197,94,0.14); }
+.amd-action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Metrics row ── */
+.amd-metrics-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;
+}
+.amd-metric-card {
+  background: #fff; border-radius: 14px; padding: 18px;
+  display: flex; align-items: center; gap: 14px;
+  border: 1px solid #f3f4f6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.amd-metric-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; color: rgba(119,138,255,1); flex-shrink: 0;
+}
+.amd-metric-label { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; color: #9ca3af; text-transform: uppercase; margin: 0 0 3px; }
+.amd-metric-value { font-size: 20px; font-weight: 800; color: #111827; margin: 0 0 2px; line-height: 1; }
+.amd-metric-sub   { font-size: 11px; color: #9ca3af; margin: 0; }
+
+/* ── Two-column layout ── */
+.amd-two-col {
+  display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-bottom: 20px;
+}
+.amd-col-left,
+.amd-col-right { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Info card ── */
+.amd-info-card {
+  background: #fff; border-radius: 16px; padding: 22px 24px;
+  border: 1px solid #f3f4f6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.amd-card-title { font-size: 14px; font-weight: 800; color: #111827; margin: 0 0 18px; }
+
+/* Profile sections */
+.amd-profile-section { margin-bottom: 18px; }
+.amd-profile-section:last-child { margin-bottom: 0; }
+.amd-profile-label { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #9ca3af; text-transform: uppercase; margin: 0 0 6px; }
+.amd-profile-text  { font-size: 13px; color: #374151; line-height: 1.7; margin: 0; }
+.amd-profile-empty { font-size: 12px; color: #d1d5db; font-style: italic; margin: 0; }
+
+/* Chips */
+.amd-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.amd-chip {
+  background: #f3f4f6; color: #6b7280;
+  padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
+}
+.amd-chip--purple {
+  background: rgba(119,138,255,0.1); color: rgba(119,138,255,1);
+}
+
+/* Contact rows */
+.amd-contact-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid #f3f4f6;
+}
+.amd-contact-row:last-child { border-bottom: none; }
+.amd-contact-icon  { font-size: 14px; color: rgba(119,138,255,0.7); margin-top: 3px; flex-shrink: 0; }
+.amd-contact-label { font-size: 11px; color: #9ca3af; font-weight: 600; margin: 0 0 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+.amd-contact-value { font-size: 13px; color: #111827; font-weight: 600; margin: 0; word-break: break-all; }
+
+/* Docs */
+.amd-docs-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px 0; color: #d1d5db; text-align: center;
+}
+.amd-docs-empty-icon { font-size: 28px; margin-bottom: 8px; }
+.amd-docs-empty p { font-size: 12px; margin: 0; }
+.amd-docs-list { display: flex; flex-direction: column; gap: 0; }
+.amd-doc-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 0; border-bottom: 1px solid #f3f4f6;
+}
+.amd-doc-row:last-child { border-bottom: none; }
+.amd-doc-icon   { font-size: 14px; color: rgba(119,138,255,0.6); flex-shrink: 0; }
+.amd-doc-info   { flex: 1; min-width: 0; }
+.amd-doc-type   { font-size: 13px; font-weight: 600; color: #111827; margin: 0 0 2px; }
+.amd-doc-date   { font-size: 11px; color: #9ca3af; margin: 0; }
+.amd-doc-right  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.amd-doc-status { font-size: 11px; font-weight: 700; }
+.amd-doc-view {
+  width: 28px; height: 28px; border-radius: 7px; border: 1px solid #e5e7eb;
+  background: #f9fafb; color: #6b7280; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; transition: all 0.15s;
+}
+.amd-doc-view:hover { background: rgba(119,138,255,0.08); color: rgba(119,138,255,1); border-color: rgba(119,138,255,0.3); }
+
+/* ── Case history table ── */
+.amd-case-card {
+  background: #fff; border-radius: 16px;
+  border: 1px solid #f3f4f6; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.amd-case-head {
+  padding: 20px 24px; border-bottom: 1px solid #f3f4f6;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.amd-case-empty {
+  padding: 40px; text-align: center; font-size: 13px; color: #9ca3af; margin: 0;
+}
+.amd-case-table { width: 100%; border-collapse: collapse; }
+.amd-case-table thead tr { background: #f9fafb; }
+.amd-case-table th {
+  padding: 11px 16px 11px 24px; text-align: left;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
+  color: #9ca3af; text-transform: uppercase; white-space: nowrap;
+  border-bottom: 1px solid #e5e7eb;
+}
+.amd-case-row { border-bottom: 1px solid #f3f4f6; transition: background 0.12s; }
+.amd-case-row:last-child { border-bottom: none; }
+.amd-case-row:hover { background: #fafbff; }
+.amd-case-table td { padding: 13px 16px 13px 24px; vertical-align: middle; font-size: 13px; color: #374151; }
+.amd-td-caseid { font-weight: 700; color: rgba(119,138,255,1); white-space: nowrap; }
+.amd-td-title  { font-weight: 600; color: #111827; }
+.amd-td-date   { color: #9ca3af; white-space: nowrap; }
+
+.amd-status-badge {
+  display: inline-flex; align-items: center;
+  height: 22px; padding: 0 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+
+.amd-view-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 12px; border-radius: 8px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  color: #6b7280; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.amd-view-btn:hover { background: rgba(119,138,255,0.08); color: rgba(119,138,255,1); border-color: rgba(119,138,255,0.3); }
+
+/* ── Toast ── */
+.amd-toast {
+  position: fixed; bottom: 28px; right: 28px; z-index: 9000;
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+  padding: 14px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  max-width: 320px; animation: amd-toastIn 0.25s ease;
+}
+@keyframes amd-toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.amd-toast-icon  { font-size: 17px; color: #22c55e; flex-shrink: 0; }
+.amd-toast-msg   { font-size: 13px; color: #374151; font-weight: 600; margin: 0; flex: 1; }
+.amd-toast-close {
+  background: none; border: none; color: #9ca3af;
+  font-size: 12px; cursor: pointer; padding: 2px;
+}
+.amd-toast-close:hover { color: #374151; }
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .amd-metrics-row { grid-template-columns: repeat(2, 1fr); }
+  .amd-two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .amd-body { padding: 20px 16px; }
+  .amd-metrics-row { grid-template-columns: 1fr 1fr; }
+  .amd-header-card { flex-direction: column; }
+}

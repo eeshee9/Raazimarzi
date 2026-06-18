@@ -279,9 +279,9 @@ const UserCaseMeetings = () => {
                       <StatusBadge status={m.displayStatus || "Completed"} />
                       <button
                         className="ucm-view-btn ucm-view-btn-sm"
-                        onClick={() => navigate(`/user/meetings/summary/${m._id}`)}
+                        onClick={() => navigate(`/user/meetings/lobby/${m._id}`)}
                       >
-                        View Summary
+                        View Details
                       </button>
                     </div>
                   ))}

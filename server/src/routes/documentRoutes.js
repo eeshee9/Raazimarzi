@@ -11,6 +11,9 @@ import {
   deleteDocument,
   approveDocument,
   rejectDocument,
+  renameDocument,
+  replaceDocument,
+  getMyCasesWithDocuments,
 } from "../controllers/documentController.js";
 
 const router = express.Router();
@@ -19,14 +22,18 @@ const adminOnly      = [protect, authorizeRoles(["admin"])];
 const adminOrManager = [protect, authorizeRoles(["admin", "case-manager"])];
 
 /* ─ Specific string routes FIRST (prevent /:id from swallowing them) ─ */
-router.post("/upload",          protect, upload.single("document"), uploadDocument);
-router.get("/all",              ...adminOnly, getAllDocuments);
-router.get("/case/:caseId",     protect, getDocumentsByCase);
+router.post("/upload",       protect, upload.single("file"), uploadDocument);
+router.post("/replace",      protect, upload.single("file"), replaceDocument);
+router.get("/all",           ...adminOnly, getAllDocuments);
+router.get("/my-cases",      protect, getMyCasesWithDocuments);
+router.get("/case/:caseId",  protect, getDocumentsByCase);
 
 /* ─ Param routes LAST ─ */
 router.get("/:id",              protect, getDocumentById);
 router.get("/:id/download",     protect, downloadDocument);
 router.put("/:id",              protect, updateDocument);
+router.patch("/:id/rename",     protect, renameDocument);
+router.patch("/:id/replace",    protect, upload.single("file"), replaceDocument);
 router.delete("/:id",           protect, deleteDocument);
 router.patch("/:id/approve",    ...adminOrManager, approveDocument);
 router.patch("/:id/reject",     ...adminOrManager, rejectDocument);

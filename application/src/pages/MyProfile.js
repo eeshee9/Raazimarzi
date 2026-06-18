@@ -1,24 +1,87 @@
 // src/pages/MyProfile.js
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./MyProfile.css";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/userContext";
 import UserSidebar from "../components/UserSidebar";
 import UserNavbar from "../components/Navbar";
+import api from "../api/axios";
 
 const MyProfile = () => {
   const navigate = useNavigate();
-  const { user, loading, getAvatarUrl } = useUser();
+  const { user, loading, getAvatarUrl, updateUserProfile, refreshUser } = useUser();
 
   const [notifications, setNotifications] = useState({
     email: true,
     sms: true,
     realtime: true,
   });
-  const [twoFactor, setTwoFactor] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
-  const toggleNotif = (key) =>
-    setNotifications((p) => ({ ...p, [key]: !p[key] }));
+  // Change password modal state
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [cpCurrent, setCpCurrent] = useState("");
+  const [cpNew, setCpNew] = useState("");
+  const [cpConfirm, setCpConfirm] = useState("");
+  const [cpError, setCpError] = useState("");
+  const [cpLoading, setCpLoading] = useState(false);
+  const [cpDone, setCpDone] = useState(false);
+
+  const avatarInputRef = useRef(null);
+
+  // Sync notifications from user object once loaded
+  useEffect(() => {
+    if (user?.notifications) {
+      setNotifications({
+        email:    user.notifications.email    ?? true,
+        sms:      user.notifications.sms      ?? true,
+        realtime: user.notifications.realtime ?? true,
+      });
+    }
+  }, [user]);
+
+  const toggleNotif = async (key) => {
+    const updated = { ...notifications, [key]: !notifications[key] };
+    setNotifications(updated);
+    try {
+      await api.patch("/auth/notifications", updated);
+    } catch {
+      // revert on failure
+      setNotifications(notifications);
+    }
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    const fd = new FormData();
+    fd.append("avatar", file);
+    await updateUserProfile(fd);
+    await refreshUser();
+    setAvatarUploading(false);
+    e.target.value = "";
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setCpError("");
+    if (cpNew !== cpConfirm) { setCpError("New passwords do not match."); return; }
+    if (cpNew.length < 6) { setCpError("Password must be at least 6 characters."); return; }
+    setCpLoading(true);
+    try {
+      await api.post("/auth/change-password", { currentPassword: cpCurrent, newPassword: cpNew });
+      setCpDone(true);
+      setTimeout(() => {
+        setShowPwModal(false);
+        setCpCurrent(""); setCpNew(""); setCpConfirm(""); setCpDone(false);
+      }, 1800);
+    } catch (err) {
+      setCpError(err.response?.data?.message || "Failed to change password.");
+    } finally {
+      setCpLoading(false);
+    }
+  };
 
   if (loading) {
     return <div style={{ padding: 40 }}>Loading profile...</div>;
@@ -60,7 +123,21 @@ const MyProfile = () => {
                   }}
                 />
                 <span className="mp-verified-badge">✔ Verified</span>
-                <button className="mp-avatar-cam" title="Change photo">📷</button>
+                <button
+                  className="mp-avatar-cam"
+                  title="Change photo"
+                  disabled={avatarUploading}
+                  onClick={() => avatarInputRef.current?.click()}
+                >
+                  {avatarUploading ? "⏳" : "📷"}
+                </button>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleAvatarChange}
+                />
               </div>
 
               <h3 className="mp-name">{user?.name || "—"}</h3>
@@ -85,33 +162,8 @@ const MyProfile = () => {
                 <div className="mp-strength-fill" style={{ width: `${strength}%` }} />
               </div>
               <p className="mp-strength-hint">
-                Complete your identity verification to unlock fast-track dispute filing features.
+                Complete your profile to unlock fast-track dispute filing features.
               </p>
-            </div>
-
-            {/* Identity verification */}
-            <div className="mp-card mp-id-card">
-              <p className="mp-id-heading">IDENTITY VERIFICATION</p>
-
-              <div className="mp-id-row">
-                <span className="mp-id-icon">🪪</span>
-                <div>
-                  <p className="mp-id-label">ID Type</p>
-                  <p className="mp-id-val">Aadhaar Card (India)</p>
-                </div>
-              </div>
-
-              <div className="mp-id-row">
-                <span className="mp-id-icon">🔢</span>
-                <div>
-                  <p className="mp-id-label">ID Number</p>
-                  <p className="mp-id-val">XXXX-XXXX-1234</p>
-                </div>
-              </div>
-
-              <div className="mp-id-preview">
-                <span className="mp-id-eye">👁️</span>
-              </div>
             </div>
           </div>
 
@@ -224,34 +276,62 @@ const MyProfile = () => {
                   <h3 className="mp-card-title">Security</h3>
                 </div>
 
-                <button className="mp-security-row">
+                <button className="mp-security-row" onClick={() => setShowPwModal(true)}>
                   <span className="mp-security-label">Change Password</span>
                   <span className="mp-security-arrow">›</span>
-                </button>
-
-                <div className="mp-toggle-row" style={{ marginTop: 16 }}>
-                  <div>
-                    <p className="mp-toggle-label">Two-Factor Auth</p>
-                  </div>
-                  <button
-                    className={`mp-toggle ${twoFactor ? "on" : ""}`}
-                    onClick={() => setTwoFactor((p) => !p)}
-                  >
-                    <span className="mp-toggle-thumb" />
-                  </button>
-                </div>
-
-                <div className="mp-divider" style={{ margin: "20px 0" }} />
-
-                <button className="mp-logout-other">
-                  <span>Logout from other devices</span>
-                  <span className="mp-logout-icon">↪</span>
                 </button>
               </div>
             </div>
           </div>
         </section>
       </main>
+
+      {/* ── Change Password Modal ── */}
+      {showPwModal && (
+        <div className="mp-modal-overlay" onClick={() => setShowPwModal(false)}>
+          <div className="mp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="mp-modal-header">
+              <h3>Change Password</h3>
+              <button className="mp-modal-close" onClick={() => setShowPwModal(false)}>✕</button>
+            </div>
+
+            {cpDone ? (
+              <p className="mp-pw-success">✔ Password changed successfully!</p>
+            ) : (
+              <form onSubmit={handleChangePassword} className="mp-pw-form">
+                {cpError && <p className="mp-pw-error">{cpError}</p>}
+                <label>Current Password</label>
+                <input
+                  type="password"
+                  value={cpCurrent}
+                  onChange={(e) => setCpCurrent(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                />
+                <label>New Password</label>
+                <input
+                  type="password"
+                  value={cpNew}
+                  onChange={(e) => setCpNew(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                />
+                <label>Confirm New Password</label>
+                <input
+                  type="password"
+                  value={cpConfirm}
+                  onChange={(e) => setCpConfirm(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                />
+                <button type="submit" className="mp-pw-submit" disabled={cpLoading}>
+                  {cpLoading ? "Saving…" : "Update Password"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

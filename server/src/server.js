@@ -35,7 +35,11 @@ import demoRoutes        from "./routes/demo.routes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import meetingRoutes     from "./routes/meetingRoutes.js";
 import arbitratorRoutes  from "./routes/arbitratorRoutes.js";
-// import paymentRoutes  from "./routes/paymentRoutes.js";
+import paymentRoutes         from "./routes/paymentRoutes.js";
+import supportRoutes         from "./routes/supportRoutes.js";
+import meetingMessageRoutes  from "./routes/meetingMessageRoutes.js";
+import meetingNoteRoutes     from "./routes/meetingNoteRoutes.js";
+import chatNoteRoutes        from "./routes/chatNoteRoutes.js";
 import caseManagerRoutes from "./routes/caseManagerRoutes.js";
 import feedbackRoutes    from "./routes/feedbackRoutes.js";
 import pdfRoutes         from "./routes/pdfRoutes.js";
@@ -151,6 +155,15 @@ app.use("/api/cms",               cmsLimiter);
 app.use("/api", generalLimiter);
 
 /* ═══════════════════════════════════════════════════════════════
+   SOCKET.IO — inject io into every Express request
+   (must come before routes so req.io is available in controllers)
+═══════════════════════════════════════════════════════════════ */
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+/* ═══════════════════════════════════════════════════════════════
    ROUTES
 ═══════════════════════════════════════════════════════════════ */
 app.use("/api/auth",         authRoutes);
@@ -167,7 +180,11 @@ app.use("/api/contact",      contactRoutes);
 app.use("/api/demo",         demoRoutes);
 app.use("/api/meetings",     meetingRoutes);
 app.use("/api/arbitrator",   arbitratorRoutes);
-// app.use("/api/payments",  paymentRoutes);
+app.use("/api/payments",          paymentRoutes);
+app.use("/api/support",           supportRoutes);
+app.use("/api/meeting-messages",  meetingMessageRoutes);
+app.use("/api/meeting-notes",     meetingNoteRoutes);
+app.use("/api/chat-notes",        chatNoteRoutes);
 app.use("/api/case-manager", caseManagerRoutes);
 app.use("/api/feedback",     feedbackRoutes);
 app.use("/api/pdf",          pdfRoutes);
@@ -262,6 +279,12 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", (roomId) => {
     socket.join(roomId);
     console.log(`👤 User ${socket.id} joined room: ${roomId}`);
+  });
+
+  // join-conversation: used by chat pages to receive real-time messages in a conversation
+  socket.on("join-conversation", (conversationId) => {
+    socket.join(conversationId);
+    console.log(`💬 User ${socket.id} joined conversation room: ${conversationId}`);
   });
 
   socket.on("sendMessage", ({ roomId, message }) => {

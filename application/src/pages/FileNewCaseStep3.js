@@ -83,6 +83,7 @@ const buildPayload = (caseData) => {
 const FileNewCaseStep3 = () => {
   const navigate = useNavigate();
   const inputRef = useRef();
+  const fileObjectsRef = useRef({});
 
   const [files, setFiles]       = useState([]);
   const [dragOver, setDragOver] = useState(false);
@@ -115,6 +116,7 @@ const FileNewCaseStep3 = () => {
         continue;
       }
       if (files.find((x) => x.name === f.name && x.size === f.size)) continue;
+      fileObjectsRef.current[`${f.name}-${f.size}`] = f;
       valid.push({ name: f.name, size: f.size, type: f.type, status: "Complete" });
     }
     const updated = [...files, ...valid];
@@ -123,6 +125,8 @@ const FileNewCaseStep3 = () => {
   };
 
   const removeFile = (idx) => {
+    const f = files[idx];
+    delete fileObjectsRef.current[`${f.name}-${f.size}`];
     const updated = files.filter((_, i) => i !== idx);
     setFiles(updated);
     persistMeta(updated);
@@ -150,7 +154,6 @@ const FileNewCaseStep3 = () => {
 
     const caseData = JSON.parse(localStorage.getItem("caseData")) || {};
 
-    // Basic guard — ensure step1 & step2 data exist
     if (!caseData.petitioner?.fullName || !caseData.step2?.caseTitle) {
       setSubmitError("Some required case information is missing. Please go back and complete all steps.");
       return;
@@ -158,7 +161,6 @@ const FileNewCaseStep3 = () => {
 
     const payload = buildPayload(caseData);
 
-    // Validate required fields before hitting the API
     if (!payload.petitioner.email) {
       setSubmitError("Petitioner email is required. Please go back to Step 1.");
       return;
@@ -170,12 +172,25 @@ const FileNewCaseStep3 = () => {
 
     setSubmitting(true);
     try {
-      await api.post("/cases/file", payload);
+      const caseRes = await api.post("/cases/file", payload);
+      const newCaseId = caseRes.data?.case?._id;
 
-      // Clear draft from localStorage on success
+      if (newCaseId && files.length > 0) {
+        for (const meta of files) {
+          const fileObj = fileObjectsRef.current[`${meta.name}-${meta.size}`];
+          if (!fileObj) continue;
+          const form = new FormData();
+          form.append("file", fileObj);
+          form.append("caseId", newCaseId);
+          form.append("documentTitle", meta.name.replace(/\.[^/.]+$/, "") || meta.name);
+          form.append("category", "Evidence");
+          await api.post("/documents/upload", form, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        }
+      }
+
       localStorage.removeItem("caseData");
-
-      // Navigate to My Cases dashboard
       navigate("/user/my-cases");
     } catch (err) {
       const msg =

@@ -47,6 +47,9 @@
 .lobby-cam-placeholder { background: #111827; width: 100%; height: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
 }
+.lobby-video-feed {
+  width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1);
+}
 
 .lobby-ready h3 { font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 6px; }
 .lobby-ready p  { font-size: 14px; color: #6b7280; margin: 0; }

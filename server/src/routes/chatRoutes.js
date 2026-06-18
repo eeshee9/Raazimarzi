@@ -11,6 +11,12 @@ import {
   editMessage,
   updateTypingStatus,
   getAdminConversations,
+  getAllConversationsAdmin,
+  getAdminConversationDetail,
+  getAdminConversationMessages,
+  adminSendToConversation,
+  archiveConversation,
+  markAdminRead,
 } from "../controllers/chatController.js";
 
 const router = express.Router();
@@ -52,12 +58,17 @@ router.post("/typing", protect, updateTypingStatus);
    ADMIN ROUTES
 ═══════════════════════════════════════════════════════════════ */
 
-// Get all conversations (admin view)
-router.get(
-  "/admin/conversations",
-  protect,
-  authorizeRoles(["admin"]),
-  getAdminConversations
-);
+const adminOrCM = [protect, authorizeRoles(["admin", "case-manager"])];
+
+// Legacy: admin conversations (admin-participated only)
+router.get("/admin/conversations", protect, authorizeRoles(["admin"]), getAdminConversations);
+
+// Admin Messages module — all platform conversations
+router.get("/admin/all", ...adminOrCM, getAllConversationsAdmin);
+router.get("/admin/conversations/:id/detail", ...adminOrCM, getAdminConversationDetail);
+router.get("/admin/conversations/:id/messages", ...adminOrCM, getAdminConversationMessages);
+router.post("/admin/conversations/:id/messages", ...adminOrCM, upload.single("file"), adminSendToConversation);
+router.patch("/admin/conversations/:id/archive", ...adminOrCM, archiveConversation);
+router.patch("/admin/conversations/:id/read", ...adminOrCM, markAdminRead);
 
 export default router;

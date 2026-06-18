@@ -1,5 +1,6 @@
 import User from "../models/userModel.js";
 import Otp from "../models/otpModel.js";
+import AdminActivityLog from "../models/adminActivityLogModel.js";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
 import { sendOtpMail } from "../services/mail.service.js";
@@ -81,14 +82,33 @@ export const login = async (req, res) => {
     }
 
     const isPasswordMatch = await user.matchPassword(password);
-    
+
     if (!isPasswordMatch) {
-      return res.status(401).json({ 
-        message: "Invalid email or password" 
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).json({
+        message: "Account disabled. Contact administrator."
       });
     }
 
     const token = generateToken(user);
+
+    user.lastLoginAt = new Date();
+    user.lastLoginIP = req.ip || req.headers["x-forwarded-for"] || "";
+    await user.save();
+
+    if (user.role === "sub-admin") {
+      AdminActivityLog.create({
+        subAdmin: user._id,
+        actor: user._id,
+        action: "login",
+        description: "System Login",
+      }).catch(() => {});
+    }
 
     console.log("✅ User logged in successfully:", email);
 
@@ -353,6 +373,41 @@ export const updateProfile = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+/* ================= CHANGE PASSWORD ================= */
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ success: false, message: "Both passwords are required" });
+    if (newPassword.length < 6)
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+    const user = await User.findById(req.user._id || req.user.id).select("+password");
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) return res.status(400).json({ success: false, message: "Current password is incorrect" });
+    user.password = newPassword;
+    await user.save();
+    return res.json({ success: true, message: "Password changed successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ================= UPDATE NOTIFICATION PREFERENCES ================= */
+export const updateNotifications = async (req, res) => {
+  try {
+    const { email, sms, realtime } = req.body;
+    await User.findByIdAndUpdate(req.user._id || req.user.id, {
+      "notifications.email":    email,
+      "notifications.sms":      sms,
+      "notifications.realtime": realtime,
+    });
+    return res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 

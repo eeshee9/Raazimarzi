@@ -200,6 +200,7 @@ export const getUserProfile = async (req, res) => {
       role: user.role,
       profileCompleted: user.profileCompleted,
       createdAt: user.createdAt,
+      notifications: user.notifications || { email: true, sms: true, realtime: true },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

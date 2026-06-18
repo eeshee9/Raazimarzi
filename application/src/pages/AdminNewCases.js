@@ -53,41 +53,63 @@ const CATEGORY_TREE = [
 
 const ALL_SUBS = CATEGORY_TREE.flatMap(g => g.sub);
 
-/* ─────────────────────────────────────────
-   CONSTANTS
-───────────────────────────────────────── */
-const STATUS_OPTIONS   = ["All Status", "Pending Review", "Mediation", "Rejected", "Resolved", "Closed"];
+const STATUS_OPTIONS   = ["All Statuses", "Pending Review", "Mediation", "Rejected", "Resolved", "Closed"];
 const MEDIATOR_OPTIONS = ["All Status", "Assigned", "Unassigned"];
 const AMOUNT_OPTIONS   = ["All Ranges", "₹499 /-", "₹999 /-", "₹1499 /-", "₹1999 /-", "₹2499 /-"];
 const ROWS_OPTIONS     = [5, 10, 20, 50];
 
+/* Bug 3 fix: normalize status for case-insensitive group matching */
+const STATUS_GROUPS = {
+  "pending review": ["pending", "pending-review", "in review", "notice-sent", "notice sent"],
+  "mediation":      ["mediation", "in-progress", "in progress", "assigned", "hearing", "arbitration"],
+  "rejected":       ["rejected"],
+  "resolved":       ["resolved", "awarded"],
+  "closed":         ["closed", "withdrawn"],
+};
+const normalizeStatus = s => (s || "").toLowerCase().replace(/-/g, " ").trim();
+
+/* Bug 4 fix: map UI subcategory labels → real caseType enum values */
+const CATEGORY_TO_TYPE = {
+  "Property & Rental Disputes":               ["property", "rental"],
+  "Family Disputes":                          ["individual"],
+  "Neighbour & Community":                    ["individual"],
+  "Product Complaints":                       ["consumer"],
+  "Service Complaints":                       ["consumer"],
+  "Delivery Issues":                          ["consumer"],
+  "Refund & Billing Disputes":                ["consumer"],
+  "Trade & Business Disputes":                ["commercial"],
+  "Finance & Banking Disputes":               ["commercial"],
+  "Corporate & Business Agreement Disputes":  ["commercial"],
+  "Construction & Infrastructure Disputes":   ["commercial"],
+  "Commercial Property Disputes":             ["commercial"],
+  "Intellectual Property Disputes":           ["commercial"],
+  "Technology & Digital Disputes":            ["commercial"],
+  "Franchise & Distribution Disputes":        ["commercial"],
+  "Employment & Workforce Disputes":          ["commercial"],
+  "Contract & Agreement Disputes":            ["commercial"],
+};
+
+/* Bug 8 fix: real numeric range bands for amount filter */
+const AMOUNT_RANGES = {
+  "₹499 /-":  { min: 0,    max: 499  },
+  "₹999 /-":  { min: 500,  max: 999  },
+  "₹1499 /-": { min: 1000, max: 1499 },
+  "₹1999 /-": { min: 1500, max: 1999 },
+  "₹2499 /-": { min: 2000, max: 2499 },
+};
+
 const getStatusClass = (s = "") => {
   const v = s.toLowerCase().replace(/\s+/g, "-");
-  if (["resolved", "closed"].includes(v))        return "adx2-badge--green";
-  if (["pending", "pending-review"].includes(v)) return "adx2-badge--yellow";
-  if (v === "rejected")                          return "adx2-badge--red";
-  if (["mediation", "assigned"].includes(v))     return "adx2-badge--blue";
+  if (["resolved", "awarded"].includes(v))          return "adx2-badge--green";
+  if (["pending", "pending-review"].includes(v))    return "adx2-badge--yellow";
+  if (v === "rejected")                             return "adx2-badge--red";
+  if (["mediation","assigned","in-progress","hearing"].includes(v)) return "adx2-badge--blue";
+  if (["closed","withdrawn"].includes(v))           return "adx2-badge--grey";
   return "adx2-badge--grey";
 };
 
 const fmtDate = d =>
   d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
-
-/* ─────────────────────────────────────────
-   MOCK DATA
-───────────────────────────────────────── */
-const MOCK_CASES = Array.from({ length: 18 }, (_, i) => ({
-  _id: String(i + 1),
-  caseId: `#${4245 + i}`,
-  caseTitle: ["Property Division", "Employment Dispute", "Consumer Complaint", "Family Dispute", "Contract Breach"][i % 5],
-  petitionerDetails: { fullName: ["Rahul Sharma", "Priya Menon", "Arun Kumar", "Sunita Rao"][i % 4] },
-  defendantDetails:  { fullName: ["Karthik", "Tech Corp Ltd", "Retailer Pvt", "Landlord Inc"][i % 4] },
-  caseType: ALL_SUBS[i % ALL_SUBS.length],
-  status: ["Pending Review", "Mediation", "Resolved", "Rejected", "Closed"][i % 5],
-  mediator: i % 3 === 1 ? null : "Kumar Sangakara",
-  filingFee: [499, 999, 1499, 1999, 2499][i % 5],
-  createdAt: new Date(2026, 4, 12 - i).toISOString(),
-}));
 
 /* ─────────────────────────────────────────
    PLAIN DROPDOWN
@@ -109,10 +131,7 @@ const Dropdown = ({ options, value, onChange }) => {
         onClick={() => setOpen(p => !p)}
       >
         <span>{value}</span>
-        {open
-          ? <FaChevronUp className="adx2-dropdown__chevron" />
-          : <FaChevronDown className="adx2-dropdown__chevron" />
-        }
+        {open ? <FaChevronUp className="adx2-dropdown__chevron" /> : <FaChevronDown className="adx2-dropdown__chevron" />}
       </button>
       {open && (
         <div className="adx2-dropdown__menu">
@@ -133,29 +152,25 @@ const Dropdown = ({ options, value, onChange }) => {
 };
 
 /* ─────────────────────────────────────────
-   DATE RANGE PICKER — s
+   DATE RANGE PICKER
 ───────────────────────────────────────── */
-const DateRangePicker = ({ dateFrom, dateTo, onFromChange, onToChange }) => {
-  return (
-    <div className="adx2-daterange">
-      <input
-        type="date"
-        className="adx2-date-input"
-        value={dateFrom}
-        onChange={e => onFromChange(e.target.value)}
-        placeholder="dd/mm"
-      />
-      <span className="adx2-daterange__sep">—</span>
-      <input
-        type="date"
-        className="adx2-date-input"
-        value={dateTo}
-        onChange={e => onToChange(e.target.value)}
-        placeholder="dd/mm"
-      />
-    </div>
-  );
-};
+const DateRangePicker = ({ dateFrom, dateTo, onFromChange, onToChange }) => (
+  <div className="adx2-daterange">
+    <input
+      type="date"
+      className="adx2-date-input"
+      value={dateFrom}
+      onChange={e => onFromChange(e.target.value)}
+    />
+    <span className="adx2-daterange__sep">—</span>
+    <input
+      type="date"
+      className="adx2-date-input"
+      value={dateTo}
+      onChange={e => onToChange(e.target.value)}
+    />
+  </div>
+);
 
 /* ─────────────────────────────────────────
    CATEGORY DROPDOWN
@@ -183,10 +198,7 @@ const CategoryDropdown = ({ value, onChange }) => {
         onClick={() => setOpen(p => !p)}
       >
         <span className="adx2-cat-trigger-text">{value}</span>
-        {open
-          ? <FaChevronUp className="adx2-dropdown__chevron" />
-          : <FaChevronDown className="adx2-dropdown__chevron" />
-        }
+        {open ? <FaChevronUp className="adx2-dropdown__chevron" /> : <FaChevronDown className="adx2-dropdown__chevron" />}
       </button>
 
       {open && (
@@ -211,10 +223,7 @@ const CategoryDropdown = ({ value, onChange }) => {
                   <span className="adx2-cat-group__icon">{icon}</span>
                   <span className="adx2-cat-group__label">{group}</span>
                   <span className="adx2-cat-group__arrow">
-                    {isExp
-                      ? <FaChevronDown style={{ fontSize: 10 }} />
-                      : <FaChevronRight style={{ fontSize: 10 }} />
-                    }
+                    {isExp ? <FaChevronDown style={{ fontSize: 10 }} /> : <FaChevronRight style={{ fontSize: 10 }} />}
                   </span>
                 </div>
                 {isExp && (
@@ -241,7 +250,7 @@ const CategoryDropdown = ({ value, onChange }) => {
 };
 
 /* ─────────────────────────────────────────
-   ROWS PER PAGE DROPDOWN (compact, chevron up/down)
+   ROWS PER PAGE DROPDOWN
 ───────────────────────────────────────── */
 const RowsDropdown = ({ value, onChange }) => {
   const [open, setOpen] = useState(false);
@@ -285,10 +294,13 @@ const RowsDropdown = ({ value, onChange }) => {
 const AdminAllCases = () => {
   const navigate = useNavigate();
 
-  const [search,       setSearch]       = useState("");
-  const [allCases,     setAllCases]     = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [search,          setSearch]          = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [cases,           setCases]           = useState([]);
+  const [serverTotal,     setServerTotal]     = useState(0);
+  const [loading,         setLoading]         = useState(true);
+  const [selectedRows,    setSelectedRows]    = useState([]);
+  const [adminAvatar,     setAdminAvatar]     = useState("");
 
   const [filterStatus,   setFilterStatus]   = useState("All Statuses");
   const [filterCategory, setFilterCategory] = useState("All Categories");
@@ -300,45 +312,71 @@ const AdminAllCases = () => {
   const [page,        setPage]        = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  /* Debounce search — avoids an API call on every keystroke */
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const fetchCases = useCallback(async () => {
     setLoading(true);
+    const params = { page, limit: rowsPerPage };
+    if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
+    if (filterStatus !== "All Statuses") {
+      const rawStatuses = STATUS_GROUPS[normalizeStatus(filterStatus)] || [];
+      if (rawStatuses.length) params.status = rawStatuses.join(",");
+    }
+    if (filterCategory !== "All Categories") {
+      const types = CATEGORY_TO_TYPE[filterCategory] || [];
+      if (types.length) params.caseType = types[0];
+    }
     try {
-      const res = await api.get("/cases/all");
-      setAllCases(res.data.success ? (res.data.cases || []) : (res.data.cases || res.data || []));
+      const res = await api.get("/admin/cases", { params });
+      const data = res.data;
+      if (data.success) {
+        setCases(data.cases || []);
+        setServerTotal(data.total || 0);
+      } else {
+        setCases([]);
+        setServerTotal(0);
+      }
     } catch {
-      setAllCases(MOCK_CASES);
+      setCases([]);
+      setServerTotal(0);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, rowsPerPage, debouncedSearch, filterStatus, filterCategory]);
 
   useEffect(() => {
     if (!localStorage.getItem("token")) { navigate("/login"); return; }
+    const stored = localStorage.getItem("user");
+    if (stored) { try { setAdminAvatar(JSON.parse(stored)?.avatar || ""); } catch {} }
     fetchCases();
   }, [navigate, fetchCases]);
 
-  /* ── Filtering ── */
-  const filtered = allCases.filter(c => {
-    const q  = search.toLowerCase();
-    const ms = !search ||
-      c.caseId?.toLowerCase().includes(q) ||
-      c.caseTitle?.toLowerCase().includes(q) ||
-      c.petitionerDetails?.fullName?.toLowerCase().includes(q) ||
-      c.defendantDetails?.fullName?.toLowerCase().includes(q);
+  /* Client-side filters for amount, mediator, and date range only.
+     Status, category, and search are sent as server-side params. */
+  const filtered = cases.filter(c => {
+    const mAmt = (() => {
+      if (filterAmount === "All Ranges") return true;
+      const range = AMOUNT_RANGES[filterAmount];
+      if (!range) return true;
+      const fee = c.filingFee ?? 0;
+      return fee >= range.min && fee <= range.max;
+    })();
 
-    const mSt  = filterStatus   === "All Statuses"    || c.status === filterStatus;
-    const mCat = filterCategory === "All Categories"  || c.caseType === filterCategory;
-    const mAmt = filterAmount   === "All Ranges"      || (c.filingFee && `₹${c.filingFee} /-` === filterAmount);
-    const mMed = filterMediator === "All Status"      ||
-      (filterMediator === "Assigned"   && c.mediator) ||
-      (filterMediator === "Unassigned" && !c.mediator);
+    const mMed = filterMediator === "All Status"     ||
+      (filterMediator === "Assigned"   && !!c.assignedNeutral) ||
+      (filterMediator === "Unassigned" && !c.assignedNeutral);
 
     let mDate = true;
     if (dateFrom && c.createdAt) mDate = new Date(c.createdAt) >= new Date(dateFrom);
     if (dateTo   && c.createdAt) mDate = mDate && new Date(c.createdAt) <= new Date(dateTo);
 
-    return ms && mSt && mCat && mAmt && mMed && mDate;
+    return mAmt && mMed && mDate;
   });
+  const hasClientFilters = filterAmount !== "All Ranges" || filterMediator !== "All Status" || !!dateFrom || !!dateTo;
 
   /* ── Active filter chips ── */
   const activeFilters = [];
@@ -356,27 +394,30 @@ const AdminAllCases = () => {
     setDateTo("");
   };
 
-  /* ── Pagination ── */
-  const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-  const paginated  = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  /* ── Pagination (server-side) ── */
+  const totalPages = Math.max(1, Math.ceil(serverTotal / rowsPerPage));
+  const paginated  = filtered; // server returns one page; amount/mediator/date applied client-side above
 
   /* ── Row selection ── */
   const toggleRow = id =>
     setSelectedRows(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-
   const toggleAll = () =>
     setSelectedRows(selectedRows.length === paginated.length ? [] : paginated.map(c => c._id));
 
-  /* ── Export ── */
+  /* ── Export CSV ── */
   const exportCSV = () => {
     const rows = [["Case ID", "Title", "Petitioner", "Respondent", "Category", "Mediator", "Status", "Fee", "Filed"]];
     filtered.forEach(c => rows.push([
       c.caseId, c.caseTitle,
       c.petitionerDetails?.fullName, c.defendantDetails?.fullName,
-      c.caseType, c.mediator || "—", c.status,
-      c.filingFee ? `₹${c.filingFee}` : "—", fmtDate(c.createdAt),
+      c.caseType,
+      // ✅ Fixed: use assignedNeutral.name
+      c.assignedNeutral?.name || "—",
+      c.status,
+      c.filingFee ? `₹${c.filingFee}` : "—",
+      fmtDate(c.createdAt),
     ]));
-    const csv  = rows.map(r => r.join(",")).join("\n");
+    const csv  = rows.map(r => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a");
@@ -384,16 +425,13 @@ const AdminAllCases = () => {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) return (
-    <div className="adx2-root">
-      <AdminSidebar />
-      <div className="adx2-loading">Loading cases…</div>
-    </div>
-  );
+  const adminName = (() => {
+    try { return JSON.parse(localStorage.getItem("user") || "{}").name || "Admin"; } catch { return "Admin"; }
+  })();
 
   return (
     <div className="adx2-root">
-      <AdminSidebar />
+      <AdminSidebar activePage="all-cases" />
 
       <main className="adx2-main">
 
@@ -405,13 +443,13 @@ const AdminAllCases = () => {
               className="adx2-search__input"
               placeholder="Search cases, mediators or files…"
               value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              onChange={e => setSearch(e.target.value)}
             />
           </div>
           <div className="adx2-topbar__right">
-            <button className="adx2-topbar__bell"><FaBell /></button>
+            <button className="adx2-topbar__bell" aria-label="Notifications"><FaBell /></button>
             <img
-              src="https://ui-avatars.com/api/?name=Admin&background=778aff&color=fff&size=80"
+              src={adminAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=778aff&color=fff&size=80`}
               alt="admin"
               className="adx2-topbar__avatar"
             />
@@ -430,7 +468,7 @@ const AdminAllCases = () => {
               <button className="adx2-refresh-btn" onClick={fetchCases} title="Refresh">
                 <FaSync />
               </button>
-              <button className="adx2-export-btn" onClick={exportCSV}>
+              <button className="adx2-export-btn" onClick={exportCSV} title="Exports current page results">
                 <FaDownload /> Export as CSV
               </button>
             </div>
@@ -440,47 +478,27 @@ const AdminAllCases = () => {
           <div className="adx2-filters">
             <div className="adx2-filter-group">
               <label className="adx2-filter-label">STATUS</label>
-              <Dropdown
-                options={STATUS_OPTIONS}
-                value={filterStatus}
-                onChange={v => { setFilterStatus(v); setPage(1); }}
-              />
+              <Dropdown options={STATUS_OPTIONS} value={filterStatus} onChange={v => { setFilterStatus(v); setPage(1); }} />
             </div>
-
             <div className="adx2-filter-group">
               <label className="adx2-filter-label">CATEGORY</label>
-              <CategoryDropdown
-                value={filterCategory}
-                onChange={v => { setFilterCategory(v); setPage(1); }}
-              />
+              <CategoryDropdown value={filterCategory} onChange={v => { setFilterCategory(v); setPage(1); }} />
             </div>
-
             <div className="adx2-filter-group">
               <label className="adx2-filter-label">AMOUNT</label>
-              <Dropdown
-                options={AMOUNT_OPTIONS}
-                value={filterAmount}
-                onChange={v => { setFilterAmount(v); setPage(1); }}
-              />
+              <Dropdown options={AMOUNT_OPTIONS} value={filterAmount} onChange={v => { setFilterAmount(v); setPage(1); }} />
             </div>
-
             <div className="adx2-filter-group">
               <label className="adx2-filter-label">DATE RANGE</label>
               <DateRangePicker
-                dateFrom={dateFrom}
-                dateTo={dateTo}
+                dateFrom={dateFrom} dateTo={dateTo}
                 onFromChange={v => { setDateFrom(v); setPage(1); }}
                 onToChange={v => { setDateTo(v); setPage(1); }}
               />
             </div>
-
             <div className="adx2-filter-group">
               <label className="adx2-filter-label">MEDIATOR</label>
-              <Dropdown
-                options={MEDIATOR_OPTIONS}
-                value={filterMediator}
-                onChange={v => { setFilterMediator(v); setPage(1); }}
-              />
+              <Dropdown options={MEDIATOR_OPTIONS} value={filterMediator} onChange={v => { setFilterMediator(v); setPage(1); }} />
             </div>
           </div>
 
@@ -498,7 +516,7 @@ const AdminAllCases = () => {
             </div>
           )}
 
-          {/* ── Table ── */}
+          {/* ── Table card ── */}
           <div className="adx2-table-card">
             <div className="adx2-table-wrap">
               <table className="adx2-table">
@@ -523,7 +541,11 @@ const AdminAllCases = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.length === 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan={9} className="adx2-table__empty">Loading cases…</td>
+                    </tr>
+                  ) : paginated.length === 0 ? (
                     <tr>
                       <td colSpan={9} className="adx2-table__empty">
                         {search || activeFilters.length > 0
@@ -534,6 +556,8 @@ const AdminAllCases = () => {
                   ) : paginated.map((c, idx) => {
                     const rowNum = (page - 1) * rowsPerPage + idx + 1;
                     const isSel  = selectedRows.includes(c._id);
+                    // ✅ Fixed: use assignedNeutral.name from populated field
+                    const mediatorName = c.assignedNeutral?.name || "—";
                     return (
                       <tr key={c._id} className={isSel ? "adx2-table__row--selected" : ""}>
                         <td className="adx2-table__td-num">
@@ -553,9 +577,11 @@ const AdminAllCases = () => {
                           <span className="adx2-participant-role">(Petitioner)</span>
                           <span className="adx2-participant-name">{c.petitionerDetails?.fullName || "—"}</span>
                           <span className="adx2-participant-role">(Respondent)</span>
-                          <span className="adx2-participant-name">{c.defendantDetails?.fullName || "—"}</span>
+                          <span className="adx2-participant-name">
+                            {c.defendantDetails?.fullName || c.respondent?.name || "—"}
+                          </span>
                         </td>
-                        <td>{c.mediator || "—"}</td>
+                        <td>{mediatorName}</td>
                         <td>
                           <span className={`adx2-badge ${getStatusClass(c.status)}`}>
                             {c.status || "Pending"}
@@ -566,9 +592,10 @@ const AdminAllCases = () => {
                         </td>
                         <td>{fmtDate(c.createdAt)}</td>
                         <td>
+                          {/* ✅ Fixed: navigate to real case ID */}
                           <button
                             className="adx2-view-btn"
-                           onClick={() => navigate("/admin/view-details")}
+                            onClick={() => navigate(`/admin/view-details/${c._id}`)}
                           >
                             View Details
                           </button>
@@ -584,10 +611,7 @@ const AdminAllCases = () => {
             <div className="adx2-pagination">
               <div className="adx2-pagination__left">
                 <span className="adx2-pagination__label">Rows per page:</span>
-                <RowsDropdown
-                  value={rowsPerPage}
-                  onChange={v => { setRowsPerPage(v); setPage(1); }}
-                />
+                <RowsDropdown value={rowsPerPage} onChange={v => { setRowsPerPage(v); setPage(1); }} />
                 {selectedRows.length > 0 && (
                   <span className="adx2-pagination__selected">
                     Selected row(s) - {selectedRows.length}
@@ -596,10 +620,11 @@ const AdminAllCases = () => {
               </div>
               <div className="adx2-pagination__right">
                 <span className="adx2-pagination__info">
-                  {filtered.length === 0
-                    ? "0"
-                    : `${(page - 1) * rowsPerPage + 1}–${Math.min(page * rowsPerPage, filtered.length)}`
-                  } of {filtered.length} cases
+                  {serverTotal === 0
+                    ? "0 cases"
+                    : `${(page - 1) * rowsPerPage + 1}–${Math.min(page * rowsPerPage, serverTotal)} of ${serverTotal} cases`
+                  }
+                  {hasClientFilters && filtered.length < cases.length && ` · ${filtered.length} shown`}
                 </span>
                 <button
                   className="adx2-pagination__btn"

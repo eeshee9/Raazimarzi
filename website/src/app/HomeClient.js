@@ -246,7 +246,10 @@ useEffect(() => {
       <button className="btn-primary" onClick={() => navigateToApp("/user/file-new-case/step1")}>
         File a Case →
       </button>
-      <button className="btn-dark" onClick={() => navigateToApp("/user/chats")}>
+      <button className="btn-dark" onClick={() => {
+        const el = document.querySelector(".hiw-section");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }}>
         How It Works 👁
       </button>
     </div>

@@ -211,8 +211,86 @@ const SERVICE_TREE = [
   },
 ];
 
+/* ─── Product dropdown — pages not yet built, shown but non-clickable ─── */
+const PRODUCT_ITEMS = [
+  {
+    label: "User",
+    desc: "Manage disputes and track cases",
+    disabled: true,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    ),
+  },
+  {
+    label: "Mediator",
+    desc: "Review and resolve disputes",
+    disabled: true,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    ),
+  },
+];
+
+/* ─── Resources dropdown — pages not yet built, shown but non-clickable ─── */
+const RESOURCE_ITEMS = [
+  {
+    label: "Blog",
+    desc: "Latest updates in legal-tech trends.",
+    disabled: true,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+    ),
+  },
+  {
+    label: "Help Center",
+    desc: "Documentation and direct support.",
+    disabled: true,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/>
+        <line x1="12" y1="17" x2="12" y2="17"/>
+      </svg>
+    ),
+  },
+  {
+    label: "FAQs",
+    desc: "Quick answers to common questions.",
+    disabled: true,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <path d="M14 2v6h6"/>
+      </svg>
+    ),
+  },
+];
+
 /* ─── Nav structure ─── */
 const NAV_ITEMS = [
+  {
+    id: "home",
+    label: "Home",
+    href: "/",
+  },
+  {
+    id: "product",
+    label: "Product",
+    dropdown: {
+      sections: [{ title: "Product", items: PRODUCT_ITEMS }],
+    },
+  },
   {
     id: "solutions",
     label: "Solutions",
@@ -255,52 +333,13 @@ const NAV_ITEMS = [
     id: "resources",
     label: "Resources",
     dropdown: {
-      sections: [
-        {
-          title: "Resources",
-          items: [
-            {
-              icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                </svg>
-              ),
-              label: "Blog",
-              desc: "Latest updates in legal-tech trends.",
-              href: "/blog",
-            },
-            {
-              icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                  <line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-              ),
-              label: "Help Center",
-              desc: "Documentation and direct support.",
-              href: "/help",
-            },
-            {
-              icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-              ),
-              label: "FAQs",
-              desc: "Quick answers to common questions.",
-              href: "/faq",
-            },
-          ],
-        },
-      ],
+      sections: [{ title: "Resources", items: RESOURCE_ITEMS }],
     },
   },
   {
     id: "pricing",
     label: "Pricing",
-    href: "/pricing",
+    disabled: true,
   },
 ];
 
@@ -347,11 +386,21 @@ function SolutionsMega({ subTree, onClose }) {
   );
 }
 
+/* ─── Role → dashboard route, mirrors application/src/pages/Login.js redirectByRole ─── */
+function getDashboardPath(role) {
+  switch (role) {
+    case "admin": return "/admin/dashboard";
+    case "mediator": return "/mediator/dashboard";
+    case "case-manager": return "/cm/dashboard";
+    default: return "/user/dashboard";
+  }
+}
+
 /* ══════════════════════════════════════
    MOBILE MENU — 3-level slide panel
 ══════════════════════════════════════ */
-function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
-  // panel: "main" | "solutions" | "solutions-sub"
+function MobileMenu({ open, onClose, isLoggedIn, dashboardPath, navigateToApp }) {
+  // panel: "main" | "product" | "solutions" | "solutions-sub" | "resources"
   const [panel, setPanel] = useState("main");
   const [activeCat, setActiveCat] = useState(null); // SERVICE_TREE item
   const [expandedCatId, setExpandedCatId] = useState(null); // for 3rd panel accordion
@@ -369,7 +418,7 @@ function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
 
   const goBack = () => {
     if (panel === "solutions-sub") setPanel("solutions");
-    else if (panel === "solutions") setPanel("main");
+    else setPanel("main");
   };
 
   const handleCatClick = (cat) => {
@@ -403,6 +452,19 @@ function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
           </div>
 
           <nav className="hdr-mob-panel__nav">
+            {/* Home — direct link */}
+            <Link href="/" onClick={onClose} className="hdr-mob-panel__row hdr-mob-panel__row--link">
+              <span className="hdr-mob-panel__row-label">Home</span>
+            </Link>
+
+            {/* Product row — opens product panel */}
+            <div className="hdr-mob-panel__row" onClick={() => setPanel("product")}>
+              <span className="hdr-mob-panel__row-label">Product</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M5 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
             {/* Solutions row — opens panel 2 */}
             <div className="hdr-mob-panel__row" onClick={() => setPanel("solutions")}>
               <span className="hdr-mob-panel__row-label">Solutions</span>
@@ -411,7 +473,7 @@ function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
               </svg>
             </div>
 
-            {/* Resources row — opens panel 2 equivalent (simple links) */}
+            {/* Resources row — opens resources panel */}
             <div className="hdr-mob-panel__row" onClick={() => setPanel("resources")}>
               <span className="hdr-mob-panel__row-label">Resources</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -419,27 +481,92 @@ function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
               </svg>
             </div>
 
-            {/* Static links */}
-            <Link href="/pricing" className="hdr-mob-panel__row hdr-mob-panel__row--link" onClick={onClose}>
+            {/* Pricing — page not built yet, non-clickable */}
+            <div className="hdr-mob-panel__row hdr-mob-panel__row--disabled" aria-disabled="true" title="Coming soon">
               <span className="hdr-mob-panel__row-label">Pricing</span>
-            </Link>
+              <span className="hdr-mob-panel__row-badge">Soon</span>
+            </div>
           </nav>
 
-          {/* CTA buttons */}
+          {/* CTA button */}
           <div className="hdr-mob-panel__cta">
             <button
-              className="hdr-mob-panel__btn hdr-mob-panel__btn--outline"
-              onClick={() => { onClose(); navigateToApp("/login"); }}
-            >
-              Log In
-            </button>
-            <button
               className="hdr-mob-panel__btn hdr-mob-panel__btn--filled"
-              onClick={() => { onClose(); navigateToApp(isLoggedIn ? "/dashboard" : "/login"); }}
+              onClick={() => { onClose(); navigateToApp(isLoggedIn ? dashboardPath : "/signup"); }}
             >
-              {isLoggedIn ? "My Dashboard" : "File a Case"}
+              {isLoggedIn ? "My Dashboard" : "Get Started"}
             </button>
           </div>
+        </div>
+
+        {/* ── PANEL: Product (pages not built yet — non-clickable) ── */}
+        <div className={`hdr-mob-panel hdr-mob-panel--product ${panel === "product" ? "hdr-mob-panel--active" : ""}`}>
+          <div className="hdr-mob-panel__top hdr-mob-panel__top--inner">
+            <button className="hdr-mob-panel__back" onClick={goBack} aria-label="Go back">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <span className="hdr-mob-panel__title">Product</span>
+            <button className="hdr-mob-panel__close" onClick={onClose} aria-label="Close menu">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <nav className="hdr-mob-panel__nav">
+            {PRODUCT_ITEMS.map((p) => (
+              <div
+                key={p.label}
+                className="hdr-mob-panel__card-row hdr-mob-panel__card-row--disabled"
+                aria-disabled="true"
+                title="Coming soon"
+              >
+                <span className="hdr-mob-panel__card-icon">{p.icon}</span>
+                <span className="hdr-mob-panel__card-text">
+                  <span className="hdr-mob-panel__card-label">{p.label}</span>
+                  <span className="hdr-mob-panel__card-desc">{p.desc}</span>
+                </span>
+                <span className="hdr-mob-panel__card-badge">Soon</span>
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* ── PANEL: Resources (pages not built yet — non-clickable) ── */}
+        <div className={`hdr-mob-panel hdr-mob-panel--resources ${panel === "resources" ? "hdr-mob-panel--active" : ""}`}>
+          <div className="hdr-mob-panel__top hdr-mob-panel__top--inner">
+            <button className="hdr-mob-panel__back" onClick={goBack} aria-label="Go back">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <span className="hdr-mob-panel__title">Resources</span>
+            <button className="hdr-mob-panel__close" onClick={onClose} aria-label="Close menu">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <nav className="hdr-mob-panel__nav">
+            {RESOURCE_ITEMS.map((r) => (
+              <div
+                key={r.label}
+                className="hdr-mob-panel__card-row hdr-mob-panel__card-row--disabled"
+                aria-disabled="true"
+                title="Coming soon"
+              >
+                <span className="hdr-mob-panel__card-icon">{r.icon}</span>
+                <span className="hdr-mob-panel__card-text">
+                  <span className="hdr-mob-panel__card-label">{r.label}</span>
+                  <span className="hdr-mob-panel__card-desc">{r.desc}</span>
+                </span>
+                <span className="hdr-mob-panel__card-badge">Soon</span>
+              </div>
+            ))}
+          </nav>
         </div>
 
         {/* ── PANEL 2: Solutions ── */}
@@ -493,37 +620,6 @@ function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
                   <path d="M5 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-            ))}
-          </nav>
-        </div>
-
-        {/* ── PANEL 2b: Resources ── */}
-        <div className={`hdr-mob-panel hdr-mob-panel--resources ${panel === "resources" ? "hdr-mob-panel--active" : ""}`}>
-          <div className="hdr-mob-panel__top hdr-mob-panel__top--inner">
-            <button className="hdr-mob-panel__back" onClick={goBack} aria-label="Go back">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <span className="hdr-mob-panel__title">Resources</span>
-            <button className="hdr-mob-panel__close" onClick={onClose} aria-label="Close menu">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
-          <nav className="hdr-mob-panel__nav">
-            {[
-              { label: "Blog", desc: "Latest updates in legal-tech trends.", href: "/blog" },
-              { label: "Help Center", desc: "Documentation and direct support.", href: "/help" },
-              { label: "FAQs", desc: "Quick answers to common questions.", href: "/faq" },
-            ].map((r) => (
-              <Link key={r.label} href={r.href} className="hdr-mob-panel__card-row" onClick={onClose}>
-                <span className="hdr-mob-panel__card-text">
-                  <span className="hdr-mob-panel__card-label">{r.label}</span>
-                  <span className="hdr-mob-panel__card-desc">{r.desc}</span>
-                </span>
-              </Link>
             ))}
           </nav>
         </div>
@@ -635,14 +731,34 @@ function MobileMenu({ open, onClose, isLoggedIn, navigateToApp }) {
 ══════════════════════════════════════ */
 export default function Header() {
   const pathname = usePathname();
-  const isLoggedIn = false; // TODO: replace with real auth
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [openNav, setOpenNav] = useState(null);
   const [activeSolution, setActiveSolution] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const dropdownRef = useRef(null);
+
+  /* auth detection — reads the same localStorage keys the app (APP_BASE_PATH) writes on login/signup */
+  useEffect(() => {
+    const readAuth = () => {
+      const token = window.localStorage.getItem("token");
+      const storedRole = window.localStorage.getItem("role");
+      setIsLoggedIn(!!token);
+      setRole(storedRole);
+    };
+    readAuth();
+    window.addEventListener("storage", readAuth);
+    window.addEventListener("focus", readAuth);
+    return () => {
+      window.removeEventListener("storage", readAuth);
+      window.removeEventListener("focus", readAuth);
+    };
+  }, []);
+
+  const dashboardPath = getDashboardPath(role);
 
   const navigateToApp = useCallback((path = "/login") => {
     try { window.location.href = `${APP_BASE_PATH}${path}`; }
@@ -742,7 +858,15 @@ export default function Header() {
 
               return (
                 <div key={item.id} className="hdr__nav-item">
-                  {item.href && !hasDropdown ? (
+                  {item.disabled ? (
+                    <span
+                      className="hdr__nav-link hdr__nav-link--disabled"
+                      aria-disabled="true"
+                      title="Coming soon"
+                    >
+                      {item.label}
+                    </span>
+                  ) : item.href && !hasDropdown ? (
                     <Link
                       href={item.href}
                       className={`hdr__nav-link ${isActive ? "hdr__nav-link--active" : ""}`}
@@ -796,26 +920,41 @@ export default function Header() {
                           <div className="hdr__dd-card">
                             {section.items.map((di) => (
                               <div key={di.label} className="hdr__dd-item-wrap">
-                                <Link
-                                  href={di.href}
-                                  className="hdr__dd-item"
-                                  onClick={() => { if (!di.subTree) closeAll(); }}
-                                  onMouseEnter={() => {
-                                    if (di.subTree) setActiveSolution(di.subTree);
-                                    else setActiveSolution(null);
-                                  }}
-                                >
-                                  <span className="hdr__dd-icon">{di.icon}</span>
-                                  <span className="hdr__dd-text">
-                                    <span className="hdr__dd-label">{di.label}</span>
-                                    <span className="hdr__dd-desc">{di.desc}</span>
-                                  </span>
-                                  {di.subTree && (
-                                    <svg className="hdr__dd-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                      <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                  )}
-                                </Link>
+                                {di.disabled ? (
+                                  <div
+                                    className="hdr__dd-item hdr__dd-item--disabled"
+                                    aria-disabled="true"
+                                    title="Coming soon"
+                                  >
+                                    <span className="hdr__dd-icon">{di.icon}</span>
+                                    <span className="hdr__dd-text">
+                                      <span className="hdr__dd-label">{di.label}</span>
+                                      <span className="hdr__dd-desc">{di.desc}</span>
+                                    </span>
+                                    <span className="hdr__dd-badge">Soon</span>
+                                  </div>
+                                ) : (
+                                  <Link
+                                    href={di.href}
+                                    className="hdr__dd-item"
+                                    onClick={() => { if (!di.subTree) closeAll(); }}
+                                    onMouseEnter={() => {
+                                      if (di.subTree) setActiveSolution(di.subTree);
+                                      else setActiveSolution(null);
+                                    }}
+                                  >
+                                    <span className="hdr__dd-icon">{di.icon}</span>
+                                    <span className="hdr__dd-text">
+                                      <span className="hdr__dd-label">{di.label}</span>
+                                      <span className="hdr__dd-desc">{di.desc}</span>
+                                    </span>
+                                    {di.subTree && (
+                                      <svg className="hdr__dd-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                        <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                                      </svg>
+                                    )}
+                                  </Link>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -833,23 +972,23 @@ export default function Header() {
             })}
           </nav>
 
-          {/* CTA BUTTONS */}
+          {/* CTA BUTTON — desktop */}
           <div className="hdr__cta">
-            {isLoggedIn ? (
-              <button className="hdr__btn hdr__btn--filled" onClick={() => navigateToApp("/dashboard")}>
-                My Dashboard
-              </button>
-            ) : (
-              <>
-                <button className="hdr__btn hdr__btn--outline" onClick={() => navigateToApp("/login")}>
-                  Log In
-                </button>
-                <button className="hdr__btn hdr__btn--filled" onClick={() => navigateToApp("/login")}>
-                  File a Case
-                </button>
-              </>
-            )}
+            <button
+              className="hdr__btn hdr__btn--filled"
+              onClick={() => navigateToApp(isLoggedIn ? dashboardPath : "/signup")}
+            >
+              {isLoggedIn ? "My Dashboard" : "Get Started"}
+            </button>
           </div>
+
+          {/* CTA BUTTON — mobile (sits next to hamburger) */}
+          <button
+            className="hdr__btn hdr__btn--filled hdr__cta-mobile"
+            onClick={() => navigateToApp(isLoggedIn ? dashboardPath : "/signup")}
+          >
+            {isLoggedIn ? "My Dashboard" : "Get Started"}
+          </button>
 
           {/* MOBILE HAMBURGER */}
           <button
@@ -868,6 +1007,7 @@ export default function Header() {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         isLoggedIn={isLoggedIn}
+        dashboardPath={dashboardPath}
         navigateToApp={navigateToApp}
       />
     </>

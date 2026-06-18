@@ -17,13 +17,16 @@ const MeetingLobby = () => {
   const { id }   = useParams();
   const navigate = useNavigate();
 
-  const [meeting,  setMeeting]  = useState(null);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState(null);
-  const [camera,   setCamera]   = useState(true);
-  const [mic,      setMic]      = useState(true);
-  const [joining,  setJoining]  = useState(false);
+  const [meeting,   setMeeting]   = useState(null);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState(null);
+  const [camera,    setCamera]    = useState(true);
+  const [mic,       setMic]       = useState(true);
+  const [joining,   setJoining]   = useState(false);
+  const [camStream, setCamStream] = useState(null);
+  const videoRef = React.useRef(null);
 
+  /* ── Fetch meeting ── */
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -37,6 +40,32 @@ const MeetingLobby = () => {
     };
     fetch();
   }, [id]);
+
+  /* ── Request camera/mic for live preview ── */
+  useEffect(() => {
+    let stream = null;
+    navigator.mediaDevices?.getUserMedia({ video: true, audio: true })
+      .then((s) => {
+        stream = s;
+        setCamStream(s);
+        if (videoRef.current) {
+          videoRef.current.srcObject = s;
+          videoRef.current.play().catch(() => {});
+        }
+      })
+      .catch(() => { /* browser denied or not supported — fallback to placeholder */ });
+    return () => { stream?.getTracks().forEach((t) => t.stop()); };
+  }, []);
+
+  /* ── Attach stream to video element once both are ready ── */
+  useEffect(() => {
+    if (camStream && videoRef.current && camera) {
+      videoRef.current.srcObject = camStream;
+      videoRef.current.play().catch(() => {});
+    } else if (videoRef.current && !camera) {
+      videoRef.current.srcObject = null;
+    }
+  }, [camStream, camera]);
 
   const handleJoin = async () => {
     setJoining(true);
@@ -93,19 +122,20 @@ const MeetingLobby = () => {
           <div className="lobby-left">
             <div className="lobby-preview">
               <div className="lobby-preview-label">🔴 LIVE PREVIEW</div>
-              <div className="lobby-cam-area">
-                {camera ? (
-                  <div className="lobby-cam-placeholder">
-                    <span>📷</span>
-                    <p>Camera is on</p>
-                  </div>
-                ) : (
-                  <div className="lobby-cam-off">
-                    <span>📷</span>
-                    <p>Camera is off</p>
-                  </div>
-                )}
-              </div>
+              {camStream && camera ? (
+                <video
+                  ref={videoRef}
+                  className="lobby-video-feed"
+                  autoPlay
+                  muted
+                  playsInline
+                />
+              ) : (
+                <div className={`lobby-cam-area${!camera ? " lobby-cam-off" : ""}`}>
+                  <span>📷</span>
+                  <p>{camera ? "Requesting camera…" : "Camera is off"}</p>
+                </div>
+              )}
             </div>
 
             <div className="lobby-ready">
@@ -217,4 +247,4 @@ const MeetingLobby = () => {
   );
 };
 
-export default UserMeetingLobby;
+export default MeetingLobby;

@@ -137,14 +137,13 @@ const FileNewCaseStep1 = () => {
             { label: "Personal Details", icon: "👤", step: 1 },
             { label: "Case Details",     icon: "📋", step: 2 },
             { label: "Documents",        icon: "📄", step: 3 },
-            { label: "Review & Payment", icon: "💳", step: 4 },
           ].map(({ label, icon, step }, i) => (
             <React.Fragment key={step}>
               <div className={`fnc-step ${step === 1 ? "active" : ""}`}>
                 <div className="fnc-step-icon">{icon}</div>
                 <span>{label}</span>
               </div>
-              {i < 3 && <div className="fnc-step-line" />}
+              {i < 2 && <div className="fnc-step-line" />}
             </React.Fragment>
           ))}
         </div>
@@ -153,7 +152,7 @@ const FileNewCaseStep1 = () => {
         <div className="fnc-body">
           <h2 className="fnc-title">People Involved</h2>
           <p className="fnc-subtitle">
-            To begin your case filing, we need to know who is involved. Your information is pre-filled from your profile.
+            Please enter the details of all parties involved to begin the case filing process.
           </p>
 
           {/* ── Petitioner ── */}

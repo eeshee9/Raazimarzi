@@ -1,34 +1,48 @@
-// import express from "express";
-// import protect, { authorizeRoles } from "../middleware/authMiddleware.js";
-// import {
-//   getFilingFee,
-//   createOrder,
-//   verifyPayment,
-//   handleWebhook,
-//   linkPaymentToCase,
-//   getMyPayments,
-//   getPaymentStatus,
-//   getAllPayments,
-//   refundPayment,
-// } from "../controllers/paymentController.js";
+import express from "express";
+import protect, { authorizeRoles } from "../middleware/authMiddleware.js";
+import {
+  getDashboard,
+  getTransactions,
+  getTransactionById,
+  downloadInvoicePDF,
+  getPaymentMethods,
+  createPaymentMethod,
+  setDefaultMethod,
+  deletePaymentMethod,
+  verifyUpiId,
+  initiatePayment,
+  verifyPayment,
+  createTransaction,
+  getAdminDashboard,
+  getAdminTransactions,
+  getAdminTransactionById,
+  downloadAdminInvoicePDF,
+} from "../controllers/paymentController.js";
 
-// const router = express.Router();
+const router = express.Router();
 
-// const adminOnly = [protect, authorizeRoles(["admin"])];
+const adminOrManager = [protect, authorizeRoles(["admin", "case-manager"])];
 
-// /* ─── Public (no auth needed for webhook — Razorpay calls this) ─── */
-// router.post("/webhook", handleWebhook);
+/* ── User routes (authenticated) ── */
+router.get("/dashboard",                       protect, getDashboard);
+router.get("/transactions",                    protect, getTransactions);
+router.get("/transactions/:id",                protect, getTransactionById);
+router.get("/transactions/:id/invoice-pdf",    protect, downloadInvoicePDF);
+router.get("/methods",                         protect, getPaymentMethods);
+router.post("/methods",                        protect, createPaymentMethod);
+router.patch("/methods/:id/default",           protect, setDefaultMethod);
+router.delete("/methods/:id",                  protect, deletePaymentMethod);
+router.post("/verify-upi",                     protect, verifyUpiId);
+router.post("/initiate",                       protect, initiatePayment);
+router.post("/verify",                         protect, verifyPayment);
 
-// /* ─── User routes ─── */
-// router.get("/fee/:caseType",          protect, getFilingFee);        // GET /api/payments/fee/property
-// router.post("/create-order",          protect, createOrder);          // POST /api/payments/create-order
-// router.post("/verify",                protect, verifyPayment);        // POST /api/payments/verify
-// router.post("/link-case",             protect, linkPaymentToCase);    // POST /api/payments/link-case
-// router.get("/my",                     protect, getMyPayments);        // GET  /api/payments/my
-// router.get("/status/:orderId",        protect, getPaymentStatus);     // GET  /api/payments/status/:orderId
+/* ── Admin / Case-Manager routes ── */
+router.post("/transactions",                   ...adminOrManager, createTransaction);
 
-// /* ─── Admin routes ─── */
-// router.get("/all",                    ...adminOnly, getAllPayments);   // GET  /api/payments/all
-// router.post("/:id/refund",            ...adminOnly, refundPayment);   // POST /api/payments/:id/refund
+/* ── Admin Payments module ── */
+router.get("/admin/dashboard",                          ...adminOrManager, getAdminDashboard);
+router.get("/admin/transactions",                       ...adminOrManager, getAdminTransactions);
+router.get("/admin/transactions/:id",                   ...adminOrManager, getAdminTransactionById);
+router.get("/admin/transactions/:id/invoice-pdf",       ...adminOrManager, downloadAdminInvoicePDF);
 
-// export default router;
+export default router;

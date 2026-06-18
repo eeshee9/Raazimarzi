@@ -1,5 +1,6 @@
 import Case, { CASE_PREFIXES } from "../models/caseModel.js";
 import User from "../models/userModel.js";
+import { normalizeCaseType } from "../utils/normalizeCaseType.js";
 // import Payment from "../models/paymentModel.js";  // re-enable when payment is ready
 import nodemailer from "nodemailer";
 import crypto from "crypto";
@@ -81,7 +82,9 @@ export const fileNewCase = async (req, res) => {
 
     const newCase = await Case.create({
       caseId,
-      caseType:      sanitizeInput(caseType),
+      // Normalize to the valid enum when possible; otherwise fall back to the
+      // sanitized raw value so Mongoose's own enum validation still applies.
+      caseType:      normalizeCaseType(sanitizeInput(caseType)) || sanitizeInput(caseType),
       caseTitle:     sanitizeInput(caseTitle),
       causeOfAction: sanitizeInput(causeOfAction),
       reliefSought:  sanitizeInput(reliefSought),

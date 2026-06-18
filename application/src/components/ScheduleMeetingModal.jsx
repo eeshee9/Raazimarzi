@@ -70,11 +70,15 @@ export default function ScheduleMeetingModal({ isOpen, onClose, caseData }) {
   const [availability,  setAvailability]  = useState(null);
   const [checkingAvail, setCheckingAvail] = useState(false);
 
+  /* Bug 1 fix: derive mediator from real field assignedNeutral */
+  const mediator = caseData?.assignedNeutral
+    ? { _id: caseData.assignedNeutral._id, name: caseData.assignedNeutral.name || caseData.assignedNeutral.fullName }
+    : null;
+
   /* init participants from caseData */
   useEffect(() => {
     if (!caseData) return;
     const initial = [];
-    // ✅ Support both petitionerDetails (your model) and petitioner (populated)
     const petName = caseData.petitionerDetails?.fullName || caseData.petitioner?.fullName;
     const resName = caseData.defendantDetails?.fullName  || caseData.respondent?.fullName;
     if (petName) initial.push({ name: petName, role: "Petitioner", included: true });
@@ -82,21 +86,19 @@ export default function ScheduleMeetingModal({ isOpen, onClose, caseData }) {
     setParticipants(initial);
   }, [caseData]);
 
-  /* check availability */
+  /* check availability — uses real assignedNeutral._id */
   const checkAvailability = useCallback(async () => {
-    if (!date || !caseData?.mediator) return;
+    if (!date || !mediator?._id) return;
     setCheckingAvail(true);
     try {
-      const mediatorId = caseData.mediator._id || caseData.mediatorId;
-      if (!mediatorId) return;
-      const res = await api.get("/meetings/availability", { params: { mediatorId, date } });
+      const res = await api.get("/meetings/availability", { params: { mediatorId: mediator._id, date } });
       setAvailability(res.data);
     } catch {
       setAvailability(null);
     } finally {
       setCheckingAvail(false);
     }
-  }, [date, caseData]);
+  }, [date, mediator?._id]);
 
   useEffect(() => { checkAvailability(); }, [checkAvailability]);
 
@@ -141,7 +143,7 @@ export default function ScheduleMeetingModal({ isOpen, onClose, caseData }) {
         startTime,
         endTime,
         timezone:      "Asia/Kolkata",
-        mediatorId:    caseData?.mediator?._id || caseData?.mediatorId || undefined,
+        mediatorId:    mediator?._id || undefined,
         locationType,
         virtualMeeting: locationType === "virtual"
           ? { platform: "Zoom", meetingLink: "", passcode: "" }
@@ -214,9 +216,7 @@ export default function ScheduleMeetingModal({ isOpen, onClose, caseData }) {
                 </div>
                 <div className="smm-case-strip__field">
                   <span className="smm-label">MEDIATOR</span>
-                  <span className="smm-val">
-                    {caseData?.mediator?.fullName || caseData?.mediator?.name || "Unassigned"}
-                  </span>
+                  <span className="smm-val">{mediator?.name || "Unassigned"}</span>
                 </div>
                 <div className="smm-case-strip__field">
                   <span className="smm-label">PARTIES</span>
@@ -341,16 +341,14 @@ export default function ScheduleMeetingModal({ isOpen, onClose, caseData }) {
                       </div>
                     ))}
 
-                    {/* Mediator (non-removable) */}
-                    {(caseData?.mediator?.fullName || caseData?.mediator?.name) && (
+                    {/* Mediator (non-removable) — uses real assignedNeutral */}
+                    {mediator?.name && (
                       <div className="smm-participant smm-participant--mediator">
                         <div className="smm-participant__avatar smm-participant__avatar--med">
-                          {(caseData.mediator.fullName || caseData.mediator.name)[0]}
+                          {mediator.name[0]}
                         </div>
                         <div className="smm-participant__info">
-                          <span className="smm-participant__name">
-                            {caseData.mediator.fullName || caseData.mediator.name}
-                          </span>
+                          <span className="smm-participant__name">{mediator.name}</span>
                           <span className="smm-participant__role smm-participant__role--med">Mediator</span>
                         </div>
                         <FaCheckCircle className="smm-participant__check" />

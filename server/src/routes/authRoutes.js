@@ -7,7 +7,9 @@ import {
   resetPassword,
   getMyProfile,
   updateProfile,
-  getCurrentUser
+  getCurrentUser,
+  changePassword,
+  updateNotifications,
 } from "../controllers/authController.js";
 
 // ✅ Import NEW profile functions from userController
@@ -39,5 +41,9 @@ router.put("/update", protect, updateProfile);
 // ✅ NEW Profile routes with avatar upload
 router.get("/me", protect, getUserProfile);
 router.put("/profile", protect, uploadAvatar.single("avatar"), updateUserProfile);
+
+// ✅ Account management
+router.post("/change-password", protect, changePassword);
+router.patch("/notifications", protect, updateNotifications);
 
 export default router;

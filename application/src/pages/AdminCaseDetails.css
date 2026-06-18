@@ -6,7 +6,7 @@
 .acd-root {
   display: flex;
   height: 100vh;
-  background: #fff;
+  background: #f4f5fb;
   font-family: 'Inter', sans-serif;
   overflow: hidden;
 }
@@ -36,13 +36,46 @@
 .acd-topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 14px 32px;
   background: #fff;
   border-bottom: 1px solid #ebebf5;
   gap: 20px;
   flex-shrink: 0;
 }
+
+/* Error / fetch-failed state */
+.acd-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  gap: 16px;
+}
+.acd-error-state__msg {
+  font-size: 15px;
+  color: #dc2626;
+  font-weight: 600;
+  margin: 0;
+}
+.acd-error-state__retry {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 20px;
+  border: 1.5px solid rgba(119,138,255,0.5);
+  border-radius: 8px;
+  background: rgba(119,138,255,0.04);
+  color: rgba(119,138,255,1);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s;
+}
+.acd-error-state__retry:hover { background: rgba(119,138,255,0.1); }
 
 .acd-search { position: relative; flex: 1; max-width: 380px; }
 
@@ -205,6 +238,7 @@
   gap: 7px;
   height: 38px;
   padding: 0 18px;
+  border: 1px solid transparent;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -212,7 +246,6 @@
   font-family: 'Inter', sans-serif;
   white-space: nowrap;
   transition: all 0.2s;
-  
 }
 
 .acd-action-btn--outline {
@@ -222,34 +255,8 @@
   box-shadow: 0 4px 12px rgba(119, 138, 255, 0.35);
 }
 .acd-action-btn--outline:hover {
-  align-items: center;
-  justify-content: center;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  font-family: "Plus Jakarta Sans", sans-serif;
-
-  width: 185px;
-  height: 56px;
-  padding: 10px;
-  gap: 10px;
-  border-radius: 24px;
-
-  font-size: 15px;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 1);
-  text-decoration: none;
-  white-space: nowrap;
-  line-height: 1;
-
-  background: linear-gradient(90deg, rgba(119,138,255,1) 0%, rgba(230,234,255,1) 100%);
-  box-shadow:
-    0px 6px 0px 0px rgba(119, 138, 255, 1),
-    0px 5px 10px 0px rgba(0, 0, 0, 0.25);
-
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
-  position: relative;
-  top: 0;
+  background: rgba(119, 138, 255, 0.1);
+  border-color: rgba(119, 138, 255, 0.8);
 }
 
 .acd-action-btn--primary {
@@ -259,34 +266,8 @@
   box-shadow: 0 4px 12px rgba(119, 138, 255, 0.35);
 }
 .acd-action-btn--primary:hover {
-  align-items: center;
-  justify-content: center;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  font-family: "Plus Jakarta Sans", sans-serif;
-
-  width: 185px;
-  height: 56px;
-  padding: 10px;
-  gap: 10px;
-  border-radius: 24px;
-
-  font-size: 15px;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 1);
-  text-decoration: none;
-  white-space: nowrap;
-  line-height: 1;
-
-  background: linear-gradient(90deg, rgba(119,138,255,1) 0%, rgba(230,234,255,1) 100%);
-  box-shadow:
-    0px 6px 0px 0px rgba(119, 138, 255, 1),
-    0px 5px 10px 0px rgba(0, 0, 0, 0.25);
-
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
-  position: relative;
-  top: 0;
+  background: rgba(119, 138, 255, 0.1);
+  border-color: rgba(119, 138, 255, 0.8);
 }
 
 /* ══════════════════════════════════════════
@@ -454,6 +435,49 @@
 .acd-timeline__item--upcoming .acd-timeline__desc {
   font-style: italic;
   color: #999;
+}
+
+.acd-timeline__by {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 2px;
+}
+
+/* Empty state message */
+.acd-empty-msg {
+  font-size: 13px;
+  color: #bbb;
+  padding: 8px 0;
+}
+
+/* Assign Mediator button — shown in Case Participants card when no mediator */
+.acd-assign-mediator-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  padding: 0 16px;
+  border: 2px dashed rgba(119, 138, 255, 0.4);
+  border-radius: 10px;
+  background: rgba(119, 138, 255, 0.04);
+  color: rgba(119, 138, 255, 1);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s, background 0.2s;
+  margin-top: 4px;
+}
+.acd-assign-mediator-btn:hover {
+  border-color: rgba(119, 138, 255, 0.7);
+  background: rgba(119, 138, 255, 0.08);
+}
+.acd-assign-mediator-btn__icon { font-size: 14px; }
+
+/* No upcoming meeting state */
+.acd-meeting-card--empty {
+  padding: 20px;
 }
 
 /* ══════════════════════════════════════════

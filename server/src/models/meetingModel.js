@@ -236,6 +236,20 @@ const meetingSchema = new mongoose.Schema(
 
     meetingNotes: String,
 
+    // ═══════════ SESSION TIMING ═══════════
+    startedAt:   Date,   // set when startMeeting is called
+    completedAt: Date,   // set when completeMeeting is called
+
+    // ═══════════ MEETING FEEDBACK ═══════════
+    meetingFeedback: [
+      {
+        submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        rating:      { type: Number, min: 1, max: 5 },
+        comment:     { type: String, trim: true, maxlength: 1000 },
+        submittedAt: { type: Date, default: Date.now },
+      },
+    ],
+
     // ═══════════ RECORDING ═══════════
     recording: {
       isRecorded:        { type: Boolean, default: false },

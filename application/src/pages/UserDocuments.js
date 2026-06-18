@@ -1,6 +1,6 @@
 // src/pages/UserDocuments.js
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import UserSidebar from "../components/UserSidebar";
 import UserNavbar from "../components/Navbar";
 import api from "../api/axios";
@@ -16,7 +16,6 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaFileAlt,
-  FaChevronRight,
   FaClock,
   FaIdCard,
   FaUser,
@@ -31,10 +30,19 @@ import {
   FaEye,
   FaArrowLeft,
   FaFolderOpen,
-  FaFileExport,
-  FaFilter,
-  FaSortAmountDown,
 } from "react-icons/fa";
+
+// ─── Decode JWT to get current user ID ────────────────────────────────────────
+const getTokenUserId = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.id || payload._id || payload.userId || null;
+  } catch {
+    return null;
+  }
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (dateStr) =>
@@ -45,6 +53,15 @@ const fmt = (dateStr) =>
         year: "numeric",
       })
     : "—";
+
+const fmtTime = (dateStr) =>
+  dateStr
+    ? new Date(dateStr).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : null;
 
 const fmtDateTime = (dateStr) =>
   dateStr
@@ -57,6 +74,18 @@ const fmtDateTime = (dateStr) =>
         hour12: false,
       })
     : "—";
+
+// Map system user role to display label
+const displayRole = (role = "") => {
+  const map = {
+    user: "Petitioner",
+    mediator: "Mediator",
+    arbitrator: "Arbitrator",
+    "case-manager": "Case Manager",
+    admin: "Admin",
+  };
+  return map[role.toLowerCase()] || role;
+};
 
 // ─── Status config ─────────────────────────────────────────────────────────────
 const getStatusCfg = (rawStatus = "pending") => {
@@ -102,20 +131,18 @@ const FileTypeIcon = ({ fileName = "", type = "" }) => {
 
 // ─── File type badge ──────────────────────────────────────────────────────────
 const FileTypeBadge = ({ fileName = "", type = "" }) => {
-  const ext = (
-    fileName.split(".").pop() ||
-    type ||
-    "file"
-  )
+  const ext = (fileName.split(".").pop() || type || "file")
     .toUpperCase()
     .slice(0, 5);
-  const cls = {
-    PDF: "ud-type-badge ud-type-badge--pdf",
-    DOCX: "ud-type-badge ud-type-badge--docx",
-    JPG: "ud-type-badge ud-type-badge--jpg",
-    JPEG: "ud-type-badge ud-type-badge--jpg",
-    PNG: "ud-type-badge ud-type-badge--png",
-  }[ext] || "ud-type-badge ud-type-badge--default";
+  const cls =
+    {
+      PDF: "ud-type-badge ud-type-badge--pdf",
+      DOCX: "ud-type-badge ud-type-badge--docx",
+      DOC: "ud-type-badge ud-type-badge--docx",
+      JPG: "ud-type-badge ud-type-badge--jpg",
+      JPEG: "ud-type-badge ud-type-badge--jpg",
+      PNG: "ud-type-badge ud-type-badge--png",
+    }[ext] || "ud-type-badge ud-type-badge--default";
   return <span className={cls}>{ext}</span>;
 };
 
@@ -135,48 +162,105 @@ const Avatar = ({ name = "", src = null }) => (
   </div>
 );
 
-// ─── Case role badge colors ────────────────────────────────────────────────────
-const RoleBadge = ({ role = "" }) => {
-  const r = role.toLowerCase();
-  const cls =
-    r === "petitioner"
-      ? "ud-role-badge ud-role-badge--petitioner"
-      : r === "respondent"
-      ? "ud-role-badge ud-role-badge--respondent"
-      : "ud-role-badge ud-role-badge--mediator";
-  return <span className={cls}>{role}</span>;
+// ─── Rename Modal ─────────────────────────────────────────────────────────────
+const RenameModal = ({ doc, onConfirm, onCancel }) => {
+  const [name, setName] = useState(doc?.fileName || doc?.documentTitle || "");
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  useEffect(() => {
+    const h = (e) => { if (e.key === "Escape") onCancel(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onCancel]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = name.trim();
+    if (trimmed && trimmed !== (doc?.fileName || doc?.documentTitle || "")) {
+      onConfirm(doc, trimmed);
+    }
+  };
+
+  return (
+    <div className="ud-modal-overlay" onClick={onCancel}>
+      <div className="ud-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="ud-modal-header">
+          <h3 className="ud-modal-title">Rename Document</h3>
+          <button className="ud-modal-close-btn" onClick={onCancel}>
+            <FaTimes />
+          </button>
+        </div>
+        <p className="ud-modal-sub">Enter a new name for this document</p>
+        <form onSubmit={handleSubmit}>
+          <input
+            ref={inputRef}
+            className="ud-modal-input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Document name"
+            maxLength={200}
+          />
+          <div className="ud-modal-actions">
+            <button type="button" className="ud-modal-cancel" onClick={onCancel}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="ud-modal-confirm"
+              disabled={!name.trim() || name.trim() === (doc?.fileName || "")}
+            >
+              Rename
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 // ─── Actions Menu ─────────────────────────────────────────────────────────────
-/**
- * Per dev comment:
- *  - Pending  → Rename, Replace file, Delete
- *  - Approved → Rename, Delete
- *  - Rejected → 3-dot replaced by re-upload icon
- *  - File uploaded by Respondent or Mediator → 3-dot disabled (from petitioner view)
- */
-const ActionsMenu = ({ doc, currentUserRole = "petitioner", onRename, onReplace, onDelete, onReupload }) => {
+const ActionsMenu = ({
+  doc,
+  currentUserId,
+  onRename,
+  onReplace,
+  onDelete,
+  onReupload,
+}) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const status = (doc.status || "pending").toLowerCase();
-  const uploaderRole = (doc.uploaderRole || doc.uploadedByRole || "").toLowerCase();
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  // Petitioner sees disabled 3-dot for respondent/mediator files
-  const isOtherUploaded =
-    currentUserRole === "petitioner" &&
-    (uploaderRole === "respondent" || uploaderRole === "mediator");
+  const isOwnFile =
+    doc.uploadedById && currentUserId && doc.uploadedById === currentUserId;
 
-  // Rejected → show re-upload icon instead of 3-dot
+  if (!isOwnFile) {
+    return (
+      <button
+        className="ud-three-dot-btn ud-three-dot-btn--disabled"
+        disabled
+        title="Actions not available for files uploaded by others"
+      >
+        <FaEllipsisV />
+      </button>
+    );
+  }
+
   if (status === "rejected") {
     return (
       <button
@@ -192,17 +276,15 @@ const ActionsMenu = ({ doc, currentUserRole = "petitioner", onRename, onReplace,
   return (
     <div className="ud-actions-wrap" ref={menuRef}>
       <button
-        className={`ud-three-dot-btn ${isOtherUploaded ? "ud-three-dot-btn--disabled" : ""}`}
-        onClick={() => !isOtherUploaded && setOpen((o) => !o)}
-        title={isOtherUploaded ? "Actions not available for files uploaded by others" : "Actions"}
-        disabled={isOtherUploaded}
+        className="ud-three-dot-btn"
+        onClick={() => setOpen((o) => !o)}
+        title="Actions"
       >
         <FaEllipsisV />
       </button>
 
       {open && (
         <div className="ud-actions-dropdown">
-          {/* Rename — available for both pending and approved */}
           <button
             className="ud-actions-item"
             onClick={() => { setOpen(false); onRename && onRename(doc); }}
@@ -211,7 +293,6 @@ const ActionsMenu = ({ doc, currentUserRole = "petitioner", onRename, onReplace,
             <span>Rename</span>
           </button>
 
-          {/* Replace file — only for pending */}
           {status === "pending" && (
             <button
               className="ud-actions-item"
@@ -222,7 +303,6 @@ const ActionsMenu = ({ doc, currentUserRole = "petitioner", onRename, onReplace,
             </button>
           )}
 
-          {/* Delete — available for both pending and approved */}
           <button
             className="ud-actions-item ud-actions-item--danger"
             onClick={() => { setOpen(false); onDelete && onDelete(doc); }}
@@ -243,11 +323,23 @@ const DocumentViewer = ({ doc, onBack }) => {
   const [zoom, setZoom] = useState(100);
   const [fullscreen, setFullscreen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [url, setUrl] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(true);
   const fileRef = useRef(null);
 
   const sc = getStatusCfg(doc.status || "pending");
-  const url = doc.fileUrl || doc.previewUrl || null;
   const isRejected = (doc.status || "").toLowerCase() === "rejected";
+
+  // Objects are private — fetch a short-lived presigned URL for preview.
+  useEffect(() => {
+    let active = true;
+    setPreviewLoading(true);
+    api.get(`/documents/${doc._id}/download`)
+      .then((res) => { if (active) setUrl(res.data?.downloadUrl || null); })
+      .catch(() => { if (active) setUrl(null); })
+      .finally(() => { if (active) setPreviewLoading(false); });
+    return () => { active = false; };
+  }, [doc._id]);
 
   useEffect(() => {
     const h = (e) => { if (e.key === "Escape") setFullscreen(false); };
@@ -255,12 +347,23 @@ const DocumentViewer = ({ doc, onBack }) => {
     return () => window.removeEventListener("keydown", h);
   }, []);
 
-  const handleDownload = () => {
-    if (!url) return;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = doc.fileName || "document";
-    a.click();
+  const handleDownload = async () => {
+    try {
+      const res = await api.get(`/documents/${doc._id}/download`);
+      if (res.data?.downloadUrl) {
+        const a = document.createElement("a");
+        a.href = res.data.downloadUrl;
+        a.download = res.data.fileName || doc.fileName || "document";
+        a.click();
+      }
+    } catch {
+      if (url) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = doc.fileName || "document";
+        a.click();
+      }
+    }
   };
 
   const handleReupload = async (e) => {
@@ -271,7 +374,9 @@ const DocumentViewer = ({ doc, onBack }) => {
       const form = new FormData();
       form.append("file", file);
       form.append("documentId", doc._id);
-      await api.post("/documents/reupload", form);
+      await api.patch(`/documents/${doc._id}/replace`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       window.location.reload();
     } catch (err) {
       alert(err.response?.data?.message || "Upload failed. Please try again.");
@@ -281,6 +386,13 @@ const DocumentViewer = ({ doc, onBack }) => {
   };
 
   const PreviewContent = () => {
+    if (previewLoading) {
+      return (
+        <div className="ud-no-preview">
+          <p>Loading preview…</p>
+        </div>
+      );
+    }
     if (!url) {
       return (
         <div className="ud-no-preview">
@@ -290,178 +402,171 @@ const DocumentViewer = ({ doc, onBack }) => {
         </div>
       );
     }
-    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+    // Presigned URLs carry a query string, so sniff the file type from
+    // metadata rather than matching an extension at the end of the URL.
+    const isImage =
+      (doc.mimeType || "").startsWith("image/") ||
+      /\.(jpg|jpeg|png|gif|webp)$/i.test(doc.fileExtension || doc.fileName || "");
+    if (isImage) {
       return (
         <img src={url} alt={doc.fileName || "document"} className="ud-preview-img" />
       );
     }
     return (
-      <iframe
-        src={url}
-        title={doc.fileName || "document"}
-        className="ud-preview-frame"
-      />
+      <iframe src={url} title={doc.fileName || "document"} className="ud-preview-frame" />
     );
   };
 
   return (
-    <>
-      {/* ── Viewer Header ── */}
-      <div className="ud-viewer-header">
-        <div className="ud-viewer-title-col">
-          {onBack && (
-            <button className="ud-back-btn" onClick={onBack}>
-              <FaArrowLeft /> <span>Back</span>
+    <div className={`ud-viewer-wrap${fullscreen ? " ud-viewer-wrap--fs" : ""}`}>
+      {!fullscreen && (
+        <div className="ud-viewer-header">
+          <div className="ud-viewer-title-col">
+            {onBack && (
+              <button className="ud-back-btn" onClick={onBack}>
+                <FaArrowLeft /> <span>Back</span>
+              </button>
+            )}
+            <div className="ud-viewer-name-row">
+              <h2 className="ud-viewer-name">{doc.fileName || "Document"}</h2>
+              <span className={sc.badgeClass}>{sc.label}</span>
+            </div>
+            <div className="ud-viewer-meta">
+              <FaIdCard className="ud-meta-icon" />
+              <span>Case ID: #{doc.caseId || "—"}</span>
+              <span className="ud-dot">•</span>
+              <FaUser className="ud-meta-icon" />
+              <span>
+                {doc.uploadedBy || "—"}
+                {doc.uploaderRole
+                  ? ` (${displayRole(doc.uploaderRole)})`
+                  : ""}
+              </span>
+              <span className="ud-dot">•</span>
+              <FaCalendarAlt className="ud-meta-icon" />
+              <span>{fmt(doc.createdAt || doc.uploadedAt)}</span>
+            </div>
+          </div>
+
+          <div className="ud-viewer-actions">
+            <div className="ud-zoom-group">
+              <button
+                className="ud-zoom-btn"
+                onClick={() => setZoom((z) => Math.max(z - 25, 50))}
+                title="Zoom out"
+              >
+                <FaSearchMinus />
+              </button>
+              <span className="ud-zoom-label">{zoom}%</span>
+              <button
+                className="ud-zoom-btn"
+                onClick={() => setZoom((z) => Math.min(z + 25, 200))}
+                title="Zoom in"
+              >
+                <FaSearchPlus />
+              </button>
+            </div>
+
+            <button className="ud-fs-btn" onClick={() => setFullscreen(true)}>
+              <FaExpand />
+              <span>Fullscreen</span>
+            </button>
+
+            <button className="ud-dl-btn" onClick={handleDownload}>
+              <FaDownload />
+              <span>Download</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="ud-viewer-body">
+        <div className="ud-preview-pane">
+          {fullscreen && (
+            <button
+              className="ud-fs-close-inline"
+              onClick={() => setFullscreen(false)}
+              title="Exit fullscreen (Esc)"
+            >
+              <FaTimes />
             </button>
           )}
-          <div className="ud-viewer-name-row">
-            <h2 className="ud-viewer-name">{doc.fileName || "Document"}</h2>
-            <span className={sc.badgeClass}>{sc.label}</span>
-          </div>
-          <div className="ud-viewer-meta">
-            <FaIdCard className="ud-meta-icon" />
-            <span>Case ID: #{doc.caseId || "—"}</span>
-            <span className="ud-dot">•</span>
-            <FaUser className="ud-meta-icon" />
-            <span>
-              {doc.uploadedBy || "—"}
-              {doc.uploaderRole ? ` (${doc.uploaderRole})` : ""}
-            </span>
-            <span className="ud-dot">•</span>
-            <FaCalendarAlt className="ud-meta-icon" />
-            <span>{fmt(doc.createdAt || doc.uploadedAt)}</span>
-          </div>
-        </div>
-
-        <div className="ud-viewer-actions">
-          <div className="ud-zoom-group">
-            <button
-              className="ud-zoom-btn"
-              onClick={() => setZoom((z) => Math.max(z - 25, 50))}
-              title="Zoom out"
-            >
-              <FaSearchMinus />
-            </button>
-            <span className="ud-zoom-label">{zoom}%</span>
-            <button
-              className="ud-zoom-btn"
-              onClick={() => setZoom((z) => Math.min(z + 25, 200))}
-              title="Zoom in"
-            >
-              <FaSearchPlus />
-            </button>
-          </div>
-
-          <button className="ud-fs-btn" onClick={() => setFullscreen(true)}>
-            <FaExpand />
-            <span>Fullscreen</span>
-          </button>
-
-          <button className="ud-dl-btn" onClick={handleDownload}>
-            <FaDownload />
-            <span>Download</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ── Body: preview + side panel ── */}
-      <div className="ud-viewer-body">
-        {/* Preview pane */}
-        <div className="ud-preview-pane">
           <div
             className="ud-preview-scroll"
-            style={{
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: "top center",
-            }}
+            style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
           >
             <PreviewContent />
           </div>
         </div>
 
-        {/* Side panel */}
-        <aside className="ud-side-panel">
-          {/* Verification status */}
-          <div className="ud-side-block">
-            <p className="ud-side-label">VERIFICATION STATUS</p>
-            <div className={sc.pillClass}>
-              <sc.Icon />
-              <span>{sc.text}</span>
-            </div>
-          </div>
-
-          {/* Rejection reason */}
-          {isRejected && doc.rejectionReason && (
+        {!fullscreen && (
+          <aside className="ud-side-panel">
             <div className="ud-side-block">
-              <p className="ud-rejection-label">REJECTION REASON</p>
-              <p className="ud-rejection-text">{doc.rejectionReason}</p>
+              <p className="ud-side-label">VERIFICATION STATUS</p>
+              <div className={sc.pillClass}>
+                <sc.Icon />
+                <span>{sc.text}</span>
+              </div>
             </div>
-          )}
 
-          {/* Audit trail */}
-          {Array.isArray(doc.auditTrail) && doc.auditTrail.length > 0 && (
-            <div className="ud-side-block">
-              <p className="ud-audit-heading">Audit Trail</p>
-              {doc.auditTrail.map((entry, i) => (
-                <div key={i} className="ud-audit-row">
-                  <Avatar name={entry.byName || "MK"} />
-                  <div className="ud-audit-info">
-                    <p className="ud-audit-action">
-                      {entry.action} by <strong>{entry.byName}</strong>
-                    </p>
-                    <p className="ud-audit-time">{fmtDateTime(entry.at)}</p>
+            {isRejected && doc.rejectionReason && (
+              <div className="ud-side-block">
+                <p className="ud-rejection-label">REJECTION REASON</p>
+                <p className="ud-rejection-text">{doc.rejectionReason}</p>
+              </div>
+            )}
+
+            {Array.isArray(doc.auditTrail) && doc.auditTrail.length > 0 && (
+              <div className="ud-side-block">
+                <p className="ud-audit-heading">Audit Trail</p>
+                {doc.auditTrail.map((entry, i) => (
+                  <div key={i} className="ud-audit-row">
+                    <Avatar name={entry.byName || "?"} />
+                    <div className="ud-audit-info">
+                      <p className="ud-audit-action">
+                        {entry.action} by <strong>{entry.byName}</strong>
+                      </p>
+                      <p className="ud-audit-time">{fmtDateTime(entry.at)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          {/* Re-upload button (rejected only) */}
-          {isRejected && (
-            <>
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                style={{ display: "none" }}
-                onChange={handleReupload}
-              />
-              <button
-                className="ud-reupload-btn"
-                onClick={() => fileRef.current && fileRef.current.click()}
-                disabled={uploading}
-              >
-                <FaUpload />
-                <span>{uploading ? "Uploading…" : "Re-upload Document"}</span>
-              </button>
-            </>
-          )}
-        </aside>
+            {isRejected && (
+              <>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  style={{ display: "none" }}
+                  onChange={handleReupload}
+                />
+                <button
+                  className="ud-reupload-btn"
+                  onClick={() => fileRef.current && fileRef.current.click()}
+                  disabled={uploading}
+                >
+                  <FaUpload />
+                  <span>{uploading ? "Uploading…" : "Re-upload Document"}</span>
+                </button>
+              </>
+            )}
+          </aside>
+        )}
       </div>
-
-      {/* ── Fullscreen overlay ── */}
-      {fullscreen && (
-        <div className="ud-fullscreen-overlay">
-          <button className="ud-fs-close-btn" onClick={() => setFullscreen(false)}>
-            <FaTimes />
-          </button>
-          <div className="ud-fs-content">
-            <PreviewContent />
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  CASE DOCUMENT LIST VIEW (inside a case folder)
+//  CASE DOCUMENT LIST VIEW
 // ══════════════════════════════════════════════════════════════════════════════
 const CaseDocumentView = ({
   caseData,
   onBack,
   onViewDocument,
-  currentUserRole = "petitioner",
+  currentUserId = "",
 }) => {
   const [search, setSearch] = useState("");
   const [filterUserType, setFilterUserType] = useState("all");
@@ -469,28 +574,27 @@ const CaseDocumentView = ({
   const [filterFileType, setFilterFileType] = useState("All Types");
   const [sortBy, setSortBy] = useState("Newest First");
   const [uploading, setUploading] = useState(false);
-  const [actionMenuOpen, setActionMenuOpen] = useState(null);
+  const [renamingDoc, setRenamingDoc] = useState(null);
+  const [replacingDoc, setReplacingDoc] = useState(null);
   const fileRef = useRef(null);
   const replaceDocRef = useRef(null);
-  const [replacingDoc, setReplacingDoc] = useState(null);
 
   const docs = caseData.documents || [];
 
-  // Filter + sort
   const filtered = docs
     .filter((d) => {
       const q = search.toLowerCase();
       const matchSearch = (d.fileName || "").toLowerCase().includes(q);
       const matchUserType =
         filterUserType === "all" ||
-        (d.uploaderRole || "").toLowerCase() === filterUserType;
+        (d.uploaderRole || "").toLowerCase() === filterUserType ||
+        displayRole(d.uploaderRole || "").toLowerCase() === filterUserType;
       const matchStatus =
         filterStatus === "All Status" ||
         (d.status || "").toLowerCase() === filterStatus.toLowerCase();
       const ext = (d.fileName || "").split(".").pop().toUpperCase();
       const matchType =
-        filterFileType === "All Types" ||
-        ext === filterFileType.toUpperCase();
+        filterFileType === "All Types" || ext === filterFileType.toUpperCase();
       return matchSearch && matchUserType && matchStatus && matchType;
     })
     .sort((a, b) => {
@@ -498,10 +602,8 @@ const CaseDocumentView = ({
       const bDate = new Date(b.createdAt || b.uploadedAt || 0);
       if (sortBy === "Newest First") return bDate - aDate;
       if (sortBy === "Oldest First") return aDate - bDate;
-      if (sortBy === "A - Z")
-        return (a.fileName || "").localeCompare(b.fileName || "");
-      if (sortBy === "Z - A")
-        return (b.fileName || "").localeCompare(a.fileName || "");
+      if (sortBy === "A - Z") return (a.fileName || "").localeCompare(b.fileName || "");
+      if (sortBy === "Z - A") return (b.fileName || "").localeCompare(a.fileName || "");
       return 0;
     });
 
@@ -512,8 +614,12 @@ const CaseDocumentView = ({
     try {
       const form = new FormData();
       form.append("file", file);
-      form.append("caseId", caseData._id || caseData.caseId);
-      await api.post("/documents/upload", form);
+      form.append("caseId", caseData._id);
+      form.append("documentTitle", file.name.replace(/\.[^/.]+$/, "") || file.name);
+      form.append("category", "Evidence");
+      await api.post("/documents/upload", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       window.location.reload();
     } catch (err) {
       alert(err.response?.data?.message || "Upload failed.");
@@ -529,18 +635,22 @@ const CaseDocumentView = ({
       const form = new FormData();
       form.append("file", file);
       form.append("documentId", replacingDoc._id);
-      await api.post("/documents/replace", form);
+      await api.post("/documents/replace", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       window.location.reload();
     } catch (err) {
       alert(err.response?.data?.message || "Replace failed.");
     }
   };
 
-  const handleRename = async (doc) => {
-    const newName = window.prompt("Enter new file name:", doc.fileName);
-    if (!newName || newName === doc.fileName) return;
+  // Opens inline rename modal instead of window.prompt()
+  const handleRename = (doc) => setRenamingDoc(doc);
+
+  const handleRenameConfirm = async (doc, newName) => {
+    setRenamingDoc(null);
     try {
-      await api.patch(`/documents/${doc._id}/rename`, { fileName: newName });
+      await api.patch(`/documents/${doc._id}/rename`, { documentTitle: newName });
       window.location.reload();
     } catch (err) {
       alert(err.response?.data?.message || "Rename failed.");
@@ -562,8 +672,22 @@ const CaseDocumentView = ({
     setTimeout(() => replaceDocRef.current && replaceDocRef.current.click(), 0);
   };
 
+  const caseStatusCfg = getStatusCfg(caseData.status || "pending");
+
+  const capitalize = (s = "") =>
+    s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
   return (
     <div className="ud-case-view">
+      {/* Rename modal */}
+      {renamingDoc && (
+        <RenameModal
+          doc={renamingDoc}
+          onConfirm={handleRenameConfirm}
+          onCancel={() => setRenamingDoc(null)}
+        />
+      )}
+
       {/* ── Case Header ── */}
       <div className="ud-case-header">
         <div className="ud-case-header-left">
@@ -577,9 +701,14 @@ const CaseDocumentView = ({
             <div>
               <h1 className="ud-case-title">{caseData.title || "Case Documents"}</h1>
               <div className="ud-case-meta">
-                <span className="ud-case-id">#{caseData.caseNumber || caseData._id}</span>
+                <span className="ud-case-id">
+                  #{caseData.caseNumber || caseData._id}
+                </span>
                 <span className="ud-dot">·</span>
-                <span>{docs.length} files</span>
+                <span>
+                  <FaFileAlt style={{ marginRight: 4 }} />
+                  {docs.length} files
+                </span>
                 <span className="ud-dot">·</span>
                 <span>
                   <FaCalendarAlt style={{ marginRight: 4 }} />
@@ -588,12 +717,15 @@ const CaseDocumentView = ({
                 {caseData.status && (
                   <>
                     <span className="ud-dot">·</span>
-                    <span className={`ud-chip ${getStatusCfg(caseData.status).chipClass}`}>
-                      {caseData.status}
+                    <span className={caseStatusCfg.chipClass}>
+                      {capitalize(caseData.status)}
                     </span>
                   </>
                 )}
               </div>
+              <p className="ud-case-description">
+                This folder contains all documents related to this case
+              </p>
             </div>
           </div>
         </div>
@@ -642,7 +774,7 @@ const CaseDocumentView = ({
           value={filterFileType}
           onChange={(e) => setFilterFileType(e.target.value)}
         >
-          {["All Types", "PDF", "DOCX", "JPG", "PNG"].map((t) => (
+          {["All Types", "PDF", "DOCX", "DOC", "JPG", "PNG"].map((t) => (
             <option key={t}>{t}</option>
           ))}
         </select>
@@ -674,15 +806,18 @@ const CaseDocumentView = ({
           ))}
         </select>
 
-        <select
-          className="ud-filter-select ud-sort-select"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          {["Newest First", "Oldest First", "A - Z", "Z - A"].map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
+        <div className="ud-sort-group">
+          <span className="ud-sort-label">Sort by:</span>
+          <select
+            className="ud-filter-select"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            {["Newest First", "Oldest First", "A - Z", "Z - A"].map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* ── Table ── */}
@@ -709,11 +844,12 @@ const CaseDocumentView = ({
             ) : (
               filtered.map((d) => {
                 const sc = getStatusCfg(d.status || "pending");
+                const ts = d.createdAt || d.uploadedAt;
                 return (
                   <tr key={d._id} className="ud-table-row">
                     <td className="ud-table-filename">
                       <FileTypeIcon fileName={d.fileName} />
-                      <span>{d.fileName || "Document"}</span>
+                      <span title={d.fileName}>{d.fileName || "Document"}</span>
                     </td>
                     <td>
                       <FileTypeBadge fileName={d.fileName} type={d.fileType} />
@@ -723,14 +859,16 @@ const CaseDocumentView = ({
                       <div className="ud-uploader-info">
                         <span className="ud-uploader-name">{d.uploadedBy || "—"}</span>
                         {d.uploaderRole && (
-                          <span className="ud-uploader-role">{d.uploaderRole}</span>
+                          <span className="ud-uploader-role">
+                            {displayRole(d.uploaderRole)}
+                          </span>
                         )}
                       </div>
                     </td>
                     <td className="ud-table-date">
-                      <span>{fmt(d.createdAt || d.uploadedAt)}</span>
-                      {d.uploadTime && (
-                        <span className="ud-table-time">{d.uploadTime}</span>
+                      <span>{fmt(ts)}</span>
+                      {ts && (
+                        <span className="ud-table-time">{fmtTime(ts)}</span>
                       )}
                     </td>
                     <td>
@@ -744,19 +882,33 @@ const CaseDocumentView = ({
                       >
                         <FaEye />
                       </button>
-                      <button className="ud-action-icon-btn" title="Download">
+                      <button
+                        className="ud-action-icon-btn"
+                        title="Download"
+                        onClick={async () => {
+                          try {
+                            const res = await api.get(`/documents/${d._id}/download`);
+                            if (res.data?.downloadUrl) {
+                              const a = document.createElement("a");
+                              a.href = res.data.downloadUrl;
+                              a.download = res.data.fileName || d.fileName || "document";
+                              a.click();
+                            }
+                          } catch (err) {
+                            alert(err.response?.data?.message || "Download failed.");
+                          }
+                        }}
+                      >
                         <FaDownload />
                       </button>
                       <ActionsMenu
                         doc={d}
-                        currentUserRole={currentUserRole}
+                        currentUserId={currentUserId}
                         onRename={handleRename}
                         onReplace={(doc) => {
                           setReplacingDoc(doc);
                           setTimeout(
-                            () =>
-                              replaceDocRef.current &&
-                              replaceDocRef.current.click(),
+                            () => replaceDocRef.current && replaceDocRef.current.click(),
                             0
                           );
                         }}
@@ -773,7 +925,10 @@ const CaseDocumentView = ({
       </div>
 
       {/* ── Drag & drop upload zone ── */}
-      <div className="ud-dropzone">
+      <div
+        className="ud-dropzone"
+        onClick={() => fileRef.current && fileRef.current.click()}
+      >
         <FaUpload className="ud-dropzone-icon" />
         <p className="ud-dropzone-title">Drag &amp; drop files here or click to upload</p>
         <p className="ud-dropzone-sub">
@@ -789,10 +944,22 @@ const CaseDocumentView = ({
 //  MY DOCUMENTS — CASE FOLDERS GRID
 // ══════════════════════════════════════════════════════════════════════════════
 const CASE_STATUS_CFG = {
-  pending: { cls: "ud-case-status-badge ud-case-status-badge--pending", label: "Pending" },
-  "in mediation": { cls: "ud-case-status-badge ud-case-status-badge--mediation", label: "In Mediation" },
-  closed: { cls: "ud-case-status-badge ud-case-status-badge--closed", label: "Closed" },
-  resolved: { cls: "ud-case-status-badge ud-case-status-badge--resolved", label: "Resolved" },
+  pending: {
+    cls: "ud-case-status-badge ud-case-status-badge--pending",
+    label: "Pending",
+  },
+  "in mediation": {
+    cls: "ud-case-status-badge ud-case-status-badge--mediation",
+    label: "In Mediation",
+  },
+  closed: {
+    cls: "ud-case-status-badge ud-case-status-badge--closed",
+    label: "Closed",
+  },
+  resolved: {
+    cls: "ud-case-status-badge ud-case-status-badge--resolved",
+    label: "Resolved",
+  },
 };
 
 const CaseFolderCard = ({ caseData, onClick }) => {
@@ -801,17 +968,22 @@ const CaseFolderCard = ({ caseData, onClick }) => {
 
   return (
     <div className="ud-folder-card" onClick={onClick}>
-      <div className="ud-folder-icon-wrap">
-        <div className="ud-folder-icon">
-          <FaFolderOpen />
+      <div className="ud-folder-illus">
+        <div className="ud-folder-illus-inner">
+          <FaFolderOpen className="ud-folder-illus-icon" />
         </div>
       </div>
-      <p className="ud-folder-name">{caseData.title || "Case Documents"}</p>
+      <p className="ud-folder-name" title={caseData.title}>
+        {caseData.title || "Case Documents"}
+      </p>
+      {caseData.caseNumber && (
+        <span className="ud-folder-case-id">#{caseData.caseNumber}</span>
+      )}
       <span className={cfg.cls}>{cfg.label}</span>
       <div className="ud-folder-meta">
         <span>
           <FaFileAlt style={{ marginRight: 4 }} />
-          {caseData.fileCount || caseData.documents?.length || 0} files
+          {caseData.fileCount ?? caseData.documents?.length ?? 0} files
         </span>
         <span>
           <FaClock style={{ marginRight: 4 }} />
@@ -822,61 +994,70 @@ const CaseFolderCard = ({ caseData, onClick }) => {
   );
 };
 
-const MyDocumentsDashboard = ({ cases = [], onOpenCase, fetching = false, fetchError = null, onRetry }) => {
+// ── My Documents Dashboard ────────────────────────────────────────────────────
+const MyDocumentsDashboard = ({
+  cases = [],
+  onOpenCase,
+  fetching = false,
+  fetchError = null,
+  onRetry,
+}) => {
   const [filterStatus, setFilterStatus] = useState("All Statuses");
   const [filterCategory, setFilterCategory] = useState("All");
   const [filterRole, setFilterRole] = useState("All Cases");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [search, setSearch] = useState("");
-  const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const uploadRef = useRef(null);
 
   const filtered = cases.filter((c) => {
     const q = search.toLowerCase();
     const matchSearch = (c.title || "").toLowerCase().includes(q);
+
     const matchStatus =
       filterStatus === "All Statuses" ||
       (c.status || "").toLowerCase() === filterStatus.toLowerCase();
-    return matchSearch && matchStatus;
+
+    // CATEGORY filters by caseType field
+    const matchCategory =
+      filterCategory === "All" ||
+      (c.caseType || "").toLowerCase().includes(filterCategory.toLowerCase());
+
+    // MY ROLE filters by myRole field returned from backend
+    const matchRole =
+      filterRole === "All Cases" ||
+      (c.myRole || "petitioner").toLowerCase() === filterRole.toLowerCase();
+
+    // DATE RANGE filters by createdAt
+    const cDate = c.createdAt ? new Date(c.createdAt) : null;
+    const matchDateFrom = !dateFrom || !cDate || cDate >= new Date(dateFrom);
+    const matchDateTo =
+      !dateTo || !cDate || cDate <= new Date(dateTo + "T23:59:59");
+
+    return matchSearch && matchStatus && matchCategory && matchRole && matchDateFrom && matchDateTo;
   });
 
-  const hasData = !fetching && cases.length > 0;
+  const hasActiveFilters =
+    filterStatus !== "All Statuses" ||
+    filterCategory !== "All" ||
+    filterRole !== "All Cases" ||
+    dateFrom ||
+    dateTo;
 
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    setDragging(false);
-    const files = Array.from(e.dataTransfer?.files || []);
-    if (files.length) handleUploadFiles(files);
+  const clearFilters = () => {
+    setFilterStatus("All Statuses");
+    setFilterCategory("All");
+    setFilterRole("All Cases");
+    setDateFrom("");
+    setDateTo("");
   };
 
-  const handleUploadFiles = async (files) => {
-    if (!files.length) return;
-    setUploading(true);
-    try {
-      for (const file of files) {
-        const form = new FormData();
-        form.append("file", file);
-        await api.post("/documents/upload", form);
-      }
-      window.location.reload();
-    } catch (err) {
-      alert(err.response?.data?.message || "Upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // ── EMPTY / FIRST-TIME STATE ──────────────────────────────────────
-  // Show when not fetching AND no cases loaded (error or genuinely empty)
   if (!fetching && cases.length === 0) {
     return (
       <div className="ud-dashboard">
         <div className="ud-dashboard-header">
           <div>
             <h1 className="ud-dashboard-title">My Documents</h1>
-            <p className="ud-dashboard-sub">
-              All your case folders and documents in one place
-            </p>
+            <p className="ud-dashboard-sub">All your case folders and documents in one place</p>
           </div>
         </div>
 
@@ -887,65 +1068,35 @@ const MyDocumentsDashboard = ({ cases = [], onOpenCase, fetching = false, fetchE
           </div>
         )}
 
-        {/* Big upload prompt — matches Image 2 style */}
-        <div
-          className={`ud-empty-upload-zone ${dragging ? "ud-empty-upload-zone--drag" : ""}`}
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
-          onClick={() => uploadRef.current && uploadRef.current.click()}
-        >
-          <input
-            ref={uploadRef}
-            type="file"
-            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            multiple
-            style={{ display: "none" }}
-            onChange={(e) => handleUploadFiles(Array.from(e.target.files || []))}
-          />
-          <div className="ud-empty-upload-icon">
-            <FaUpload />
-          </div>
-          <p className="ud-empty-upload-title">
-            {uploading ? "Uploading…" : "Drag & drop files here or click to upload"}
-          </p>
-          <p className="ud-empty-upload-sub">
-            Supported formats: PDF, DOC, DOCX, JPG, PNG (Max. 20MB).<br />
-            Your files are encrypted and securely stored in our legal vault.
-          </p>
-          {!fetchError && (
-            <p className="ud-empty-upload-hint">
-              Documents filed with a case also appear here automatically.
+        {!fetchError && (
+          <div className="ud-no-cases-state">
+            <FaFolderOpen className="ud-no-cases-icon" />
+            <p className="ud-no-cases-title">No cases yet</p>
+            <p className="ud-no-cases-sub">
+              Your documents will appear here once you file a case.
             </p>
-          )}
-        </div>
+            <Link to="/user/file-new-case/step1" className="ud-file-case-btn">
+              File a New Case
+            </Link>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="ud-dashboard">
-      {/* Header — only shown when there IS data */}
       <div className="ud-dashboard-header">
         <div>
           <h1 className="ud-dashboard-title">My Documents</h1>
-          <p className="ud-dashboard-sub">
-            All your case folders and documents in one place
-          </p>
+          <p className="ud-dashboard-sub">All your case folders and documents in one place</p>
         </div>
-        <button className="ud-export-btn">
-          <FaFileExport />
-          <span>Export as ZIP</span>
-        </button>
       </div>
 
-      {/* Inline fetch error banner — does NOT replace the page */}
       {fetchError && (
         <div className="ud-inline-error">
           <span>⚠️ {fetchError}</span>
-          <button className="ud-inline-retry-btn" onClick={onRetry}>
-            Retry
-          </button>
+          <button className="ud-inline-retry-btn" onClick={onRetry}>Retry</button>
         </div>
       )}
 
@@ -958,9 +1109,9 @@ const MyDocumentsDashboard = ({ cases = [], onOpenCase, fetching = false, fetchE
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            {["All Statuses", "Pending", "In Mediation", "Closed", "Resolved"].map(
-              (s) => <option key={s}>{s}</option>
-            )}
+            {["All Statuses", "Pending", "In Mediation", "Closed", "Resolved"].map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
         </div>
 
@@ -971,9 +1122,9 @@ const MyDocumentsDashboard = ({ cases = [], onOpenCase, fetching = false, fetchE
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
           >
-            {["All", "Property", "Family", "Business", "Employment"].map((s) => (
-              <option key={s}>{s}</option>
-            ))}
+            {["All", "Property", "Family", "Business", "Employment", "Civil", "Criminal"].map(
+              (s) => <option key={s}>{s}</option>
+            )}
           </select>
         </div>
 
@@ -989,14 +1140,74 @@ const MyDocumentsDashboard = ({ cases = [], onOpenCase, fetching = false, fetchE
             ))}
           </select>
         </div>
+
+        <div className="ud-filter-group">
+          <label className="ud-filter-label">DATE RANGE</label>
+          <div className="ud-date-range">
+            <input
+              type="date"
+              className="ud-filter-select ud-date-input"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              title="From date"
+            />
+            <span className="ud-date-sep">—</span>
+            <input
+              type="date"
+              className="ud-filter-select ud-date-input"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              title="To date"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Loading shimmer */}
+      {/* Active filter chips */}
+      {hasActiveFilters && (
+        <div className="ud-active-filters">
+          <span className="ud-active-filters-label">Active Filters:</span>
+          {filterStatus !== "All Statuses" && (
+            <span className="ud-filter-chip">
+              {filterStatus}
+              <button className="ud-filter-chip-x" onClick={() => setFilterStatus("All Statuses")}>×</button>
+            </span>
+          )}
+          {filterCategory !== "All" && (
+            <span className="ud-filter-chip">
+              {filterCategory}
+              <button className="ud-filter-chip-x" onClick={() => setFilterCategory("All")}>×</button>
+            </span>
+          )}
+          {filterRole !== "All Cases" && (
+            <span className="ud-filter-chip">
+              {filterRole}
+              <button className="ud-filter-chip-x" onClick={() => setFilterRole("All Cases")}>×</button>
+            </span>
+          )}
+          {dateFrom && (
+            <span className="ud-filter-chip">
+              From {dateFrom}
+              <button className="ud-filter-chip-x" onClick={() => setDateFrom("")}>×</button>
+            </span>
+          )}
+          {dateTo && (
+            <span className="ud-filter-chip">
+              To {dateTo}
+              <button className="ud-filter-chip-x" onClick={() => setDateTo("")}>×</button>
+            </span>
+          )}
+          <button className="ud-clear-filters-btn" onClick={clearFilters}>
+            Clear All
+          </button>
+        </div>
+      )}
+
       {fetching && cases.length === 0 ? (
         <div className="ud-folder-grid">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="ud-folder-card ud-folder-card--skeleton">
-              <div className="ud-skeleton-icon" />
+              <div className="ud-skeleton-illus" />
               <div className="ud-skeleton-line ud-skeleton-line--name" />
               <div className="ud-skeleton-line ud-skeleton-line--badge" />
               <div className="ud-skeleton-line ud-skeleton-line--meta" />
@@ -1024,18 +1235,14 @@ const MyDocumentsDashboard = ({ cases = [], onOpenCase, fetching = false, fetchE
 // ══════════════════════════════════════════════════════════════════════════════
 const UserDocuments = () => {
   const navigate = useNavigate();
-
-  // View states: "dashboard" | "caseDocuments" | "docViewer"
   const [view, setView] = useState("dashboard");
   const [cases, setCases] = useState([]);
   const [selectedCase, setSelectedCase] = useState(null);
   const [selectedDoc, setSelectedDoc] = useState(null);
-  // loading is inline — never blocks the whole page
   const [fetching, setFetching] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
-  // Current logged-in user's role
-  const currentUserRole = localStorage.getItem("userRole") || "petitioner";
+  const currentUserId = getTokenUserId() || localStorage.getItem("userId") || "";
 
   const fetchCases = useCallback(async () => {
     const token = localStorage.getItem("token");
@@ -1044,55 +1251,17 @@ const UserDocuments = () => {
     setFetching(true);
     setFetchError(null);
     try {
-      // Try the new endpoint first; fall back to the old one if 404
-      let res;
-      try {
-        res = await api.get("/documents/my-cases");
-      } catch (firstErr) {
-        if (firstErr.response?.status === 404) {
-          // Backend not yet updated — try old endpoint and reshape data
-          const oldRes = await api.get("/documents/my-documents");
-          const docs = Array.isArray(oldRes.data)
-            ? oldRes.data
-            : Array.isArray(oldRes.data?.documents)
-            ? oldRes.data.documents
-            : [];
-          // Group flat documents into pseudo case-folders by caseId
-          const byCase = {};
-          docs.forEach((d) => {
-            const key = d.caseId || "uncategorized";
-            if (!byCase[key]) {
-              byCase[key] = {
-                _id: key,
-                caseNumber: key,
-                title: d.caseTitle || `Case #${key}`,
-                status: d.caseStatus || "pending",
-                createdAt: d.createdAt,
-                updatedAt: d.updatedAt,
-                documents: [],
-              };
-            }
-            byCase[key].documents.push(d);
-          });
-          setCases(Object.values(byCase));
-          return;
-        }
-        throw firstErr;
-      }
-
-      const data = Array.isArray(res.data)
-        ? res.data
-        : Array.isArray(res.data?.cases)
+      const res = await api.get("/documents/my-cases");
+      const data = Array.isArray(res.data?.cases)
         ? res.data.cases
+        : Array.isArray(res.data)
+        ? res.data
         : [];
       setCases(data);
     } catch (err) {
       if (err.response?.status === 401) { navigate("/login"); return; }
-      // Show inline error — dashboard still renders
       setFetchError(
-        err.response?.data?.message ||
-          err.message ||
-          "Could not load case folders. Please retry."
+        err.response?.data?.message || err.message || "Could not load case folders. Please retry."
       );
     } finally {
       setFetching(false);
@@ -1117,7 +1286,6 @@ const UserDocuments = () => {
       <main className="main-content ud-page">
         <UserNavbar />
 
-        {/* ── Dashboard: case folders grid ── */}
         {view === "dashboard" && (
           <MyDocumentsDashboard
             cases={cases}
@@ -1128,17 +1296,15 @@ const UserDocuments = () => {
           />
         )}
 
-        {/* ── Case document list ── */}
         {view === "caseDocuments" && selectedCase && (
           <CaseDocumentView
             caseData={selectedCase}
             onBack={() => setView("dashboard")}
             onViewDocument={handleViewDocument}
-            currentUserRole={currentUserRole}
+            currentUserId={currentUserId}
           />
         )}
 
-        {/* ── Document viewer ── */}
         {view === "docViewer" && selectedDoc && (
           <div className="ud-viewer-page">
             <DocumentViewer

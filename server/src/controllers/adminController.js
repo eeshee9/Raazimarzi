@@ -1,7 +1,9 @@
-import Case     from "../models/caseModel.js";
-import User     from "../models/userModel.js";
-import Meeting  from "../models/meetingModel.js";
-import Feedback from "../models/feedbackModel.js";
+import Case          from "../models/caseModel.js";
+import User          from "../models/userModel.js";
+import Meeting       from "../models/meetingModel.js";
+import Feedback      from "../models/feedbackModel.js";
+import Transaction   from "../models/transactionModel.js";
+import SupportTicket from "../models/supportTicketModel.js";
 import { sendRespondentNotice }   from "../services/mail.service.js";
 import { sendRespondentNoticeWA } from "../services/whatsapp.service.js";
 
@@ -122,7 +124,7 @@ export const getAdminDashboard = async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    /* ── 9. Recent feedback ── */
+    /* ── Recent feedback ── */
     const recentFeedback = await Feedback.find({ isApproved: true, isPublic: true })
       .populate("submittedBy", "name avatar")
       .populate("caseId",      "caseId caseTitle")
@@ -134,12 +136,146 @@ export const getAdminDashboard = async (req, res) => {
       { $group: { _id: null, avgRating: { $avg: "$overallRating" }, count: { $sum: 1 } } },
     ]);
 
+    /* ── Recent user registrations ── */
+    const recentUsers = await User.find({ role: "user" })
+      .select("name email role createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    const relativeTime = (d) => {
+      const diff  = Date.now() - new Date(d).getTime();
+      const mins  = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days  = Math.floor(diff / 86400000);
+      if (mins  < 60) return `${mins}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      return `${days}d ago`;
+    };
+
+    const registrations = recentUsers.map((u) => ({
+      id:   u._id,
+      name: u.name || "Unknown",
+      role: u.role || "User",
+      ago:  relativeTime(u.createdAt),
+    }));
+
+    /* ── Revenue — monthly for current year ── */
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    const monthlyRevRaw = await Case.aggregate([
+      { $match: { createdAt: { $gte: yearStart }, filingFeePaid: true } },
+      {
+        $group: {
+          _id:     { $month: "$createdAt" },
+          revenue: { $sum: { $add: [{ $ifNull: ["$filingFee", 0] }, { $ifNull: ["$platformFee", 0] }] } },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Fill all 12 months (0 for months with no paid cases)
+    const revenueMonthly = Array.from({ length: 12 }, (_, i) => {
+      const found = monthlyRevRaw.find((r) => r._id === i + 1);
+      return found ? found.revenue : 0;
+    });
+
+    const totalRevenue = revenueMonthly.reduce((s, v) => s + v, 0);
+
+    /* ── Action items: overdue / unassigned / respondent onboarding ── */
+    const [overdueCount, unassignedCount, pendingOnboarding] = await Promise.all([
+      // Cases older than 30 days still in "notice-sent" or "in-progress"
+      Case.countDocuments({
+        status: { $in: ["notice-sent","in-progress","Assigned"] },
+        createdAt: { $lt: thirtyDaysAgo },
+      }),
+      // Cases with no assignedNeutral and not yet closed
+      Case.countDocuments({
+        assignedNeutral: { $exists: false },
+        status: { $nin: ["Resolved","resolved","awarded","Rejected","rejected","withdrawn","closed"] },
+      }),
+      // Respondents who haven't accepted invite
+      Case.countDocuments({
+        "respondent.inviteStatus": "pending",
+        status: { $nin: ["Resolved","resolved","awarded","closed","withdrawn"] },
+      }),
+    ]);
+
+    const actions = [];
+    if (overdueCount > 0) {
+      actions.push({
+        id:   "overdue",
+        icon: "⏰",
+        title: `Overdue Cases (${String(overdueCount).padStart(2,"0")})`,
+        sub:   "Cases exceeding resolution time",
+        btn:   "Remind Mediator",
+      });
+    }
+    if (unassignedCount > 0) {
+      actions.push({
+        id:   "unassigned",
+        icon: "👤",
+        title: `Unassigned Mediations (${String(unassignedCount).padStart(2,"0")})`,
+        sub:   "Cases awaiting mediator assignment",
+        btn:   "Assign Mediators",
+      });
+    }
+    if (pendingOnboarding > 0) {
+      actions.push({
+        id:   "onboarding",
+        icon: "🔗",
+        title: `Respondent Onboarding (${String(pendingOnboarding).padStart(2,"0")})`,
+        sub:   "Follow up with respondent for onboarding",
+        btn:   "View Details",
+      });
+    }
+
+    /* ── Format upcoming sessions for dashboard widget ── */
+    const upcomingSessions = await Meeting.find({
+      scheduledDate: { $gte: now },
+      status: { $nin: ["cancelled","Cancelled","completed","Completed"] },
+    })
+      .populate("caseId", "caseId caseTitle")
+      .sort({ scheduledDate: 1 })
+      .limit(5)
+      .lean();
+
+    const sessions = upcomingSessions.map((m) => {
+      const d = new Date(m.scheduledDate);
+      return {
+        id:     m._id,
+        month:  d.toLocaleString("en-US", { month: "short" }).toUpperCase(),
+        day:    d.getDate(),
+        caseId: `#${m.caseId?.caseId || "—"} (${m.caseId?.caseTitle || m.meetingTitle || "Meeting"})`,
+        time:   m.startTime && m.endTime ? `${m.startTime} – ${m.endTime}` : "TBD",
+      };
+    });
+
     return res.status(200).json({
       success: true,
       admin:   { name: admin?.name || "Admin", email: admin?.email || "", avatar: admin?.avatar || "" },
-      stats:   { active: activeCases, current: currentCases, total: totalCases, pendingReview, resolved: resolvedCases, awarded: awardedCases, rejected: rejectedCases, exParte: exParteCases, noticeSent: noticeSentCases, resolutionRate },
-      cases: formattedCases, todayMeetings: formattedMeetings,
-      caseProgress, casesByType, recentTrend,
+      stats: {
+        total:        totalCases,
+        active:       activeCases,
+        resolved:     resolvedCases + awardedCases,
+        pending:      pendingReview,
+        revenue:      totalRevenue,
+        current:      currentCases,
+        pendingReview,
+        awarded:      awardedCases,
+        rejected:     rejectedCases,
+        exParte:      exParteCases,
+        noticeSent:   noticeSentCases,
+        resolutionRate,
+      },
+      cases:          formattedCases,
+      todayMeetings:  formattedMeetings,
+      sessions,
+      registrations,
+      actions,
+      revenueMonthly,
+      caseProgress,
+      casesByType,
+      recentTrend,
       feedback: {
         recent:    recentFeedback,
         avgRating: feedbackStats[0]?.avgRating?.toFixed(1) || "0",
@@ -273,10 +409,24 @@ export const getCaseManagers = async (req, res) => {
   } catch (error) { return res.status(500).json({ message: error.message }); }
 };
 
+/* To seed a mediator that will show up here, create a User document with:
+   role: "mediator", isActive: true, approvalStatus: "approved"
+   (approvalStatus does not gate this query but is checked elsewhere in the Mediators module). */
 export const getMediators = async (req, res) => {
   try {
-    const mediators = await User.find({ role:"mediator", isActive:true }).select("_id name email avatar");
-    return res.status(200).json({ success: true, mediators });
+    const mediators = await User.find({ role:"mediator", isActive:true })
+      .select("_id name email avatar expertiseAreas")
+      .lean();
+
+    const enriched = await Promise.all(
+      mediators.map(async (m) => ({
+        ...m,
+        expertise:    m.expertiseAreas?.length ? m.expertiseAreas.join(", ") : "",
+        casesHandled: await Case.countDocuments({ assignedNeutral: m._id }),
+      }))
+    );
+
+    return res.status(200).json({ success: true, mediators: enriched });
   } catch (error) { return res.status(500).json({ message: error.message }); }
 };
 
@@ -294,7 +444,10 @@ export const getAllCases = async (req, res) => {
   try {
     const { status, adminStatus, caseType, priority, page = 1, limit = 20, search } = req.query;
     const filter = {};
-    if (status)      filter.status      = status;
+    if (status) {
+      const statusArr = status.split(",").map(s => s.trim()).filter(Boolean);
+      filter.status = statusArr.length === 1 ? statusArr[0] : { $in: statusArr };
+    }
     if (adminStatus) filter.adminStatus = adminStatus;
     if (caseType)    filter.caseType    = caseType;
     if (priority)    filter.priority    = priority;
@@ -555,4 +708,177 @@ export const getCaseProgress = async (req, res) => {
       },
     });
   } catch (error) { return res.status(500).json({ message: error.message }); }
+};
+
+/* ════════════════════════════════════════
+   ADMIN USERS ANALYTICS (paginated list + top stats + charts)
+   GET /admin/users/analytics
+════════════════════════════════════════ */
+const makeDisplayId = (id) => {
+  const num = parseInt(id.toString().slice(-6), 16) % 9000 + 1000;
+  return `RM-${num}`;
+};
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+export const getAdminUsersAnalytics = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search, dateFrom, dateTo } = req.query;
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart    = new Date(now.getFullYear(), 0, 1);
+
+    /* Top-level stats */
+    const [totalUsers, newThisMonth, totalCases, revAgg] = await Promise.all([
+      User.countDocuments({ role: "user" }),
+      User.countDocuments({ role: "user", createdAt: { $gte: startOfMonth } }),
+      Case.countDocuments(),
+      Transaction.aggregate([
+        { $match: { status: "paid" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+    ]);
+    const totalRevenue = revAgg[0]?.total || 0;
+
+    /* Filtered user list */
+    const filter = { role: "user" };
+    if (search) {
+      filter.$or = [
+        { name:  { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+      if (dateTo)   filter.createdAt.$lte = new Date(`${dateTo}T23:59:59`);
+    }
+
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
+      .lean();
+
+    /* Per-user aggregates (case count + paid total) */
+    const enriched = await Promise.all(
+      users.map(async (u) => {
+        const uid = u._id;
+        const [caseCount, payAgg] = await Promise.all([
+          Case.countDocuments({ $or: [{ createdBy: uid }, { claimant: uid }] }),
+          Transaction.aggregate([
+            { $match: { userId: uid, status: "paid" } },
+            { $group: { _id: null, total: { $sum: "$amount" } } },
+          ]),
+        ]);
+        return {
+          ...u,
+          displayId:     makeDisplayId(uid),
+          caseCount,
+          totalPayments: payAgg[0]?.total || 0,
+        };
+      })
+    );
+
+    /* Chart data — current calendar year */
+    const [userGrowthRaw, caseVolumeRaw] = await Promise.all([
+      User.aggregate([
+        { $match: { role: "user", createdAt: { $gte: yearStart } } },
+        { $group: { _id: { $month: "$createdAt" }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
+      Case.aggregate([
+        { $match: { createdAt: { $gte: yearStart } } },
+        { $group: { _id: { $month: "$createdAt" }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
+    ]);
+
+    const userGrowth = MONTHS.map((month, i) => ({
+      month,
+      users: userGrowthRaw.find((r) => r._id === i + 1)?.count || 0,
+    }));
+    const caseVolume = MONTHS.map((month, i) => ({
+      month,
+      cases: caseVolumeRaw.find((r) => r._id === i + 1)?.count || 0,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      stats:   { totalUsers, newThisMonth, totalCases, totalRevenue },
+      users:   enriched,
+      total,
+      page:    Number(page),
+      pages:   Math.ceil(total / Number(limit)),
+      userGrowth,
+      caseVolume,
+    });
+  } catch (err) {
+    console.error("❌ getAdminUsersAnalytics error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ════════════════════════════════════════
+   ADMIN USER DETAIL
+   GET /admin/users/:id/detail
+════════════════════════════════════════ */
+export const getAdminUserDetail = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password").lean();
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const uid = user._id;
+
+    const [
+      totalCases,
+      resolvedCount,
+      payAgg,
+      activeTickets,
+      cases,
+      transactions,
+      tickets,
+    ] = await Promise.all([
+      Case.countDocuments({ $or: [{ createdBy: uid }, { claimant: uid }] }),
+      Case.countDocuments({
+        $or: [{ createdBy: uid }, { claimant: uid }],
+        status: { $in: ["Resolved", "resolved", "awarded"] },
+      }),
+      Transaction.aggregate([
+        { $match: { userId: uid, status: "paid" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+      SupportTicket.countDocuments({ userId: uid, status: "open" }),
+      Case.find({ $or: [{ createdBy: uid }, { claimant: uid }] })
+        .select("caseId caseTitle caseType status updatedAt")
+        .sort({ updatedAt: -1 })
+        .limit(5)
+        .lean(),
+      Transaction.find({ userId: uid })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+      SupportTicket.find({ userId: uid })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+    ]);
+
+    const totalPayments  = payAgg[0]?.total || 0;
+    const settlementRate = totalCases > 0 ? Math.round((resolvedCount / totalCases) * 100) : 0;
+
+    return res.status(200).json({
+      success: true,
+      user:    { ...user, displayId: makeDisplayId(uid) },
+      stats:   { totalCases, totalPayments, activeTickets, settlementRate },
+      cases,
+      transactions,
+      tickets,
+    });
+  } catch (err) {
+    console.error("❌ getAdminUserDetail error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
 };

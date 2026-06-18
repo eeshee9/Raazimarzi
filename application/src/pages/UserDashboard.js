@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import UserSidebar from "../components/UserSidebar";
 import UserNavbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
 
 import UDIcon1 from "../assets/icons/ud-1.png";
 import UDIcon2 from "../assets/icons/ud-2.png";
@@ -12,8 +13,6 @@ import respond from "../assets/icons/respond.png";
 
 import "./UserDashboard.css";
 
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // ─── Status badge helper (shared desktop + mobile) ────────────────────────────
 const getStatusStyle = (status) => {
@@ -88,16 +87,10 @@ const UserDashboard = () => {
         setLoading(true);
         setError(null);
 
-        const token = localStorage.getItem("token");
-        if (!token) { setError("Not logged in"); setLoading(false); return; }
+        const res = await api.get("/dashboard/user");
+        const data = res.data;
 
-        const res = await fetch(`${API_URL}/dashboard/user`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        });
-        const data = await res.json();
-
-        if (!res.ok || !data.success) { setError(data.message || "Failed to load dashboard"); return; }
+        if (!data.success) { setError(data.message || "Failed to load dashboard"); return; }
 
         setStats(data.stats || { total: 0, active: 0, resolved: 0, pending: 0 });
         setCases(data.cases || []);
@@ -259,7 +252,10 @@ const UserDashboard = () => {
                         : <img src={respond} alt="chat" />}
                     </div>
                     <p className="action-text">{action.description}</p>
-                    <button className="action-cta">
+                    <button
+                      className="action-cta"
+                      onClick={() => navigate(action.type === "document" ? "/user/documents" : "/user/chats")}
+                    >
                       {action.type === "document" ? "Complete Now" : "Reply"}
                     </button>
                   </div>
@@ -302,7 +298,7 @@ const UserDashboard = () => {
                           </span>
                         </td>
                         <td>
-                          <button className="view-details-btn">View Details</button>
+                          <button className="view-details-btn" onClick={() => navigate(`/user/my-cases/details/${c._id}`)}>View Details</button>
                         </td>
                       </tr>
                     ))}
@@ -320,7 +316,7 @@ const UserDashboard = () => {
                   <MobileDisputeCard
                     key={i}
                     c={c}
-                    onNavigate={() => navigate(`/user/case/${c.id || c._id}`)}
+                    onNavigate={() => navigate(`/user/my-cases/details/${c._id}`)}
                   />
                 ))
               )}
@@ -344,11 +340,13 @@ const UserDashboard = () => {
               ) : (
                 messages.slice(0, 2).map((msg, i) => (
                   <div key={i} className="message-item">
-                    <img
-                      src={msg.avatar || `https://i.pravatar.cc/40?img=${i + 1}`}
-                      alt={msg.sender}
-                      className="msg-avatar"
-                    />
+                    {msg.avatar ? (
+                      <img src={msg.avatar} alt={msg.sender} className="msg-avatar" />
+                    ) : (
+                      <div className="msg-avatar msg-avatar--initials">
+                        {(msg.sender || "?").charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div className="msg-body">
                       <div className="msg-top">
                         <span className="msg-sender">{msg.sender}</span>
@@ -392,7 +390,7 @@ const UserDashboard = () => {
                           Join Meeting
                         </button>
                       ) : (
-                        <button className="view-details-outline-btn" onClick={() => navigate("/user/documents")}>
+                        <button className="view-details-outline-btn" onClick={() => navigate("/user/case-meetings")}>
                           View Details
                         </button>
                       )}

@@ -158,6 +158,12 @@
   font-weight: 600;
 }
 
+.hdr__nav-link--disabled {
+  color: #b8b8c4;
+  cursor: not-allowed;
+  user-select: none;
+}
+
 .hdr__nav-btn--open {
   color: var(--hdr-accent);
   background: rgba(108, 99, 255, 0.08);
@@ -292,6 +298,27 @@
 
 .hdr__dd-item:hover {
   background: #f5f3ff;
+}
+
+.hdr__dd-item--disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.hdr__dd-item--disabled:hover {
+  background: none;
+}
+
+.hdr__dd-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #999;
+  background: #f0f0f5;
+  border-radius: 6px;
+  padding: 3px 7px;
+  flex-shrink: 0;
 }
 
 .hdr__dd-icon {
@@ -491,6 +518,17 @@
 }
 
 /* ═══════════════════════════════════
+   MOBILE CTA (next to hamburger)
+═══════════════════════════════════ */
+
+.hdr__cta-mobile {
+  display: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════
    HAMBURGER
 ═══════════════════════════════════ */
 
@@ -502,7 +540,6 @@
   border: none;
   cursor: pointer;
   padding: 4px;
-  margin-left: auto;
 }
 
 .hdr__hamburger span {
@@ -685,6 +722,27 @@
   color: var(--hdr-text);
 }
 
+.hdr-mob-panel__row--disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.hdr-mob-panel__row--disabled:hover {
+  background: none;
+}
+
+.hdr-mob-panel__row-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #999;
+  background: #f0f0f5;
+  border-radius: 6px;
+  padding: 3px 7px;
+  flex-shrink: 0;
+}
+
 /* ── Card rows (Solutions panel) ── */
 .hdr-mob-panel__card-row {
   display: flex;
@@ -705,6 +763,27 @@
 
 .hdr-mob-panel__card-row:hover {
   background: #f5f3ff;
+}
+
+.hdr-mob-panel__card-row--disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.hdr-mob-panel__card-row--disabled:hover {
+  background: none;
+}
+
+.hdr-mob-panel__card-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #999;
+  background: #f0f0f5;
+  border-radius: 6px;
+  padding: 3px 7px;
+  flex-shrink: 0;
 }
 
 .hdr-mob-panel__card-icon {
@@ -901,6 +980,7 @@
   .hdr__nav,
   .hdr__cta { display: none; }
 
+  .hdr__cta-mobile { display: inline-flex; align-items: center; }
   .hdr__hamburger { display: flex; }
 
   .hdr--scrolled .hdr__inner {

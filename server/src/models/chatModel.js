@@ -43,6 +43,14 @@ const conversationSchema = new mongoose.Schema(
       default: {},
     },
 
+    // Per-admin last-read timestamp — keyed by admin/case-manager userId
+    // Enables real admin unread computation: lastMessage.sentAt > adminReadState[adminId]
+    adminReadState: {
+      type: Map,
+      of: Date,
+      default: {},
+    },
+
     // Conversation settings
     isArchived: {
       type: Boolean,

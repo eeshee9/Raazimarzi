@@ -338,7 +338,8 @@ export const startMeeting = async (req, res) => {
     if (!isAuthorized)
       return res.status(403).json({ success: false, message: "Access denied" });
 
-    meeting.status = "In Progress";
+    meeting.status    = "In Progress";
+    meeting.startedAt = new Date();
     await meeting.save();
 
     const updated = await Meeting.findById(meeting._id)
@@ -493,15 +494,20 @@ export const completeMeeting = async (req, res) => {
     if (meeting.status === "Completed")
       return res.status(400).json({ success: false, message: "Meeting already completed" });
 
+    const isParticipant = meeting.participants?.some(
+      (p) => p.user?.toString() === req.user._id.toString()
+    );
     const isAuthorized =
       req.user.role === "admin" || req.user.role === "case-manager" ||
       meeting.organizer.toString() === req.user._id.toString() ||
-      meeting.mediator?.toString() === req.user._id.toString();
+      meeting.mediator?.toString() === req.user._id.toString() ||
+      isParticipant;
 
     if (!isAuthorized)
       return res.status(403).json({ success: false, message: "Access denied" });
 
-    meeting.status  = "Completed";
+    meeting.status      = "Completed";
+    meeting.completedAt = new Date();
     meeting.outcome = {
       summary:          summary          || "",
       agreementReached: agreementReached || false,
@@ -618,6 +624,57 @@ export const getAllMeetings = async (req, res) => {
   } catch (error) {
     console.error("❌ getAllMeetings error:", error);
     return res.status(500).json({ success: false, message: "Failed to fetch meetings" });
+  }
+};
+
+/* ══════════════════════════════════════════════════════
+   10b. SUBMIT MEETING FEEDBACK
+   POST /api/meetings/:id/feedback
+   Body: { rating (1-5), comment? }
+══════════════════════════════════════════════════════ */
+export const submitMeetingFeedback = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    if (!rating || rating < 1 || rating > 5)
+      return res.status(400).json({ success: false, message: "Rating must be 1–5" });
+
+    const meeting = await Meeting.findById(req.params.id);
+    if (!meeting)
+      return res.status(404).json({ success: false, message: "Meeting not found" });
+
+    if (meeting.status !== "Completed")
+      return res.status(400).json({ success: false, message: "Meeting must be completed before rating" });
+
+    const userId = req.user._id.toString();
+
+    // Permission: must be organizer, mediator, or participant
+    const isAuthorized =
+      meeting.organizer?.toString()  === userId ||
+      meeting.mediator?.toString()   === userId ||
+      meeting.participants.some((p) => p.user?.toString() === userId);
+
+    if (!isAuthorized)
+      return res.status(403).json({ success: false, message: "Access denied" });
+
+    // Prevent duplicate
+    const already = meeting.meetingFeedback?.find(
+      (f) => f.submittedBy?.toString() === userId
+    );
+    if (already)
+      return res.status(400).json({ success: false, message: "You have already submitted feedback for this meeting" });
+
+    meeting.meetingFeedback.push({
+      submittedBy: req.user._id,
+      rating:      Number(rating),
+      comment:     comment?.trim() || "",
+      submittedAt: new Date(),
+    });
+    await meeting.save();
+
+    return res.status(200).json({ success: true, message: "Thank you for your feedback!" });
+  } catch (error) {
+    console.error("❌ submitMeetingFeedback error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

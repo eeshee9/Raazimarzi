@@ -89,7 +89,6 @@ const FileNewCaseStep2 = () => {
             { label: "Personal Details", icon: "👤", step: 1 },
             { label: "Case Details",     icon: "📋", step: 2 },
             { label: "Documents",        icon: "📄", step: 3 },
-            { label: "Review & Payment", icon: "💳", step: 4 },
           ].map(({ label, icon, step }, i) => (
             <React.Fragment key={step}>
               <div className={`fnc-step ${step === 1 ? "completed" : step === 2 ? "active" : ""}`}>
@@ -98,7 +97,7 @@ const FileNewCaseStep2 = () => {
                 </div>
                 <span>{label}</span>
               </div>
-              {i < 3 && <div className={`fnc-step-line ${step === 1 ? "completed" : ""}`} />}
+              {i < 2 && <div className={`fnc-step-line ${step === 1 ? "completed" : ""}`} />}
             </React.Fragment>
           ))}
         </div>
@@ -250,7 +249,7 @@ const FileNewCaseStep2 = () => {
                 <div className="s2-progress-bar">
                   <div className="s2-progress-fill" style={{ width: "50%" }} />
                 </div>
-                <p className="s2-progress-step">Step 2 of 4: Details In Progress</p>
+                <p className="s2-progress-step">Step 2 of 3: Details In Progress</p>
               </div>
             </div>
 

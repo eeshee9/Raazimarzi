@@ -4,40 +4,14 @@ import { useNavigate } from "react-router-dom";
 import {
   FaBell, FaSearch, FaChevronDown, FaChevronUp,
   FaChevronLeft, FaChevronRight, FaSync, FaVideo,
-  FaUser, FaShoppingBag, FaBuilding,
 } from "react-icons/fa";
 import api from "../api/axios";
 import AdminSidebar from "../components/AdminSidebar";
 import "./AdminCaseMeetings.css";
 
 /* ─── Constants ─── */
-const STATUS_OPTIONS     = ["All Statuses","Ongoing","Upcoming","Missed","Completed","Cancelled"];
-const INVITATION_OPTIONS = ["All Type","Invited","Optional","Not Required"];
-const ROWS_OPTIONS       = [5,10,20,50];
-
-const CATEGORY_TREE = [
-  { group:"Individual", icon:<FaUser />,        sub:["Property & Rental Disputes","Family Disputes","Neighbour & Community"] },
-  { group:"Consumer",   icon:<FaShoppingBag />, sub:["Product Complaints","Service Complaints","Delivery Issues","Refund & Billing Disputes"] },
-  { group:"Commercial", icon:<FaBuilding />,    sub:["Trade & Business Disputes","Finance & Banking Disputes","Corporate & Business Agreement Disputes","Construction & Infrastructure Disputes","Commercial Property Disputes","Intellectual Property Disputes","Technology & Digital Disputes","Franchise & Distribution Disputes","Employment & Workforce Disputes","Contract & Agreement Disputes"] },
-];
-
-/* ─── Mock data ─── */
-const MOCK = Array.from({length:14},(_,i)=>({
-  _id:String(i+1),
-  meetingId:`#${2544+i}`,
-  caseId:`#${4245+i}`,
-  meetingTitle:["Property Division","Employment Dispute","Family Settlement","Contract Breach","Consumer Complaint"][i%5],
-  petitioner:["Rahul Sharma","Priya Menon","Arun Kumar","Sunita Rao"][i%4],
-  respondent:["Karthik","Tech Corp Ltd","Retailer Pvt","Landlord Inc"][i%4],
-  mediator:"Kumar Sangakara",
-  status:["Ongoing","Upcoming","Upcoming","Missed","Completed"][i%5],
-  invitation:["Invited","Optional","Not Required","Optional","Invited"][i%5],
-  scheduledDate:"2026-05-12",
-  startTime:"10:00",
-  endTime:"11:00",
-  virtualMeeting:{ meetingLink:"https://meet.google.com/abc-defg-hij" },
-  caseType:["Property & Rental Disputes","Employment & Workforce Disputes","Family Disputes","Contract & Agreement Disputes"][i%4],
-}));
+const STATUS_OPTIONS = ["All Statuses","Ongoing","Upcoming","Missed","Completed","Cancelled"];
+const ROWS_OPTIONS   = [5,10,20,50];
 
 /* ─── Helpers ─── */
 const fmtDate = d => d ? new Date(d).toLocaleDateString("en-IN",{day:"2-digit",month:"2-digit",year:"numeric"}) : "—";
@@ -76,50 +50,6 @@ const Dropdown = ({options,value,onChange}) => {
   );
 };
 
-/* ─── Category Dropdown ─── */
-const CategoryDropdown = ({value,onChange}) => {
-  const [open,setOpen]     = useState(false);
-  const [exp,setExp]       = useState({});
-  const ref = useRef();
-  useEffect(()=>{ const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);}; document.addEventListener("mousedown",h); return()=>document.removeEventListener("mousedown",h); },[]);
-  return (
-    <div className="adm3-dd adm3-cat-dd" ref={ref}>
-      <button className={`adm3-dd__trigger ${open?"open":""}`} onClick={()=>setOpen(p=>!p)}>
-        <span className="adm3-cat-trigger">{value}</span>
-        {open?<FaChevronUp className="adm3-dd__chev"/>:<FaChevronDown className="adm3-dd__chev"/>}
-      </button>
-      {open&&(
-        <div className="adm3-dd__menu adm3-cat-menu">
-          <div className="adm3-dd__item" onClick={()=>{onChange("All Categories");setOpen(false);}}>
-            <span>All Categories</span>
-            <span className={`adm3-radio ${value==="All Categories"?"adm3-radio--on":""}`}/>
-          </div>
-          {CATEGORY_TREE.map(({group,icon,sub})=>(
-            <div key={group}>
-              <div className={`adm3-cat-group ${sub.includes(value)?"adm3-cat-group--active":""}`}
-                   onClick={e=>{e.stopPropagation();setExp(p=>({...p,[group]:!p[group]}));}}>
-                <span className="adm3-cat-group__icon">{icon}</span>
-                <span className="adm3-cat-group__lbl">{group}</span>
-                <span className="adm3-cat-group__arr">{exp[group]?<FaChevronDown style={{fontSize:10}}/>:<FaChevronRight style={{fontSize:10}}/>}</span>
-              </div>
-              {exp[group]&&(
-                <div className="adm3-cat-subs">
-                  {sub.map(s=>(
-                    <div key={s} className="adm3-cat-sub" onClick={()=>{onChange(s);setOpen(false);}}>
-                      <span>{s}</span>
-                      <span className={`adm3-radio ${value===s?"adm3-radio--on":""}`}/>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 /* ─── Action button logic ─── */
 const MeetingActionBtn = ({meeting, onJoin}) => {
   if(meeting.status==="Ongoing") return (
@@ -133,8 +63,13 @@ const MeetingActionBtn = ({meeting, onJoin}) => {
     </button>
   );
   if(meeting.status==="Missed"||meeting.status==="Completed") return (
-    <button className="adm3-action-btn adm3-action-btn--recording">
-      View Recording
+    <button
+      className="adm3-action-btn adm3-action-btn--recording"
+      disabled
+      title="Recordings not available (live video not yet implemented)"
+      style={{ opacity: 0.45, cursor: "not-allowed" }}
+    >
+      No Recording
     </button>
   );
   return <span className="adm3-action-dash">—</span>;
@@ -149,12 +84,8 @@ const AdminMeetings = () => {
   const [meetings,      setMeetings]      = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [filterStatus,  setFilterStatus]  = useState("All Statuses");
-  const [filterCat,     setFilterCat]     = useState("All Categories");
-  const [filterInvite,  setFilterInvite]  = useState("All Type");
   const [page,          setPage]          = useState(1);
   const [rowsPerPage,   setRowsPerPage]   = useState(10);
-  const [activeSession, setActiveSession] = useState(null); // meeting being joined
-
   const fetchMeetings = useCallback(async()=>{
     setLoading(true);
     try {
@@ -170,15 +101,13 @@ const AdminMeetings = () => {
         respondent:   m.participants?.find(p=>p.role==="Respondent")?.name||"—",
         mediator:     m.mediator?.name||m.mediator?.fullName||"—",
         status:       m.status||"Upcoming",
-        invitation:   "Invited",
         scheduledDate:m.scheduledDate,
         startTime:    m.startTime,
         endTime:      m.endTime,
         virtualMeeting:m.virtualMeeting,
-        caseType:     "—",
       })));
     } catch {
-      setMeetings(MOCK);
+      setMeetings([]);
     } finally { setLoading(false); }
   },[]);
 
@@ -192,29 +121,18 @@ const AdminMeetings = () => {
     const q=search.toLowerCase();
     const ms=!search||m.meetingId.toLowerCase().includes(q)||m.caseId.toLowerCase().includes(q)||m.meetingTitle.toLowerCase().includes(q)||m.mediator.toLowerCase().includes(q)||m.petitioner.toLowerCase().includes(q);
     const mSt = filterStatus==="All Statuses"||m.status===filterStatus;
-    const mCat= filterCat==="All Categories"||m.caseType===filterCat;
-    const mInv= filterInvite==="All Type"||m.invitation===filterInvite;
-    return ms&&mSt&&mCat&&mInv;
+    return ms&&mSt;
   });
 
   const activeFilters=[];
-  if(filterCat!=="All Categories")   activeFilters.push({key:"cat",  label:filterCat,    clear:()=>setFilterCat("All Categories")});
-  if(filterStatus!=="All Statuses")  activeFilters.push({key:"st",   label:filterStatus, clear:()=>setFilterStatus("All Statuses")});
-  if(filterInvite!=="All Type")      activeFilters.push({key:"inv",  label:filterInvite, clear:()=>setFilterInvite("All Type")});
+  if(filterStatus!=="All Statuses")  activeFilters.push({key:"st", label:filterStatus, clear:()=>setFilterStatus("All Statuses")});
 
   const totalPages = Math.max(1,Math.ceil(filtered.length/rowsPerPage));
   const paginated  = filtered.slice((page-1)*rowsPerPage, page*rowsPerPage);
 
   const handleJoin = (meeting) => {
-    // if has a real link open it, else show in-app video UI
-    if(meeting.virtualMeeting?.meetingLink) {
-      window.open(meeting.virtualMeeting.meetingLink,"_blank");
-    } else {
-      setActiveSession(meeting);
-    }
+    navigate(`/admin/meetings/lobby/${meeting._id}`);
   };
-
-  if(activeSession) return <MeetingRoom meeting={activeSession} onLeave={()=>setActiveSession(null)}/>;
 
   return (
     <div className="adm3-root">
@@ -251,14 +169,6 @@ const AdminMeetings = () => {
               <label className="adm3-filter-lbl">STATUS</label>
               <Dropdown options={STATUS_OPTIONS} value={filterStatus} onChange={v=>{setFilterStatus(v);setPage(1);}}/>
             </div>
-            <div className="adm3-filter-group">
-              <label className="adm3-filter-lbl">CATEGORY</label>
-              <CategoryDropdown value={filterCat} onChange={v=>{setFilterCat(v);setPage(1);}}/>
-            </div>
-            <div className="adm3-filter-group">
-              <label className="adm3-filter-lbl">INVITATION</label>
-              <Dropdown options={INVITATION_OPTIONS} value={filterInvite} onChange={v=>{setFilterInvite(v);setPage(1);}}/>
-            </div>
           </div>
 
           {/* Active tags */}
@@ -271,7 +181,7 @@ const AdminMeetings = () => {
                   <button className="adm3-filter-tag__x" onClick={f.clear}>×</button>
                 </span>
               ))}
-              <button className="adm3-clear-all" onClick={()=>{setFilterStatus("All Statuses");setFilterCat("All Categories");setFilterInvite("All Type");}}>
+              <button className="adm3-clear-all" onClick={()=>{setFilterStatus("All Statuses");}}>
                 Clear All
               </button>
             </div>
@@ -287,12 +197,12 @@ const AdminMeetings = () => {
                   <tr>
                     <th>MEETING ID</th><th>CASE ID</th><th>TOPIC</th>
                     <th>PARTICIPANTS</th><th>MEDIATOR</th>
-                    <th>STATUS</th><th>INVITATION</th><th>DATE &amp; TIME</th><th></th>
+                    <th>STATUS</th><th>DATE &amp; TIME</th><th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.length===0?(
-                    <tr><td colSpan={9} className="adm3-table-empty">
+                    <tr><td colSpan={8} className="adm3-table-empty">
                       {search||activeFilters.length>0?"No meetings match your filters.":"No meetings found."}
                     </td></tr>
                   ):paginated.map(m=>(
@@ -313,7 +223,6 @@ const AdminMeetings = () => {
                           {m.status}
                         </span>
                       </td>
-                      <td>{m.invitation}</td>
                       <td className="adm3-table__dt">
                         <span className="adm3-dt-date">{fmtDate(m.scheduledDate)}</span>
                         <span className="adm3-dt-time">{fmt12(m.startTime)} – {fmt12(m.endTime)}</span>
@@ -343,175 +252,6 @@ const AdminMeetings = () => {
           </div>
         </div>
       </main>
-    </div>
-  );
-};
-
-/* ══════════════════════════════════════════
-   IN-APP MEETING ROOM
-   Shown when no external link is available
-══════════════════════════════════════════ */
-const MeetingRoom = ({meeting, onLeave}) => {
-  const [muted,      setMuted]      = useState(false);
-  const [camOff,     setCamOff]     = useState(false);
-  const [recording,  setRecording]  = useState(true);
-  const [elapsed,    setElapsed]    = useState(0);
-  const [panel,      setPanel]      = useState(null); // "chat"|"notes"|"docs"|null
-  const [chatMsg,    setChatMsg]    = useState("");
-  const [chatLog,    setChatLog]    = useState([{from:"System",text:"Meeting started",ts:new Date()}]);
-  const [notes,      setNotes]      = useState("");
-
-  /* live timer */
-  useEffect(()=>{ const id=setInterval(()=>setElapsed(e=>e+1),1000); return()=>clearInterval(id); },[]);
-  const fmtElapsed = s => `${String(Math.floor(s/3600)).padStart(2,"0")}:${String(Math.floor(s%3600/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
-
-  const sendChat = () => {
-    if(!chatMsg.trim()) return;
-    setChatLog(l=>[...l,{from:"Admin",text:chatMsg,ts:new Date()}]);
-    setChatMsg("");
-  };
-
-  /* fake participant tiles */
-  const tiles = [
-    {name:"Rajesh Sharma",role:"Mediator",  host:true,  color:"#3a4299"},
-    {name:`${meeting.petitioner||"Petitioner"}`, role:"Petitioner", host:false, color:"#2a7a5a"},
-    {name:`${meeting.respondent||"Respondent"}`, role:"Respondent", host:false, color:"#7a3a3a"},
-  ];
-
-  return (
-    <div className="adm3-room">
-      {/* Topbar */}
-      <div className="adm3-room__topbar">
-        <div className="adm3-room__title-wrap">
-          <span className="adm3-room__title">{meeting.meetingTitle} | {meeting.meetingId}</span>
-          {recording&&<span className="adm3-room__rec"><span className="adm3-room__rec-dot"/>RECORDING</span>}
-        </div>
-        <div className="adm3-room__timer">
-          <span className="adm3-room__timer-dot"/>
-          {fmtElapsed(elapsed)}
-        </div>
-      </div>
-
-      <div className="adm3-room__body">
-        {/* Main video area */}
-        <div className="adm3-room__videos">
-          {/* Host / featured tile */}
-          <div className="adm3-room__tile adm3-room__tile--main">
-            <div className="adm3-room__tile-bg" style={{background:`linear-gradient(135deg,${tiles[0].color}88,${tiles[0].color}44)`}}>
-              <div className="adm3-room__avatar-placeholder" style={{background:tiles[0].color}}>
-                {tiles[0].name[0]}
-              </div>
-            </div>
-            <div className="adm3-room__name-tag">
-              <span className="adm3-room__mic-icon">{muted?"🔇":"🎤"}</span>
-              {tiles[0].name} ({tiles[0].role})
-            </div>
-            {tiles[0].host&&<span className="adm3-room__host-badge">HOST</span>}
-          </div>
-
-          {/* Secondary tiles */}
-          <div className="adm3-room__tile-col">
-            {tiles.slice(1).map((t,i)=>(
-              <div key={i} className="adm3-room__tile adm3-room__tile--side">
-                <div className="adm3-room__tile-bg" style={{background:`linear-gradient(135deg,${t.color}66,${t.color}22)`}}>
-                  <div className="adm3-room__avatar-placeholder adm3-room__avatar-placeholder--sm" style={{background:t.color}}>
-                    {t.name[0]}
-                  </div>
-                </div>
-                <div className="adm3-room__name-tag">
-                  <span className="adm3-room__mic-icon">🎤</span>
-                  {t.name} ({t.role})
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Side panel */}
-        {panel&&(
-          <div className="adm3-room__panel">
-            <div className="adm3-room__panel-header">
-              <span>{panel==="chat"?"Meeting Chat":panel==="notes"?"Notes":"Documents"}</span>
-              <button className="adm3-room__panel-close" onClick={()=>setPanel(null)}>✕</button>
-            </div>
-
-            {panel==="chat"&&(
-              <>
-                <div className="adm3-room__chat-log">
-                  {chatLog.map((c,i)=>(
-                    <div key={i} className="adm3-room__chat-msg">
-                      <span className="adm3-room__chat-from">{c.from}</span>
-                      <span className="adm3-room__chat-text">{c.text}</span>
-                      <span className="adm3-room__chat-ts">{c.ts.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="adm3-room__chat-input-row">
-                  <input className="adm3-room__chat-input" placeholder="Type a message…" value={chatMsg}
-                    onChange={e=>setChatMsg(e.target.value)}
-                    onKeyDown={e=>e.key==="Enter"&&sendChat()}/>
-                  <button className="adm3-room__chat-send" onClick={sendChat}>Send</button>
-                </div>
-              </>
-            )}
-
-            {panel==="notes"&&(
-              <textarea className="adm3-room__notes" placeholder="Take session notes here…"
-                value={notes} onChange={e=>setNotes(e.target.value)}/>
-            )}
-
-            {panel==="docs"&&(
-              <div className="adm3-room__docs-empty">
-                <span>📄</span>
-                <p>No documents shared yet.</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Right icon rail */}
-        <div className="adm3-room__rail">
-          {[
-            {id:"chat",  icon:"💬", label:"MEETING CHAT"},
-            {id:"notes", icon:"📝", label:"NOTES"},
-            {id:"docs",  icon:"📁", label:"DOCUMENTS"},
-          ].map(b=>(
-            <button key={b.id} className={`adm3-room__rail-btn ${panel===b.id?"active":""}`}
-              onClick={()=>setPanel(panel===b.id?null:b.id)}>
-              <span className="adm3-room__rail-icon">{b.icon}</span>
-              <span className="adm3-room__rail-label">{b.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Controls bar */}
-      <div className="adm3-room__controls">
-        <button className={`adm3-ctrl-btn ${muted?"adm3-ctrl-btn--active":""}`} onClick={()=>setMuted(p=>!p)}>
-          <span className="adm3-ctrl-icon">🎤</span>
-          <span className="adm3-ctrl-lbl">{muted?"UNMUTE":"MUTE"}</span>
-        </button>
-        <button className={`adm3-ctrl-btn ${camOff?"adm3-ctrl-btn--active":""}`} onClick={()=>setCamOff(p=>!p)}>
-          <span className="adm3-ctrl-icon">📷</span>
-          <span className="adm3-ctrl-lbl">CAMERA</span>
-        </button>
-        <button className="adm3-ctrl-btn">
-          <span className="adm3-ctrl-icon">📤</span>
-          <span className="adm3-ctrl-lbl">SHARE</span>
-        </button>
-        <button className={`adm3-ctrl-btn ${recording?"adm3-ctrl-btn--record-on":""}`} onClick={()=>setRecording(p=>!p)}>
-          <span className="adm3-ctrl-icon">⏺</span>
-          <span className="adm3-ctrl-lbl">RECORD</span>
-        </button>
-        <button className="adm3-ctrl-btn">
-          <span className="adm3-ctrl-icon">👥</span>
-          <span className="adm3-ctrl-lbl">PARTICIPANTS</span>
-        </button>
-        <button className="adm3-ctrl-btn adm3-ctrl-btn--end" onClick={onLeave}>
-          <span className="adm3-ctrl-icon">📵</span>
-          <span className="adm3-ctrl-lbl">END</span>
-        </button>
-      </div>
     </div>
   );
 };

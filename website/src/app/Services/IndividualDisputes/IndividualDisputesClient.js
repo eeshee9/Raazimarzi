@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { APP_BASE_PATH } from "@/config/appConfig";
 import "@/styles/individualDisputes.css";
 
 const whyIcons = [
@@ -96,6 +98,10 @@ const IndividualDisputes = () => {
     return () => observer.disconnect();
   }, []);
 
+  const navigateToApp = useCallback((path = "/login") => {
+    window.location.href = `${APP_BASE_PATH}${path}`;
+  }, []);
+
   const prevT = () => setActiveTestimonial((prev) => (prev === 0 ? testimonialData.length - 1 : prev - 1));
   const nextT = () => setActiveTestimonial((prev) => (prev === testimonialData.length - 1 ? 0 : prev + 1));
   const toggleFaq = (index) => setOpenFaq(openFaq === index ? null : index);
@@ -130,8 +136,8 @@ const IndividualDisputes = () => {
                   and personal loan disputes through secure online mediation and arbitration.
                 </p>
                 <div className="id-hero-btns">
-                  <button className="id-btn-primary">File a Case</button>
-                  <button className="id-btn-secondary">Learn More</button>
+                  <button className="id-btn-primary" onClick={() => navigateToApp("/user/file-new-case/step1")}>File a Case</button>
+                  <button className="id-btn-secondary" onClick={() => { const el = document.querySelector(".id-about"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}>Learn More</button>
                 </div>
               </div>
               <div className="id-hero-right">
@@ -156,7 +162,7 @@ const IndividualDisputes = () => {
                   helps resolve these disputes through secure online mediation and arbitration without the
                   need for lengthy court procedures.
                 </p>
-                <button className="id-btn-primary">File a case</button>
+                <button className="id-btn-primary" onClick={() => navigateToApp("/user/file-new-case/step1")}>File a case</button>
               </div>
               <div className="id-cause-grid">
                 {causeCards.map((c, index) => (
@@ -185,12 +191,12 @@ const IndividualDisputes = () => {
               <div className="id-flip-card">
                 <div className="id-flip-inner">
                   <div className="id-flip-front">
-                    <img src="/assets/images/pd1.png" alt="Property & Rental Disputes" />
+                    <img src="/assets/images/pd1.png" alt="Neighbour & Community Disputes" />
                   </div>
                   <div className="id-flip-back">
                     <h4>Neighbour &amp; Community Disputes</h4>
                     <p>Neighbour and community disputes arise from conflicts between individuals living in shared or nearby spaces. These may include noise complaints, parking issues, maintenance concerns, or privacy and safety disagreements.</p>
-                    <span className="id-flip-explore">EXPLORE MORE &nbsp;&#8594;</span>
+                    <Link href="/Services/NeighborDisputes" className="id-flip-explore">EXPLORE MORE &nbsp;&#8594;</Link>
                     <div className="id-flip-deco"><img src="/assets/icons/pd-i1.png" alt="" aria-hidden="true" /></div>
                   </div>
                 </div>
@@ -199,12 +205,12 @@ const IndividualDisputes = () => {
               <div className="id-flip-card">
                 <div className="id-flip-inner">
                   <div className="id-flip-front">
-                    <img src="/assets/images/pd3.png" alt="Personal Loan & Borrowing" />
+                    <img src="/assets/images/pd3.png" alt="Property & Rental Disputes" />
                   </div>
                   <div className="id-flip-back">
                     <h4>Property &amp; Rental Disputes</h4>
                     <p>Property and rental disputes include landlord-tenant conflicts, rent agreement issues, property ownership disputes, and boundary disagreements. These can be resolved efficiently through online dispute resolution.</p>
-                    <span className="id-flip-explore">EXPLORE MORE &nbsp;&#8594;</span>
+                    <Link href="/Services/Property&RentalDisputes" className="id-flip-explore">EXPLORE MORE &nbsp;&#8594;</Link>
                     <div className="id-flip-deco"><img src="/assets/icons/pd-i2.png" alt="" aria-hidden="true" /></div>
                   </div>
                 </div>
@@ -218,7 +224,7 @@ const IndividualDisputes = () => {
                   <div className="id-flip-back">
                     <h4>Family Disputes</h4>
                     <p>Family disputes include divorce cases, child custody issues, alimony or maintenance claims, and family property conflicts. These can be resolved through structured mediation and online dispute resolution.</p>
-                    <span className="id-flip-explore">EXPLORE MORE &nbsp;&#8594;</span>
+                    <Link href="/Services/FamilyDisputes" className="id-flip-explore">EXPLORE MORE &nbsp;&#8594;</Link>
                     <div className="id-flip-deco"><img src="/assets/icons/pd-i3.png" alt="" aria-hidden="true" /></div>
                   </div>
                 </div>
@@ -387,7 +393,7 @@ const IndividualDisputes = () => {
             <div className="svc-container svc-cta-inner">
               <h2 className="svc-cta-title">Ready to find a peaceful resolution?</h2>
               <p className="svc-cta-text">Join thousands of individuals who have settled their disputes with dignity and legal certainty.</p>
-              <button className="svc-cta-btn">File a Case</button>
+              <button className="svc-cta-btn" onClick={() => navigateToApp("/user/file-new-case/step1")}>File a Case</button>
             </div>
           </div>
         </section>

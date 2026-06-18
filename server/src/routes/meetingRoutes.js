@@ -7,7 +7,8 @@ import {
   updateMeeting, rescheduleMeeting,
   cancelMeeting, completeMeeting,
   getMediatorAvailability,
-  startMeeting,           // ✅ NEW
+  startMeeting,
+  submitMeetingFeedback,
 } from "../controllers/meetingController.js";
 
 const router = express.Router();
@@ -30,5 +31,6 @@ router.patch("/:id/start",           ...adminManagerOrNeutral,  startMeeting);  
 router.patch("/:id/reschedule",      ...adminOrManager,         rescheduleMeeting);
 router.patch("/:id/cancel",          ...adminOrManager,         cancelMeeting);
 router.patch("/:id/complete",        ...adminManagerOrNeutral,  completeMeeting);
+router.post("/:id/feedback",         protect,                   submitMeetingFeedback);
 
 export default router;

@@ -1,14 +1,5 @@
 import multer from "multer";
-import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import path from "path";
-
-/* ── Cloudinary Config ── */
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 /* ── Allowed file types ── */
 const ALLOWED_MIME_TYPES = [
@@ -22,32 +13,6 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 const ALLOWED_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".doc", ".docx"];
-
-/* ── Cloudinary Storage ── */
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: async (req, file) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-
-    // Use 'raw' resource type for PDFs and docs (not 'image')
-    const resourceType =
-      file.mimetype === "application/pdf" ||
-      file.mimetype.includes("word") ||
-      file.mimetype.includes("document")
-        ? "raw"
-        : "image";
-
-    return {
-      folder:        `raazimarzi/cases/${req.body.caseId || "general"}`,
-      resource_type: resourceType,
-      public_id:     `doc_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-      // Raw files (PDF/docs) don't support transformation
-      ...(resourceType === "image" && {
-        transformation: [{ quality: "auto", fetch_format: "auto" }],
-      }),
-    };
-  },
-});
 
 /* ── File Filter ── */
 const fileFilter = (req, file, cb) => {
@@ -66,9 +31,9 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-/* ── Multer Instance ── */
+/* ── Multer Instance — buffers in memory, controller uploads to NeevCloud ── */
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB max
@@ -76,4 +41,3 @@ const upload = multer({
 });
 
 export default upload;
-export { cloudinary };
