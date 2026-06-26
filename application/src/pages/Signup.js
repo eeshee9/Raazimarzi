@@ -5,8 +5,10 @@ import api from "../api/axios";
 import loginBg from "../assets/icons/login.png"; // ← import so bundler resolves the path
 
 const Signup = () => {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [confirmError, setConfirmError] = useState("");
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -19,7 +21,7 @@ const Signup = () => {
   const location = useLocation();
   const redirectPath = new URLSearchParams(location.search).get("redirect");
 
-  const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); setError(""); };
+  const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); setError(""); setConfirmError(""); };
 
   const handleOtpChange = (val, idx) => {
     if (!/^\d*$/.test(val)) return;
@@ -38,7 +40,22 @@ const Signup = () => {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setMessage("");
+    setError(""); setMessage(""); setConfirmError("");
+
+    if (form.password.length < 8) {
+      setConfirmError("Password must be at least 8 characters.");
+      return;
+    }
+    if (!form.confirmPassword) {
+      setConfirmError("Please confirm your password.");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setConfirmError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await api.post("/otp/send-otp", { email: form.email, type: "signup" });
       if (res.data?.success !== false) { setOtpSent(true); setMessage("OTP sent to your email"); startTimer(); }
@@ -67,6 +84,10 @@ const Signup = () => {
       const res = await api.post("/auth/signup", { ...form, role: "user" });
       if (res.data?.token) {
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("role", res.data.user.role);
+        localStorage.setItem("email", res.data.user.email);
+        localStorage.setItem("userId", res.data.user.id);
+        localStorage.setItem("userName", res.data.user.name);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         setMessage("Account created! Redirecting...");
         setTimeout(() => navigate(redirectPath || "/user/dashboard", { replace: true }), 1000);
@@ -119,7 +140,7 @@ const Signup = () => {
 
                 <div className="form-group">
                   <label>Phone Number</label>
-                  <div className="input-wrap has-prefix">
+                  <div className="input-wrap has-prefix has-prefix-icon">
                     <span className="input-icon">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.37 18a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2 3.18 2 2 0 0 1 3.96 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
                     </span>
@@ -141,6 +162,22 @@ const Signup = () => {
                         : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>}
                     </span>
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Confirm Password</label>
+                  <div className="input-wrap">
+                    <span className="input-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    </span>
+                    <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="••••••••" value={form.confirmPassword} onChange={handleChange} required />
+                    <span className="input-icon-right" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword
+                        ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                        : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>}
+                    </span>
+                  </div>
+                  {confirmError && <p className="field-error">{confirmError}</p>}
                 </div>
 
                 <button type="submit" className="auth-btn" disabled={loading}>

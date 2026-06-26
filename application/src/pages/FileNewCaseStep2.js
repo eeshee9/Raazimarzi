@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserSidebar from "../components/UserSidebar";
+import { isJunkText, validateLength } from "../utils/caseValidation";
 import "./FileNewCase.css";
 import "./FileNewCaseStep2.css";
 
@@ -62,10 +63,22 @@ const FileNewCaseStep2 = () => {
     const newErrors = {};
     if (!formData.caseTitle.trim())
       newErrors.caseTitle = "Case title is required";
+    else if (isJunkText(formData.caseTitle, 3))
+      newErrors.caseTitle = "Please enter a real case title, not placeholder text";
+    else {
+      const titleLenError = validateLength(formData.caseTitle, { min: 3, max: 200, label: "Case title" });
+      if (titleLenError) newErrors.caseTitle = titleLenError;
+    }
     if (!formData.description.trim())
       newErrors.description = "Case description is required";
     else if (formData.description.trim().length < 100)
       newErrors.description = "Must be at least 100 characters";
+    else if (isJunkText(formData.description, 100))
+      newErrors.description = "Please describe the actual dispute, not placeholder text";
+    else {
+      const descLenError = validateLength(formData.description, { min: 100, max: 5000, label: "Description" });
+      if (descLenError) newErrors.description = descLenError;
+    }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -135,6 +148,7 @@ const FileNewCaseStep2 = () => {
                   value={formData.caseTitle}
                   onChange={(e) => set("caseTitle", e.target.value)}
                   className={errors.caseTitle ? "err" : ""}
+                  maxLength={200}
                 />
                 {errors.caseTitle && <span className="err-msg">{errors.caseTitle}</span>}
               </div>
@@ -187,11 +201,12 @@ const FileNewCaseStep2 = () => {
                   placeholder="Provide a detailed overview of the situation. Mention key events, parties involved, and what you hope to achieve. Guidance: Try to be as factual as possible while expressing your feelings."
                   value={formData.description}
                   onChange={(e) => set("description", e.target.value)}
+                  maxLength={5000}
                 />
                 <div className="s2-desc-footer">
                   {errors.description && <span className="err-msg">{errors.description}</span>}
                   <span className={`s2-char-count ${descLen >= 100 ? "ok" : ""}`} style={{ marginLeft: "auto" }}>
-                    {descLen} / min. 100 characters
+                    {descLen} / 5000 (min. 100 characters)
                   </span>
                 </div>
               </div>
@@ -269,7 +284,7 @@ const FileNewCaseStep2 = () => {
         {/* Footer */}
         <div className="fnc-footer">
           <button className="fnc-draft-btn" onClick={handleSaveDraft}>
-            ⊞ Save as Draft
+            <span className="fnc-btn-icon">⊞</span> Save as Draft
           </button>
           <button className="fnc-cancel-btn" onClick={() => navigate("/user/file-new-case/step1")}>
             Back

@@ -171,6 +171,16 @@
   margin: 8px 0 0 0;
 }
 
+.s3-success {
+  font-size: 13px;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 8px 0 0 0;
+}
+
 /* ══════════════════════════════════════════
    UPLOADED FILES
 ══════════════════════════════════════════ */

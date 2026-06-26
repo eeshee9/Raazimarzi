@@ -49,6 +49,9 @@ import MediatorDashboard from "./pages/MediatorDashboard";
 import MediatorMyCases from "./pages/MediatorMyCases";
 import MediatorCaseMeetings from "./pages/MediatorCaseMeetings";
 import MediatorChats from "./pages/MediatorChats";
+import MediatorLogin from "./pages/MediatorLogin";
+import MediatorSignup from "./pages/MediatorSignup";
+import MediatorTerms from "./pages/MediatorTerms";
 import ForgotPassword from "./pages/ForgotPassword";
 import { CaseProvider } from "./context/caseContext";
 import { UserProvider } from "./context/userContext";
@@ -64,6 +67,9 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
+            <Route path="/mediator/login" element={<MediatorLogin />} />
+            <Route path="/mediator-signup" element={<MediatorSignup />} />
+            <Route path="/mediator-terms" element={<MediatorTerms />} />
 
             {/* User Routes — protected (token + role=user required) */}
             <Route element={<ProtectedRoute />}>
@@ -87,11 +93,13 @@ function App() {
               <Route path="/user/case-meetings/call" element={<UserCaseMeetingsNextPage />} />
             </Route>
 
-            {/* Mediator Routes */}
-            <Route path="/mediator/dashboard" element={<MediatorDashboard />} />
-            <Route path="/mediator/case-meetings" element={<MediatorCaseMeetings />} />
-            <Route path="/mediator/chats" element={<MediatorChats />} />
-            <Route path="/mediator/my-cases" element={<MediatorMyCases />} />
+            {/* Mediator Routes — protected (token + role=mediator required) */}
+            <Route element={<ProtectedRoute allowedRoles={["mediator"]} />}>
+              <Route path="/mediator/dashboard" element={<MediatorDashboard />} />
+              <Route path="/mediator/case-meetings" element={<MediatorCaseMeetings />} />
+              <Route path="/mediator/chats" element={<MediatorChats />} />
+              <Route path="/mediator/my-cases" element={<MediatorMyCases />} />
+            </Route>
 
             {/* Case Manager Routes */}
             <Route path="/cm/dashboard" element={<CaseManagerDashboard />} />

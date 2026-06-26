@@ -1,5 +1,5 @@
 import express from "express";
-import protect, { authorizeRoles } from "../middleware/authMiddleware.js";
+import protect, { authorizeRoles, gateMediatorPortal } from "../middleware/authMiddleware.js";
 import {
   downloadAwardPDF,
   previewAwardPDF,
@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-const adminOrNeutral = [protect, authorizeRoles(["admin","arbitrator","mediator"])];
+const adminOrNeutral = [protect, authorizeRoles(["admin","arbitrator","mediator"]), gateMediatorPortal];
 
 /* ── Generate + download PDF ── */
 router.get("/award/:caseId",         ...adminOrNeutral, downloadAwardPDF);  // GET /api/pdf/award/:caseId

@@ -22,12 +22,13 @@ const fileFilter = (req, file, cb) => {
   if (ALLOWED_MIME_TYPES.includes(mime) && ALLOWED_EXTENSIONS.includes(ext)) {
     cb(null, true);
   } else {
-    cb(
-      new Error(
-        `Invalid file type. Allowed: PDF, JPG, PNG, WEBP, DOC, DOCX. Got: ${ext}`
-      ),
-      false
+    const err = new Error(
+      `Invalid file type. Allowed: PDF, JPG, PNG, WEBP, DOC, DOCX. Got: ${ext}`
     );
+    // Bad input, not a server fault — the global error handler reads this
+    // to return 400 instead of defaulting to 500.
+    err.statusCode = 400;
+    cb(err, false);
   }
 };
 

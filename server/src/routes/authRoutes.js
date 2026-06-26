@@ -2,6 +2,7 @@ import express from "express";
 import {
   signup,
   login,
+  mediatorSignup,
   sendPasswordResetOtp,
   verifyOtp,
   resetPassword,
@@ -20,11 +21,22 @@ import {
 
 import protect from "../middleware/authMiddleware.js";
 import { uploadAvatar } from "../config/uploadConfig.js";
+import documentUpload from "../middleware/documentUpload.js";
 
 const router = express.Router();
 
+const mediatorDocFields = documentUpload.fields([
+  { name: "qualificationDegree",      maxCount: 1 },
+  { name: "certification",            maxCount: 1 },
+  { name: "legalLicense",             maxCount: 1 },
+  { name: "govtId",                   maxCount: 1 },
+  { name: "barCouncilRegistration",   maxCount: 1 },
+  { name: "policeVerification",       maxCount: 1 },
+]);
+
 /* ==================== PUBLIC ROUTES ==================== */
 router.post("/signup", signup);
+router.post("/mediator-signup", mediatorDocFields, mediatorSignup);
 router.post("/login", login);
 
 // Password reset flow

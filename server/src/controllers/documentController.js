@@ -2,42 +2,9 @@ import Document from "../models/documentModel.js";
 import Case from "../models/caseModel.js";
 import path from "path";
 import { uploadDocument as uploadToNeev, deleteDocument as deleteFromNeev, getPresignedUrl } from "../utils/storageProvider.js";
-
-/* ═══════════════════════════════════════════════════════════════
-   HELPER: Check if user has access to a case
-═══════════════════════════════════════════════════════════════ */
-const canAccessCase = async (userId, caseId, userRole) => {
-  if (userRole === "admin" || userRole === "case-manager") return true;
-
-  const caseDoc = await Case.findById(caseId);
-  if (!caseDoc) return false;
-
-  // User is claimant (new field) or created the case (legacy)
-  if (
-    caseDoc.createdBy?.toString() === userId.toString() ||
-    caseDoc.claimant?.toString() === userId.toString()
-  ) return true;
-
-  // User is respondent (new system)
-  if (caseDoc.respondent?.userId?.toString() === userId.toString()) return true;
-
-  // User is respondent (legacy — email match)
-  const userEmail = await getUserEmail(userId);
-  if (caseDoc.defendantDetails?.email === userEmail) return true;
-  if (caseDoc.respondent?.email === userEmail) return true;
-
-  // User is assigned neutral (mediator or arbitrator)
-  if (caseDoc.assignedNeutral?.toString() === userId.toString()) return true;
-  if (caseDoc.assignedMediator?.toString() === userId.toString()) return true;
-
-  return false;
-};
-
-const getUserEmail = async (userId) => {
-  const User = (await import("../models/userModel.js")).default;
-  const user = await User.findById(userId);
-  return user?.email;
-};
+import { MAX_FILES_PER_CASE } from "../utils/validateCase.js";
+import { canAccessCase } from "../utils/accessControl.js";
+import { sanitizeFilename } from "../utils/sanitizeFilename.js";
 
 /* ═══════════════════════════════════════════════════════════════
    1. UPLOAD DOCUMENT
@@ -71,6 +38,15 @@ export const uploadDocument = async (req, res) => {
       return res.status(403).json({ success: false, message: "You don't have access to this case" });
     }
 
+    // ✅ Enforce the per-case document cap before touching storage at all
+    const existingDocCount = await Document.countDocuments({ caseId });
+    if (existingDocCount >= MAX_FILES_PER_CASE) {
+      return res.status(400).json({
+        success: false,
+        message: `This case already has the maximum of ${MAX_FILES_PER_CASE} documents`,
+      });
+    }
+
     // ✅ Upload to NeevCloud
     let uploaded;
     try {
@@ -91,7 +67,7 @@ export const uploadDocument = async (req, res) => {
         documentTitle:     documentTitle.trim(),
         description:       description?.trim(),
         category,
-        originalFileName:  req.file.originalname,
+        originalFileName:  sanitizeFilename(req.file.originalname),
         storedFileName:    uploaded.key,
         provider:          "neev",
         storageKey:        uploaded.key,
@@ -439,7 +415,7 @@ export const replaceDocument = async (req, res) => {
     await deleteFromNeev(document.storageKey);
 
     // Update document with new file
-    document.originalFileName = req.file.originalname;
+    document.originalFileName = sanitizeFilename(req.file.originalname);
     document.storedFileName   = uploaded.key;
     document.provider         = "neev";
     document.storageKey       = uploaded.key;

@@ -377,6 +377,21 @@
 }
 
 /* ── Timeline ── */
+.ucd-tl-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 18px;
+}
+
+.ucd-tl-heading-icon {
+  font-size: 13px;
+  color: rgba(119, 138, 255, 1);
+}
+
 .ucd-timeline { display: flex; flex-direction: column; }
 
 .ucd-tl-item {
@@ -399,19 +414,26 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #e0e0ea;
-  border: 2px solid #e0e0ea;
   flex-shrink: 0;
 }
 
+/* Completed step — filled solid marker. */
 .ucd-tl-dot--done {
   background: rgba(119, 138, 255, 1);
-  border-color: rgba(119, 138, 255, 1);
+  border: 2px solid rgba(119, 138, 255, 1);
 }
 
-.ucd-tl-dot--upcoming {
+/* The single "next up" step — hollow marker with a highlight ring. */
+.ucd-tl-dot--current {
   background: #fff;
-  border-color: rgba(119, 138, 255, 0.5);
+  border: 2px solid rgba(119, 138, 255, 0.9);
+  box-shadow: 0 0 0 3px rgba(119, 138, 255, 0.15);
+}
+
+/* Not-yet-reached steps — muted/inactive marker. */
+.ucd-tl-dot--pending {
+  background: #fff;
+  border: 2px solid #d8dae6;
 }
 
 .ucd-tl-line {
@@ -427,11 +449,12 @@
 .ucd-tl-title {
   font-size: 14px;
   font-weight: 700;
-  color: #111;
   margin: 0 0 2px 0;
 }
 
-.ucd-tl-title--upcoming { color: rgba(119, 138, 255, 1); }
+.ucd-tl-title--done    { color: #111827; }
+.ucd-tl-title--current { color: rgba(119, 138, 255, 1); }
+.ucd-tl-title--pending { color: #9ca3af; font-weight: 600; }
 
 .ucd-tl-date {
   font-size: 11px;
@@ -441,12 +464,13 @@
 
 .ucd-tl-desc {
   font-size: 13px;
-  color: #64748b;
   margin: 0;
   line-height: 1.5;
 }
 
-.ucd-tl-desc--italic { font-style: italic; }
+.ucd-tl-desc--done    { color: #64748b; }
+.ucd-tl-desc--current { color: rgba(119, 138, 255, 0.85); font-style: italic; }
+.ucd-tl-desc--pending  { color: #b3b8c4; }
 
 /* ══════════════════════════════════════════════════════
    RIGHT PANEL

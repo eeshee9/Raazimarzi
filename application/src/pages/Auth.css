@@ -233,6 +233,20 @@ body { font-family: 'DM Sans', sans-serif; }
 }
 .input-wrap.has-prefix input { padding-left: 98px; }
 
+/* Signup's phone field has a left icon *and* a prefix sharing the same edge
+   (MediatorSignup's identical-looking field has no icon, so it's scoped here
+   instead of changed on the shared rule above, to avoid shifting it too).
+   Fixed-width box instead of estimated text padding, so the divider doesn't
+   drift under the typed digits on different fonts/devices. */
+.input-wrap.has-prefix-icon .phone-prefix {
+  left: 38px;
+  width: 54px;
+  justify-content: flex-end;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
+.input-wrap.has-prefix-icon input { padding-left: 100px; }
+
 /* ============================================================
    FORGOT / ROW HELPERS
    ============================================================ */
@@ -401,6 +415,13 @@ body { font-family: 'DM Sans', sans-serif; }
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 4px;
+}
+
+.field-error {
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 6px 0 0 0;
 }
 .auth-success {
   background: var(--success-bg);
@@ -961,6 +982,19 @@ body { font-family: 'DM Sans', sans-serif; }
     padding-left: 102px !important;   /* enough room for "+91 |" */
     width: 100% !important;
     box-sizing: border-box !important;
+  }
+
+  /* Signup's icon+prefix combo specifically (see desktop rule above for why
+     this is scoped instead of changing .phone-prefix itself): fixed-width
+     box so the divider doesn't drift under the typed digits on this field. */
+  .input-wrap.has-prefix-icon .phone-prefix {
+    width: 54px !important;
+    justify-content: flex-end !important;
+    padding-right: 8px !important;
+    box-sizing: border-box !important;
+  }
+  .input-wrap.has-prefix-icon input {
+    padding-left: 106px !important;   /* 44 + 54(prefix box) + 8(gap) */
   }
 }
 

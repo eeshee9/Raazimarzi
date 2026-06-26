@@ -15,19 +15,31 @@ const generateToken = (id, role) =>
 /* =========================
    REGISTER
 ========================= */
+const PRIVILEGE_FIELDS = ["approvalStatus", "permissions", "isAdmin", "status", "verified", "verificationDocs", "isActive"];
+
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
+
+    const attemptedRole = req.body.role && req.body.role !== "user" ? req.body.role : null;
+    const flaggedFields = PRIVILEGE_FIELDS.filter((f) => req.body[f] !== undefined);
+    if (attemptedRole || flaggedFields.length) {
+      console.warn(
+        `⚠️  Blocked privilege-escalation attempt on POST /user/register — email=${email || "?"} ip=${req.ip || "?"} ` +
+        `attemptedRole=${attemptedRole || "none"} fields=[${flaggedFields.join(",")}]`
+      );
+    }
 
     const userExists = await User.findOne({ email });
     if (userExists)
       return res.status(400).json({ message: "User already exists" });
 
+    // role is always "user" — public registration can never grant elevated roles.
     const user = await User.create({
       name,
       email,
       password,
-      role,
+      role: "user",
       verified: true,
     });
 

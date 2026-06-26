@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserSidebar from "../components/UserSidebar";
-
+import { isJunkName, validateDob, isSameParty, validateLength } from "../utils/caseValidation";
 
 import "./FileNewCase.css";
 
@@ -31,6 +31,7 @@ const FileNewCaseStep1 = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState("");
 
   // Pre-fill if data exists in localStorage
   useEffect(() => {
@@ -40,10 +41,10 @@ const FileNewCaseStep1 = () => {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^[0-9]{10}$/.test(phone);
-  const validateDate  = (d) => d && new Date(d) <= new Date();
 
   const handlePetitionerChange = (field, value) => {
     setErrors((prev) => ({ ...prev, [`petitioner.${field}`]: "" }));
+    setFormError("");
     setFormData((prev) => ({
       ...prev,
       petitioner: { ...prev.petitioner, [field]: value },
@@ -52,6 +53,7 @@ const FileNewCaseStep1 = () => {
 
   const handleDefendantChange = (index, field, value) => {
     setErrors((prev) => ({ ...prev, [`defendant.${index}.${field}`]: "" }));
+    setFormError("");
     setFormData((prev) => {
       const updated = [...prev.defendants];
       updated[index] = { ...updated[index], [field]: value };
@@ -84,36 +86,62 @@ const FileNewCaseStep1 = () => {
 
   const handleNext = () => {
     const newErrors = {};
+    setFormError("");
 
     // Petitioner validations
     if (!formData.petitioner.fullName.trim())
       newErrors["petitioner.fullName"] = "Full name is required";
+    else if (isJunkName(formData.petitioner.fullName))
+      newErrors["petitioner.fullName"] = "Please enter a real full name";
     if (!formData.petitioner.mobile.trim())
       newErrors["petitioner.mobile"] = "Phone number is required";
     else if (!validatePhone(formData.petitioner.mobile))
       newErrors["petitioner.mobile"] = "Must be 10 digits";
-    if (formData.petitioner.email && !validateEmail(formData.petitioner.email))
+    if (!formData.petitioner.email.trim())
+      newErrors["petitioner.email"] = "Email is required";
+    else if (!validateEmail(formData.petitioner.email))
       newErrors["petitioner.email"] = "Invalid email format";
-    if (!formData.petitioner.dob)
-      newErrors["petitioner.dob"] = "Date of birth is required";
-    else if (!validateDate(formData.petitioner.dob))
-      newErrors["petitioner.dob"] = "Invalid date";
+    const petitionerDobError = validateDob(formData.petitioner.dob, { required: true });
+    if (petitionerDobError) newErrors["petitioner.dob"] = petitionerDobError;
     if (!formData.petitioner.address.trim())
       newErrors["petitioner.address"] = "Address is required";
+    else {
+      const addrError = validateLength(formData.petitioner.address, { min: 10, max: 500, label: "Address" });
+      if (addrError) newErrors["petitioner.address"] = addrError;
+    }
 
     // Defendant validations
     formData.defendants.forEach((def, i) => {
       if (!def.fullName.trim())
         newErrors[`defendant.${i}.fullName`] = "Full name is required";
+      else if (isJunkName(def.fullName))
+        newErrors[`defendant.${i}.fullName`] = "Please enter a real full name";
       if (!def.mobile.trim())
         newErrors[`defendant.${i}.mobile`] = "Phone number is required";
       else if (!validatePhone(def.mobile))
         newErrors[`defendant.${i}.mobile`] = "Must be 10 digits";
-      if (def.email && !validateEmail(def.email))
+      if (!def.email.trim())
+        newErrors[`defendant.${i}.email`] = "Email is required";
+      else if (!validateEmail(def.email))
         newErrors[`defendant.${i}.email`] = "Invalid email format";
+      const defDobError = validateDob(def.dob, { required: false });
+      if (defDobError) newErrors[`defendant.${i}.dob`] = defDobError;
       if (!def.address.trim())
         newErrors[`defendant.${i}.address`] = "Address is required";
+      else {
+        const defAddrError = validateLength(def.address, { min: 10, max: 500, label: "Address" });
+        if (defAddrError) newErrors[`defendant.${i}.address`] = defAddrError;
+      }
     });
+
+    // Cross-field check: petitioner and respondent cannot be the same person.
+    if (
+      Object.keys(newErrors).length === 0 &&
+      formData.defendants.some((def) => isSameParty(formData.petitioner, def))
+    ) {
+      setFormError("Petitioner and respondent details cannot be the same.");
+      return;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -125,6 +153,9 @@ const FileNewCaseStep1 = () => {
   };
 
   const todayStr = new Date().toISOString().split("T")[0];
+  const minDobStr = new Date(Date.now() - 120 * 365.25 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
 
   return (
     <div className="dashboard-container">
@@ -154,6 +185,8 @@ const FileNewCaseStep1 = () => {
           <p className="fnc-subtitle">
             Please enter the details of all parties involved to begin the case filing process.
           </p>
+
+          {formError && <div className="fnc-form-error">{formError}</div>}
 
           {/* ── Petitioner ── */}
           <div className="fnc-section-card">
@@ -185,12 +218,13 @@ const FileNewCaseStep1 = () => {
               </div>
 
               <div className="fnc-field">
-                <label>EMAIL ADDRESS</label>
+                <label>EMAIL ADDRESS <span className="req">*</span></label>
                 <input
                   type="email"
                   value={formData.petitioner.email}
                   onChange={(e) => handlePetitionerChange("email", e.target.value)}
                   className={errors["petitioner.email"] ? "err" : ""}
+                  required
                 />
                 {errors["petitioner.email"] && <span className="err-msg">{errors["petitioner.email"]}</span>}
               </div>
@@ -204,6 +238,7 @@ const FileNewCaseStep1 = () => {
                     value={formData.petitioner.dob}
                     onChange={(e) => handlePetitionerChange("dob", e.target.value)}
                     max={todayStr}
+                    min={minDobStr}
                     className={errors["petitioner.dob"] ? "err" : ""}
                   />
                 </div>
@@ -232,6 +267,7 @@ const FileNewCaseStep1 = () => {
                   value={formData.petitioner.address}
                   onChange={(e) => handlePetitionerChange("address", e.target.value)}
                   className={errors["petitioner.address"] ? "err" : ""}
+                  maxLength={500}
                 />
                 {errors["petitioner.address"] && <span className="err-msg">{errors["petitioner.address"]}</span>}
               </div>
@@ -274,12 +310,13 @@ const FileNewCaseStep1 = () => {
                 </div>
 
                 <div className="fnc-field">
-                  <label>EMAIL ADDRESS</label>
+                  <label>EMAIL ADDRESS <span className="req">*</span></label>
                   <input
                     type="email"
                     value={def.email}
                     onChange={(e) => handleDefendantChange(idx, "email", e.target.value)}
                     className={errors[`defendant.${idx}.email`] ? "err" : ""}
+                    required
                   />
                   {errors[`defendant.${idx}.email`] && <span className="err-msg">{errors[`defendant.${idx}.email`]}</span>}
                 </div>
@@ -292,8 +329,11 @@ const FileNewCaseStep1 = () => {
                       value={def.dob}
                       onChange={(e) => handleDefendantChange(idx, "dob", e.target.value)}
                       max={todayStr}
+                      min={minDobStr}
+                      className={errors[`defendant.${idx}.dob`] ? "err" : ""}
                     />
                   </div>
+                  {errors[`defendant.${idx}.dob`] && <span className="err-msg">{errors[`defendant.${idx}.dob`]}</span>}
                 </div>
 
                 <div className="fnc-field">
@@ -318,6 +358,7 @@ const FileNewCaseStep1 = () => {
                     value={def.address}
                     onChange={(e) => handleDefendantChange(idx, "address", e.target.value)}
                     className={errors[`defendant.${idx}.address`] ? "err" : ""}
+                    maxLength={500}
                   />
                   {errors[`defendant.${idx}.address`] && <span className="err-msg">{errors[`defendant.${idx}.address`]}</span>}
                 </div>
@@ -346,7 +387,7 @@ const FileNewCaseStep1 = () => {
         {/* Footer */}
         <div className="fnc-footer">
           <button className="fnc-draft-btn" onClick={handleSaveDraft}>
-            ⊞ Save as Draft
+            <span className="fnc-btn-icon">⊞</span> Save as Draft
           </button>
           <button className="fnc-cancel-btn" onClick={() => navigate("/user/dashboard")}>
             Cancel

@@ -55,7 +55,7 @@ const Login = () => {
       }
     } catch (err) {
       if (err.response?.status === 401) setError("Invalid email or password");
-      else if (err.response?.status === 400) setError(err.response.data.message);
+      else if (err.response?.status === 400 || err.response?.status === 403) setError(err.response.data.message);
       else if (err.response?.status === 500) setError("Server error. Please try again later.");
       else setError("Login failed. Please try again.");
     } finally {

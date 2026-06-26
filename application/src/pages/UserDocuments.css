@@ -355,6 +355,10 @@
 .ud-search-wrap--inline .ud-search-input {
   width: 100%;
   box-sizing: border-box;
+  /* The icon moved to left:12px above, but without this the input kept the
+     base rule's padding-left:34px (tuned for an icon at left:28px) — leaving
+     a wide empty gap that made the icon look detached from the input. */
+  padding-left: 30px;
 }
 
 /* ══════════════════════════════════════════════════════════════════

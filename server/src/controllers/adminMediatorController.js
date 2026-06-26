@@ -1,5 +1,6 @@
 import Case from "../models/caseModel.js";
 import User from "../models/userModel.js";
+import { sendMediatorApprovedEmail, sendMediatorRejectedEmail } from "../services/mail.service.js";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const ACTIVE_STATUSES = [
@@ -216,12 +217,22 @@ export const getMediatorAssignableCases = async (req, res) => {
 ════════════════════════════════════════ */
 export const approveMediatorStatus = async (req, res) => {
   try {
+    const before = await User.findOne({ _id: req.params.id, role: "mediator" }).select("approvalStatus");
+    if (!before) return res.status(404).json({ success: false, message: "Mediator not found" });
+    const wasAlreadyApproved = before.approvalStatus === "approved";
+
     const mediator = await User.findOneAndUpdate(
       { _id: req.params.id, role: "mediator" },
       { approvalStatus: "approved", approvalNote: "" },
       { new: true }
     ).select("-password");
-    if (!mediator) return res.status(404).json({ success: false, message: "Mediator not found" });
+
+    // Only send the approval email on an actual pending/rejected -> approved transition,
+    // so re-clicking approve (or a frontend retry) never double-sends it.
+    if (!wasAlreadyApproved) {
+      sendMediatorApprovedEmail({ name: mediator.name, email: mediator.email }).catch(() => {});
+    }
+
     return res.status(200).json({ success: true, message: "Mediator approved", mediator });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -234,12 +245,21 @@ export const approveMediatorStatus = async (req, res) => {
 export const rejectMediatorStatus = async (req, res) => {
   try {
     const { reason } = req.body;
+    const before = await User.findOne({ _id: req.params.id, role: "mediator" }).select("approvalStatus");
+    if (!before) return res.status(404).json({ success: false, message: "Mediator not found" });
+    const wasAlreadyRejected = before.approvalStatus === "rejected";
+
     const mediator = await User.findOneAndUpdate(
       { _id: req.params.id, role: "mediator" },
       { approvalStatus: "rejected", approvalNote: reason || "" },
       { new: true }
     ).select("-password");
-    if (!mediator) return res.status(404).json({ success: false, message: "Mediator not found" });
+
+    // Same idempotency guard as approve — only email on an actual transition into "rejected".
+    if (!wasAlreadyRejected) {
+      sendMediatorRejectedEmail({ name: mediator.name, email: mediator.email, reason: mediator.approvalNote }).catch(() => {});
+    }
+
     return res.status(200).json({ success: true, message: "Mediator rejected", mediator });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });

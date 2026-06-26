@@ -3,15 +3,17 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import UserSidebar from "../components/UserSidebar";
 import api from "../api/axios";
+import { MAX_FILES_PER_CASE, MAX_FILE_SIZE, ACCEPTED_FILE_TYPES, ACCEPTED_FILE_EXTENSIONS } from "../utils/caseValidation";
 import "./FileNewCase.css";
 import "./FileNewCaseStep3.css";
 
-const ACCEPTED = ["application/pdf", "image/jpeg", "image/png"];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED = ACCEPTED_FILE_TYPES;
+const MAX_SIZE = MAX_FILE_SIZE;
 
 const getFileIcon = (type) => {
   if (type === "application/pdf") return "📄";
   if (type.startsWith("image/")) return "🖼️";
+  if (type.includes("word") || type.includes("msword")) return "📃";
   return "📎";
 };
 
@@ -64,6 +66,7 @@ const buildPayload = (caseData) => {
       dob:        defendant.dob       || "",
       mobile:     defendant.mobile    || "",
       email:      defendant.email     || "",
+      address:    defendant.address   || "",
       fatherName: "",
       idDetails:  "",
     },
@@ -84,17 +87,26 @@ const FileNewCaseStep3 = () => {
   const navigate = useNavigate();
   const inputRef = useRef();
   const fileObjectsRef = useRef({});
+  const isSubmittingRef = useRef(false);
 
   const [files, setFiles]       = useState([]);
   const [dragOver, setDragOver] = useState(false);
   const [fileError, setFileError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Restore file metadata from localStorage
+  // Restore file metadata from localStorage. Note: the actual File blobs
+  // can never survive a remount/reload (browsers don't let you persist a
+  // File object) — only their names/sizes do. Mark restored entries as
+  // "Needs re-upload" so the UI doesn't lie about files being attached;
+  // submitting silently used to skip these with no error, so the case
+  // would be created with no documents.
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("caseData")) || {};
-    if (stored.step3Files) setFiles(stored.step3Files);
+    if (stored.step3Files) {
+      setFiles(stored.step3Files.map((f) => ({ ...f, status: "Needs re-upload" })));
+    }
   }, []);
 
   const persistMeta = (list) => {
@@ -106,9 +118,14 @@ const FileNewCaseStep3 = () => {
   const addFiles = (incoming) => {
     setFileError("");
     const valid = [];
+    let remainingSlots = MAX_FILES_PER_CASE - files.length;
     for (const f of incoming) {
+      if (remainingSlots <= 0) {
+        setFileError(`You can attach at most ${MAX_FILES_PER_CASE} documents to a case.`);
+        break;
+      }
       if (!ACCEPTED.includes(f.type)) {
-        setFileError(`"${f.name}" is not supported. Use PDF, JPG, or PNG.`);
+        setFileError(`"${f.name}" is not supported. Use PDF, DOC, DOCX, JPG, PNG, or WEBP.`);
         continue;
       }
       if (f.size > MAX_SIZE) {
@@ -118,6 +135,7 @@ const FileNewCaseStep3 = () => {
       if (files.find((x) => x.name === f.name && x.size === f.size)) continue;
       fileObjectsRef.current[`${f.name}-${f.size}`] = f;
       valid.push({ name: f.name, size: f.size, type: f.type, status: "Complete" });
+      remainingSlots -= 1;
     }
     const updated = [...files, ...valid];
     setFiles(updated);
@@ -150,6 +168,10 @@ const FileNewCaseStep3 = () => {
 
   // ── Submit case to backend ───────────────────────────────────────────────────
   const handleSubmit = async () => {
+    // Ref check (not state) so a fast double-click can't slip a second
+    // request through before React re-renders the disabled button.
+    if (isSubmittingRef.current) return;
+
     setSubmitError("");
 
     const caseData = JSON.parse(localStorage.getItem("caseData")) || {};
@@ -170,15 +192,29 @@ const FileNewCaseStep3 = () => {
       return;
     }
 
+    // A file that lost its blob (e.g. user left and came back to this step)
+    // would otherwise be silently skipped during upload, so the case ends up
+    // with no documents and no indication anything went wrong.
+    const missingFiles = files.filter((f) => !fileObjectsRef.current[`${f.name}-${f.size}`]);
+    if (missingFiles.length > 0) {
+      setSubmitError(
+        `These files need to be re-selected before submitting (they weren't retained across this page reload): ${missingFiles
+          .map((f) => f.name)
+          .join(", ")}`
+      );
+      return;
+    }
+
+    isSubmittingRef.current = true;
     setSubmitting(true);
+    let newCaseId = null;
     try {
       const caseRes = await api.post("/cases/file", payload);
-      const newCaseId = caseRes.data?.case?._id;
+      newCaseId = caseRes.data?.case?._id;
 
       if (newCaseId && files.length > 0) {
         for (const meta of files) {
           const fileObj = fileObjectsRef.current[`${meta.name}-${meta.size}`];
-          if (!fileObj) continue;
           const form = new FormData();
           form.append("file", fileObj);
           form.append("caseId", newCaseId);
@@ -191,16 +227,30 @@ const FileNewCaseStep3 = () => {
       }
 
       localStorage.removeItem("caseData");
-      navigate("/user/my-cases");
+      setSubmitSuccess(true);
+      setTimeout(() => navigate("/user/my-cases"), 1200);
     } catch (err) {
+      // The case may already have been created even though a later step
+      // (e.g. a document upload) failed. Surface that clearly instead of a
+      // generic "failed to file case" message that would push the user to
+      // hit Submit again and create a duplicate case.
+      const caseWasCreated = !!newCaseId;
       const msg =
         err.response?.data?.message ||
         (Array.isArray(err.response?.data?.errors)
           ? err.response.data.errors.join(", ")
           : null) ||
         "Failed to file case. Please try again.";
-      setSubmitError(msg);
+      setSubmitError(
+        caseWasCreated
+          ? `Your case was filed successfully, but one or more documents failed to upload (${msg}). Please add the remaining documents from the case's Documents tab — do not submit this form again.`
+          : msg
+      );
+      if (caseWasCreated) {
+        localStorage.removeItem("caseData");
+      }
     } finally {
+      isSubmittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -264,7 +314,7 @@ const FileNewCaseStep3 = () => {
               ref={inputRef}
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept={ACCEPTED_FILE_EXTENSIONS}
               style={{ display: "none" }}
               onChange={handleBrowse}
             />
@@ -273,7 +323,7 @@ const FileNewCaseStep3 = () => {
             </div>
             <p className="s3-drop-title">Drag and drop files here</p>
             <p className="s3-drop-sub">
-              Supports PDF, JPG, and PNG files to build your case foundation.
+              Supports PDF, DOC, DOCX, JPG, PNG, and WEBP files to build your case foundation.
             </p>
             <button
               className="s3-browse-btn"
@@ -281,7 +331,7 @@ const FileNewCaseStep3 = () => {
             >
               + Browse
             </button>
-            <p className="s3-drop-limit">Maximum file size: 10MB</p>
+            <p className="s3-drop-limit">Maximum file size: 10MB · Up to {MAX_FILES_PER_CASE} files</p>
           </div>
 
           {/* File validation error */}
@@ -317,22 +367,29 @@ const FileNewCaseStep3 = () => {
           )}
 
           {/* API submit error */}
-          {submitError && (
+          {submitError && !submitSuccess && (
             <div className="s3-error" style={{ marginTop: 16 }}>
               ⚠️ {submitError}
+            </div>
+          )}
+
+          {/* Success confirmation */}
+          {submitSuccess && (
+            <div className="s3-success" style={{ marginTop: 16 }}>
+              ✅ Case has been submitted successfully. Redirecting to My Cases…
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="fnc-footer">
-          <button className="fnc-draft-btn" onClick={handleSaveDraft}>
-            ⊞ Save as Draft
+          <button className="fnc-draft-btn" onClick={handleSaveDraft} disabled={submitting || submitSuccess}>
+            <span className="fnc-btn-icon">⊞</span> Save as Draft
           </button>
           <button
             className="fnc-cancel-btn"
             onClick={() => navigate("/user/file-new-case/step2")}
-            disabled={submitting}
+            disabled={submitting || submitSuccess}
           >
             ← Back
           </button>
@@ -340,9 +397,9 @@ const FileNewCaseStep3 = () => {
             className="fnc-next-btn"
             style={{ marginLeft: "auto" }}
             onClick={handleSubmit}
-            disabled={submitting}
+            disabled={submitting || submitSuccess}
           >
-            {submitting ? "Filing Case…" : "Submit Case ✓"}
+            {submitSuccess ? "Submitted ✓" : submitting ? "Filing Case…" : "Submit Case ✓"}
           </button>
         </div>
       </section>

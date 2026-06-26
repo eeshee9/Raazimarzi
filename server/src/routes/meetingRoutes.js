@@ -1,6 +1,6 @@
 // routes/meetingRoutes.js
 import express from "express";
-import protect, { authorizeRoles } from "../middleware/authMiddleware.js";
+import protect, { authorizeRoles, gateMediatorPortal } from "../middleware/authMiddleware.js";
 import {
   createMeeting, getMyMeetings, getAllMeetings,
   getMeetingsByCase, getMeetingById,
@@ -15,7 +15,7 @@ const router = express.Router();
 
 const adminOnly             = [protect, authorizeRoles(["admin"])];
 const adminOrManager        = [protect, authorizeRoles(["admin", "case-manager"])];
-const adminManagerOrNeutral = [protect, authorizeRoles(["admin", "case-manager", "mediator", "arbitrator"])];
+const adminManagerOrNeutral = [protect, authorizeRoles(["admin", "case-manager", "mediator", "arbitrator"]), gateMediatorPortal];
 
 /* ─── String routes FIRST ─── */
 router.get("/my",           protect,           getMyMeetings);

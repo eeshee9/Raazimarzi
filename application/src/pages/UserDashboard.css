@@ -235,6 +235,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-left: auto; /* keeps icons right-aligned even with no .greeting sibling */
 }
 
 .nav-icons .icon {
@@ -282,7 +283,7 @@
 .stat-card {
   background: rgba(247, 248, 255, 1);
   border-radius: 16px;
-  width: 252px;
+  width: 100%; /* fill its grid track instead of a fixed px fighting `1fr` columns */
   height: 122px;
   padding: 0 10px;
   display: flex;
@@ -349,7 +350,7 @@
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
-  align-items: flex-start;
+  align-items: stretch; /* keeps both panels the same height even when one is empty */
 }
 
 /* ── LEFT wrapper (title outside card) ── */
@@ -397,6 +398,10 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   width: 100%;
   box-sizing: border-box;
+  /* Grow to fill disputes-wrapper's stretched height when content (e.g. the
+     empty-state text) is short, but never shrink below the table's natural
+     height — overflow:hidden would otherwise let flex clip real case rows. */
+  flex: 1 0 auto;
 }
 
 /* ── Table ── */

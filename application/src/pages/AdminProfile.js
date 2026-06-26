@@ -189,6 +189,14 @@ const SecurityTab = ({ profile, onSaved }) => {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
 
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [cpCurrent, setCpCurrent] = useState("");
+  const [cpNew, setCpNew] = useState("");
+  const [cpConfirm, setCpConfirm] = useState("");
+  const [cpError, setCpError] = useState("");
+  const [cpLoading, setCpLoading] = useState(false);
+  const [cpDone, setCpDone] = useState(false);
+
   const toggle2FA = async () => {
     setUpdating(true); setError("");
     try {
@@ -198,6 +206,28 @@ const SecurityTab = ({ profile, onSaved }) => {
       setError(err.response?.data?.message || "Failed to update two-factor setting");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const closePwModal = () => {
+    setShowPwModal(false);
+    setCpCurrent(""); setCpNew(""); setCpConfirm(""); setCpError(""); setCpDone(false);
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setCpError("");
+    if (cpNew !== cpConfirm) { setCpError("New passwords do not match."); return; }
+    if (cpNew.length < 6) { setCpError("Password must be at least 6 characters."); return; }
+    setCpLoading(true);
+    try {
+      await api.post("/auth/change-password", { currentPassword: cpCurrent, newPassword: cpNew });
+      setCpDone(true);
+      setTimeout(closePwModal, 1800);
+    } catch (err) {
+      setCpError(err.response?.data?.message || "Failed to change password.");
+    } finally {
+      setCpLoading(false);
     }
   };
 
@@ -230,10 +260,39 @@ const SecurityTab = ({ profile, onSaved }) => {
             <p className="adp-info-value">{profile.twoFactorEnabled ? "Multi-Factor Authenticated" : "Password Only"}</p>
           </div>
         </div>
-        <div className="adp-note">
-          Password changes are handled through the Forgot Password flow on the login page for security reasons.
-        </div>
+        <button className="adp-security-row" onClick={() => setShowPwModal(true)}>
+          <span className="adp-security-label">Change Password</span>
+          <span className="adp-security-arrow">›</span>
+        </button>
       </div>
+
+      {showPwModal && (
+        <div className="adp-modal-overlay" onClick={closePwModal}>
+          <div className="adp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="adp-modal-header">
+              <h3>Change Password</h3>
+              <button className="adp-modal-close" onClick={closePwModal}>✕</button>
+            </div>
+
+            {cpDone ? (
+              <p className="adp-pw-success">✔ Password changed successfully!</p>
+            ) : (
+              <form onSubmit={handleChangePassword} className="adp-pw-form">
+                {cpError && <p className="adp-pw-error">{cpError}</p>}
+                <label>Current Password</label>
+                <input type="password" value={cpCurrent} onChange={(e) => setCpCurrent(e.target.value)} required autoComplete="current-password" />
+                <label>New Password</label>
+                <input type="password" value={cpNew} onChange={(e) => setCpNew(e.target.value)} required autoComplete="new-password" />
+                <label>Confirm New Password</label>
+                <input type="password" value={cpConfirm} onChange={(e) => setCpConfirm(e.target.value)} required autoComplete="new-password" />
+                <button type="submit" className="adp-pw-submit" disabled={cpLoading}>
+                  {cpLoading ? "Saving…" : "Update Password"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

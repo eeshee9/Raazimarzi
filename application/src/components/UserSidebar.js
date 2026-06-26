@@ -98,8 +98,10 @@ const UserSidebar = ({ activePage = "dashboard" }) => {
       {/* ════ DESKTOP SIDEBAR ════ */}
       <aside className={`usr-sidebar${sidebarCollapsed ? " usr-collapsed" : ""}`}>
         <div className="usr-sidebar-header">
-          <div className="usr-sidebar-toggle" onClick={toggleSidebar}>
-            <span className="usr-hamburger-icon">&#8801;</span>
+          <div className="usr-sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
+            <span className="usr-bar" />
+            <span className="usr-bar" />
+            <span className="usr-bar" />
           </div>
         </div>
 

@@ -1,0 +1,83 @@
+@import './Auth.css';
+
+/* ============================================================
+   MediatorTerms.css
+   ──────────────────────────────────────────────────────────── */
+.mt-wrapper {
+  min-height: 100vh;
+  background: #F5F6FB;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.mt-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+}
+.mt-nav-logo img { height: 36px; object-fit: contain; }
+.mt-nav-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-mid);
+  text-decoration: none;
+}
+.mt-nav-back svg { width: 16px; height: 16px; }
+.mt-nav-back:hover { color: var(--primary); }
+
+.mt-hero {
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+  padding: 44px 56px;
+  margin: 28px 48px 0;
+  border-radius: 16px;
+}
+.mt-hero h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.mt-card {
+  max-width: 920px;
+  margin: 28px auto 60px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  padding: 40px 48px;
+}
+.mt-card > p:first-child { font-size: 14px; color: var(--text-mid); margin-bottom: 24px; }
+.mt-card h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 28px 0 12px;
+}
+.mt-card p { font-size: 14px; color: var(--text-mid); line-height: 1.7; margin-bottom: 10px; }
+.mt-card ul { margin: 4px 0 12px 20px; }
+.mt-card li { font-size: 14px; color: var(--text-mid); line-height: 1.7; margin-bottom: 6px; }
+
+.mt-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 13px 28px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .mt-hero, .mt-nav { padding: 24px; margin: 16px; }
+  .mt-card { margin: 16px; padding: 28px 24px; }
+}

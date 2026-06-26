@@ -1,0 +1,72 @@
+@import './Auth.css';
+
+/* ============================================================
+   MediatorLogin.css
+   ──────────────────────────────────────────────────────────── */
+.auth-right { background: #ffffff !important; }
+.auth-form-container { max-width: 420px; }
+
+.ml-heading {
+  font-family: 'Sora', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 24px;
+}
+
+.ml-card {
+  background: #ffffff;
+}
+
+.ml-note {
+  font-size: 11px;
+  color: var(--text-light);
+  text-align: center;
+  margin-top: 18px;
+  line-height: 1.5;
+}
+
+/* ── ACCESS REQUIRED STATE ───────────────────────────────── */
+.ml-denied-card {
+  max-width: 380px;
+  margin: 0 auto;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px 32px;
+  border-top: 4px solid var(--primary);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.ml-denied-icon {
+  width: 72px;
+  height: 72px;
+  background: #FEE2E2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 22px;
+}
+.ml-denied-icon svg { width: 32px; height: 32px; color: #DC2626; }
+
+.ml-denied-card h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.ml-denied-card p {
+  font-size: 14px;
+  color: var(--text-soft);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.ml-denied-card .auth-btn { margin-bottom: 14px; }
+
+@media (max-width: 768px) {
+  .ml-heading { font-size: 24px; }
+}

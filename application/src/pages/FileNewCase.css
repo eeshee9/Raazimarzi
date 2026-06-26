@@ -209,6 +209,16 @@
   margin-top: 2px;
 }
 
+.fnc-form-error {
+  font-size: 13px;
+  color: #dc2626;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
 /* Date input wrapper */
 .fnc-date-wrap {
   position: relative;
@@ -329,6 +339,16 @@
   gap: 6px;
   padding: 0;
   font-family: 'Inter', sans-serif;
+}
+
+/* Isolates the icon glyph's own box so its font metrics (emoji ascent/descent
+   differ from surrounding Latin text) don't pull it off-center relative to
+   the label next to it or the "Back" button beside this one. */
+.fnc-draft-btn .fnc-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  font-size: 14px;
 }
 
 .fnc-draft-btn:hover {

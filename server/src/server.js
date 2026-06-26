@@ -66,12 +66,27 @@ const generalLimiter = rateLimit({
   message: { success: false, message: "Too many requests. Please try again after 15 minutes." },
 });
 
+// "Who am I" reads (/me, /current-user, /my-profile) are fetched automatically
+// on every page load by UserProvider/AuthContext — they must not share the
+// login/signup brute-force budget, or routine navigation can lock a user out
+// of logging back in. They get their own, more generous limiter below.
+const SESSION_READ_PATHS = ["/me", "/current-user", "/my-profile"];
+
 const authLimiter = rateLimit({
   windowMs:        15 * 60 * 1000,
   max:             10,
   standardHeaders: true,
   legacyHeaders:   false,
+  skip:            (req) => SESSION_READ_PATHS.includes(req.path),
   message: { success: false, message: "Too many login attempts. Please try again after 15 minutes." },
+});
+
+const sessionReadLimiter = rateLimit({
+  windowMs:        15 * 60 * 1000,
+  max:             60,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { success: false, message: "Too many requests. Please try again shortly." },
 });
 
 const otpLimiter = rateLimit({
@@ -147,6 +162,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
    ✅ APPLY RATE LIMITERS TO ROUTES
 ═══════════════════════════════════════════════════════════════ */
 app.use("/api/auth",              authLimiter);
+app.use(SESSION_READ_PATHS.map((p) => `/api/auth${p}`), sessionReadLimiter);
 app.use("/api/otp",               otpLimiter);
 app.use("/api/contact",           contactLimiter);
 app.use("/api/demo",              contactLimiter);

@@ -68,42 +68,43 @@ const caseSchema = new mongoose.Schema(
       index: true,
     },
 
-    caseTitle:     { type: String, required: true },
-    causeOfAction: { type: String },
-    reliefSought:  { type: String },
+    caseTitle:     { type: String, required: true, maxlength: 200 },
+    causeOfAction: { type: String, maxlength: 5000 },
+    reliefSought:  { type: String, maxlength: 2000 },
     caseValue:     { type: String },
 
     /* ── Petitioner / Claimant Details (snapshot at filing) ── */
     petitionerDetails: {
-      fullName:   String,
-      fatherName: String,
+      fullName:   { type: String, maxlength: 100 },
+      fatherName: { type: String, maxlength: 100 },
       gender:     String,
       dob:        String,
       mobile:     String,
       email:      String,
-      address:    String,
+      address:    { type: String, maxlength: 500 },
       idType:     String,
       idProof:    String,
     },
 
     /* ── Defendant / Respondent Details (snapshot at filing) ── */
     defendantDetails: {
-      fullName:   String,
-      fatherName: String,
+      fullName:   { type: String, maxlength: 100 },
+      fatherName: { type: String, maxlength: 100 },
       gender:     String,
       dob:        String,
       mobile:     String,
       email:      String,
+      address:    { type: String, maxlength: 500 },
       idDetails:  String,
     },
 
     /* ── Case Facts ── */
     caseFacts: {
-      caseSummary:      String,
+      caseSummary:      { type: String, maxlength: 5000 },
       documentTitle:    String,
       documentType:     String,
-      witnessDetails:   String,
-      place:            String,
+      witnessDetails:   { type: String, maxlength: 2000 },
+      place:            { type: String, maxlength: 200 },
       date:             String,
       digitalSignature: String,
       declaration:      { type: Boolean, default: false },

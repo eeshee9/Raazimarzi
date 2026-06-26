@@ -1,12 +1,12 @@
 import express from "express";
-import protect, { authorizeRoles } from "../middleware/authMiddleware.js";
+import protect, { authorizeRoles, gateMediatorPortal } from "../middleware/authMiddleware.js";
 import {
   getMyStats, getMyCases, getMyCaseById,
   resolveCase, addNote, getMyMeetings, requestHearing,
 } from "../controllers/mediatorController.js";
 
 const router = express.Router();
-const isMediatorOrAdmin = [protect, authorizeRoles(["mediator", "admin"])];
+const isMediatorOrAdmin = [protect, authorizeRoles(["mediator", "admin"]), gateMediatorPortal];
 
 router.get("/stats",                        ...isMediatorOrAdmin, getMyStats);
 router.get("/cases",                        ...isMediatorOrAdmin, getMyCases);

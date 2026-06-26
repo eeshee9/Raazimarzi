@@ -184,8 +184,12 @@ const UserDashboard = () => {
 
 
         {/* ════ DESKTOP NAVBAR ════ */}
+        {/* showGreeting=false: this page renders its own greeting below, driven
+            by live dashboard stats — UserNavbar's built-in greeting would just
+            duplicate it (and with stale/zeroed disputes data, since UserNavbar
+            reads from UserContext, not this page's /dashboard/user fetch). */}
         <div className="dash-desktop-navbar">
-          <UserNavbar />
+          <UserNavbar showGreeting={false} />
         </div>
 
         {/* ════ GREETING ════ */}

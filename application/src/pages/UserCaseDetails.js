@@ -8,7 +8,7 @@ import UserNavbar from "../components/Navbar";
 import api from "../api/axios";
 import "./UserCaseDetails.css";
 import {
-  FaFileAlt, FaDownload, FaEye, FaVideo,
+  FaFileAlt, FaDownload, FaEye, FaVideo, FaHistory,
   FaCheckCircle, FaArrowLeft, FaUpload, FaCommentDots, FaChevronRight,
 } from "react-icons/fa";
 
@@ -69,32 +69,129 @@ const relativeTime = (dateStr) => {
   return fmtDate(dateStr);
 };
 
-// ─── Timeline Item ─────────────────────────────────────────────────────────────
-const TimelineItem = ({ item, isLast }) => {
-  const isUpcoming = item.upcoming === true;
-  return (
-    <div className={`ucd-tl-item ${isLast ? "ucd-tl-item--last" : ""}`}>
-      <div className="ucd-tl-left">
-        <div className={`ucd-tl-dot${item.done === false ? "" : " ucd-tl-dot--done"}${isUpcoming ? " ucd-tl-dot--upcoming" : ""}`} />
-        {!isLast && <div className="ucd-tl-line" />}
-      </div>
-      <div className="ucd-tl-content">
-        <p className={`ucd-tl-title${isUpcoming ? " ucd-tl-title--upcoming" : ""}`}>
-          {item.action || item.title || "—"}
-        </p>
-        <p className="ucd-tl-date">
-          {fmtDate(item.createdAt || item.date)}
-          {item.performedBy?.name ? ` · ${item.performedBy.name}` : ""}
-        </p>
-        {(item.note || item.desc) && (
-          <p className={`ucd-tl-desc${isUpcoming ? " ucd-tl-desc--italic" : ""}`}>
-            {item.note || item.desc}
-          </p>
-        )}
-      </div>
-    </div>
-  );
+// ─── Fixed 5-step case progress mapping ───────────────────────────────────────
+// This is a productized timeline, not a raw dump of case.timeline[]. Each step's
+// "done" state is derived from real fields/events only — nothing is invented.
+const selectNextMeeting = (meetings = []) => {
+  const now = new Date();
+  return meetings
+    .filter((m) => !["cancelled", "completed"].includes((m.status || "").toLowerCase())
+              && new Date(m.scheduledDate) >= now)
+    .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))[0] || null;
 };
+
+const selectFirstCompletedMeeting = (meetings = []) =>
+  meetings
+    .filter((m) => (m.status || "").toLowerCase() === "completed")
+    .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))[0] || null;
+
+const getCaseProgressSteps = (caseData, meetingsData = []) => {
+  const c          = caseData || {};
+  const respondent = c.respondent        || {};
+  const defendant  = c.defendantDetails  || {};
+  const mediator   = c.assignedNeutral   || null;
+  const timeline   = c.timeline          || [];
+
+  const findEntry = (actions) => timeline.find((t) => actions.includes(t.action)) || null;
+
+  const nextMeeting   = selectNextMeeting(meetingsData);
+  const firstSession  = selectFirstCompletedMeeting(meetingsData);
+  const respondentName = defendant.fullName || respondent.name || null;
+  const mediatorName    = mediator?.name || null;
+
+  // Step 1 — the case record existing is itself the proof.
+  const step1Done = true;
+  const step1Date = c.createdAt || null;
+
+  // Step 2 — only true if the invite was actually accepted.
+  const acceptedEntry = findEntry(["Respondent Accepted Invite"]);
+  const step2Done = respondent.inviteStatus === "accepted";
+  const step2Date = acceptedEntry?.createdAt || respondent.acceptedAt || null;
+
+  // Step 3 — only true if a neutral is actually on the case.
+  const assignedEntry = findEntry(["Mediator Assigned", "Arbitrator Assigned"]);
+  const step3Done = !!(mediator?.name || mediator?._id);
+  const step3Date = assignedEntry?.createdAt || c.assignedAt || null;
+
+  // Step 4 — only true if a meeting record actually carries "Completed" status.
+  const step4Done = !!firstSession;
+  const step4Date = firstSession?.scheduledDate || null;
+
+  const doneFlags    = [step1Done, step2Done, step3Done, step4Done];
+  const firstNotDone = doneFlags.findIndex((d) => !d);
+  const stateFor = (idx, done) => (done ? "done" : idx === firstNotDone ? "current" : "pending");
+
+  // Step 5 only lights up once everything before it is real AND a future
+  // meeting actually exists — otherwise it's a quiet placeholder, not a
+  // misleading "this is next" claim.
+  const allPriorDone = firstNotDone === -1;
+  const step5State   = allPriorDone && nextMeeting ? "current" : "pending";
+
+  return [
+    {
+      key: "filed",
+      title: "Case Filed",
+      date: step1Date,
+      description: "Initial submission of dispute details and supporting documents.",
+      state: stateFor(0, step1Done),
+    },
+    {
+      key: "accepted",
+      title: "Respondent Accepted Case",
+      date: step2Date,
+      description: step2Done
+        ? `Legal notice accepted${respondentName ? ` by ${respondentName}` : ""}.`
+        : "Awaiting the respondent's acceptance of the legal notice.",
+      state: stateFor(1, step2Done),
+    },
+    {
+      key: "mediator",
+      title: mediatorName ? `Mediator Assigned - ${mediatorName}` : "Mediator Assigned",
+      date: step3Date,
+      description: step3Done
+        ? "A mediator has been assigned to guide both parties toward a resolution."
+        : "Awaiting mediator assignment by the case admin.",
+      state: stateFor(2, step3Done),
+    },
+    {
+      key: "first-session",
+      title: "First Mediation Session",
+      date: step4Date,
+      description: step4Done
+        ? (firstSession?.outcome?.summary || "Joint session held to identify key issues.")
+        : "No mediation session has taken place yet.",
+      state: stateFor(3, step4Done),
+    },
+    {
+      key: "next-session",
+      title: nextMeeting
+        ? `Upcoming: ${nextMeeting.meetingTitle || "Next Mediation Session"}`
+        : "Upcoming: Next Mediation Session",
+      date: nextMeeting?.scheduledDate || null,
+      description: nextMeeting
+        ? (nextMeeting.agenda || "Scheduled focus: next mediation session.")
+        : "No further session has been scheduled yet.",
+      state: step5State,
+    },
+  ];
+};
+
+// ─── Timeline Item ─────────────────────────────────────────────────────────────
+const TimelineItem = ({ step, isLast }) => (
+  <div className={`ucd-tl-item ${isLast ? "ucd-tl-item--last" : ""}`}>
+    <div className="ucd-tl-left">
+      <div className={`ucd-tl-dot ucd-tl-dot--${step.state}`} />
+      {!isLast && <div className="ucd-tl-line" />}
+    </div>
+    <div className="ucd-tl-content">
+      <p className={`ucd-tl-title ucd-tl-title--${step.state}`}>{step.title}</p>
+      {step.date && <p className="ucd-tl-date">{fmtDate(step.date)}</p>}
+      {step.description && (
+        <p className={`ucd-tl-desc ucd-tl-desc--${step.state}`}>{step.description}</p>
+      )}
+    </div>
+  </div>
+);
 
 // ─── Section Block ────────────────────────────────────────────────────────────
 const SectionBlock = ({ title, children }) => (
@@ -229,11 +326,11 @@ const UserCaseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [caseData,    setCaseData]    = useState(null);
-  const [documents,   setDocuments]   = useState([]);
-  const [nextMeeting, setNextMeeting] = useState(null);
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState(null);
+  const [caseData,  setCaseData]  = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [meetings,  setMeetings]  = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState(null);
 
   const fetchCaseData = useCallback(async () => {
     const token = localStorage.getItem("token");
@@ -260,13 +357,7 @@ const UserCaseDetails = () => {
       }
 
       if (meetingsRes.status === "fulfilled") {
-        const meetings = meetingsRes.value.data?.meetings || [];
-        const now = new Date();
-        const upcoming = meetings
-          .filter(m => !["cancelled", "Cancelled", "Completed", "completed"].includes(m.status)
-                    && new Date(m.scheduledDate) >= now)
-          .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
-        if (upcoming.length > 0) setNextMeeting(upcoming[0]);
+        setMeetings(meetingsRes.value.data?.meetings || []);
       }
     } catch (err) {
       if (err.response?.status === 401) { navigate("/login"); return; }
@@ -312,20 +403,12 @@ const UserCaseDetails = () => {
   const mediator         = c.assignedNeutral   || null;
   const facts            = c.caseFacts         || {};
 
-  // Timeline — kept in insertion order (chronological, oldest first)
-  const timeline = (c.timeline || []).slice();
-
-  // Inject upcoming meeting as last item if available
-  const timelineItems = [...timeline];
-  if (nextMeeting) {
-    timelineItems.push({
-      upcoming: true,
-      done: false,
-      action: `Upcoming: ${nextMeeting.meetingTitle || "Mediation Session"}`,
-      date: nextMeeting.scheduledDate,
-      note: nextMeeting.agenda || "Scheduled focus: Next mediation session.",
-    });
-  }
+  // Raw event log (used only for the "LAST ACTIVITY" stat card sub-text below) —
+  // the "Case Progression Timeline" section itself uses the fixed 5-step product
+  // mapping (getCaseProgressSteps), not this raw array.
+  const timeline = c.timeline || [];
+  const progressSteps = getCaseProgressSteps(c, meetings);
+  const nextMeeting = selectNextMeeting(meetings);
 
   // Documents — prefer real docs; fall back to caseFacts doc title
   const docsList = documents.length > 0
@@ -464,22 +547,22 @@ const UserCaseDetails = () => {
           <section className="ucd-left-panel">
             <div className="ucd-scroll-container">
 
-              {/* 1. Case Progression Timeline */}
-              <SectionBlock title="Case Progression Timeline">
-                {timelineItems.length === 0 ? (
-                  <p className="ucd-description-text">No timeline events yet.</p>
-                ) : (
-                  <div className="ucd-timeline">
-                    {timelineItems.map((item, i) => (
-                      <TimelineItem
-                        key={item._id || i}
-                        item={item}
-                        isLast={i === timelineItems.length - 1}
-                      />
-                    ))}
-                  </div>
-                )}
-              </SectionBlock>
+              {/* 1. Case Progression Timeline — fixed 5-step product view */}
+              <div className="ucd-section-block">
+                <div className="ucd-tl-heading">
+                  <FaHistory className="ucd-tl-heading-icon" />
+                  <span>Case Progression Timeline</span>
+                </div>
+                <div className="ucd-timeline">
+                  {progressSteps.map((step, i) => (
+                    <TimelineItem
+                      key={step.key}
+                      step={step}
+                      isLast={i === progressSteps.length - 1}
+                    />
+                  ))}
+                </div>
+              </div>
 
               {/* 2. Detailed Participant Profiles */}
               <SectionBlock title="Detailed Participant Profiles">

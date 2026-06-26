@@ -564,4 +564,79 @@ export const sendAwardIssuedEmails = async ({ caseData, awardType, awardInFavorO
   console.log(`📧 Award notifications sent for case ${caseData.caseId}`);
 };
 
+/* ════════════════════════════════════════
+   MEDIATOR APPLICATION — admin notification
+   Fired once when a mediator application is submitted
+════════════════════════════════════════ */
+export const sendMediatorApplicationAdminEmail = async ({ mediatorId, name, email, phone, submittedAt }) => {
+  const reviewUrl = `${process.env.CLIENT_URL || ""}/app/admin/mediators/${mediatorId}`;
+  return safeSend({
+    to:      process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+    subject: `📋 New Mediator Application | ${name}`,
+    html: `
+      <h2>📋 New Mediator Application Submitted</h2><hr />
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone:</strong> ${phone || "N/A"}</p>
+      <p><strong>Submitted At:</strong> ${new Date(submittedAt).toLocaleString()}</p>
+      <hr />
+      <p>Please review the mediator's profile and uploaded documents in the admin dashboard.</p>
+      ${process.env.CLIENT_URL ? `<p><a href="${reviewUrl}" style="background:#5B6BF8;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Review Application</a></p>` : ""}
+      <p style="color:gray;">— RaaziMarzi System</p>
+    `,
+  });
+};
+
+/* ════════════════════════════════════════
+   MEDIATOR APPROVED
+════════════════════════════════════════ */
+export const sendMediatorApprovedEmail = async ({ name, email }) => {
+  const loginUrl = `${process.env.CLIENT_URL || ""}/app/mediator/login`;
+  return safeSend({
+    to:      email,
+    subject: "✅ Your Mediator Application Has Been Approved | RaaziMarzi",
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="background:#16a34a;padding:20px;border-radius:8px 8px 0 0;">
+          <h2 style="color:white;margin:0;">Application Approved</h2>
+        </div>
+        <div style="border:1px solid #e5e7eb;padding:24px;border-radius:0 0 8px 8px;">
+          <p>Dear <strong>${name}</strong>,</p>
+          <p>Congratulations! Your mediator application has been <strong>approved</strong>. You can now log in to the Mediator Portal and start managing dispute resolution cases on RaaziMarzi.</p>
+          ${process.env.CLIENT_URL ? `<div style="text-align:center;margin:28px 0;"><a href="${loginUrl}" style="background:#16a34a;color:white;padding:14px 28px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Log In as Mediator</a></div>` : ""}
+          <p style="color:#6b7280;font-size:13px;">If you have any questions, contact us at <a href="mailto:${process.env.EMAIL_USER}">${process.env.EMAIL_USER}</a></p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+          <p style="color:#9ca3af;font-size:12px;text-align:center;">— RaaziMarzi Online Dispute Resolution Platform</p>
+        </div>
+      </div>
+    `,
+  });
+};
+
+/* ════════════════════════════════════════
+   MEDIATOR REJECTED
+════════════════════════════════════════ */
+export const sendMediatorRejectedEmail = async ({ name, email, reason }) => {
+  return safeSend({
+    to:      email,
+    subject: "Update on Your Mediator Application | RaaziMarzi",
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="background:#dc2626;padding:20px;border-radius:8px 8px 0 0;">
+          <h2 style="color:white;margin:0;">Application Update</h2>
+        </div>
+        <div style="border:1px solid #e5e7eb;padding:24px;border-radius:0 0 8px 8px;">
+          <p>Dear <strong>${name}</strong>,</p>
+          <p>Thank you for applying to become a mediator on RaaziMarzi. After careful review, we are unable to approve your application at this time.</p>
+          ${reason ? `<div style="background:#fef2f2;border-left:4px solid #dc2626;padding:14px 18px;margin:18px 0;border-radius:4px;"><p style="margin:0;"><strong>Reason:</strong> ${reason}</p></div>` : ""}
+          <p>If you believe this decision was made in error or would like to reapply with updated information, please contact our support team.</p>
+          <p style="color:#6b7280;font-size:13px;">Contact us at <a href="mailto:${process.env.EMAIL_USER}">${process.env.EMAIL_USER}</a></p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+          <p style="color:#9ca3af;font-size:12px;text-align:center;">— RaaziMarzi Online Dispute Resolution Platform</p>
+        </div>
+      </div>
+    `,
+  });
+};
+
 export default getTransporter;

@@ -3,36 +3,80 @@ import Otp from "../models/otpModel.js";
 import AdminActivityLog from "../models/adminActivityLogModel.js";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
-import { sendOtpMail } from "../services/mail.service.js";
+import { sendOtpMail, sendMediatorApplicationAdminEmail } from "../services/mail.service.js";
+import { uploadDocument as uploadToNeev } from "../utils/storageProvider.js";
+import { isMediatorPortalLive } from "../utils/featureFlags.js";
+
+/* Fields that must never be settable by a client on public signup/registration —
+   they are the only privilege-bearing fields these endpoints could otherwise
+   mass-assign from req.body. Any attempt is logged, never honored. */
+const PRIVILEGE_FIELDS = ["approvalStatus", "permissions", "isAdmin", "status", "verified", "verificationDocs", "isActive"];
+
+const flagPrivilegeEscalationAttempt = (req, endpoint) => {
+  const attemptedRole = req.body.role && req.body.role !== "user" ? req.body.role : null;
+  const flaggedFields = PRIVILEGE_FIELDS.filter((f) => req.body[f] !== undefined);
+  if (attemptedRole || flaggedFields.length) {
+    console.warn(
+      `⚠️  Blocked privilege-escalation attempt on ${endpoint} — email=${req.body.email || "?"} ip=${req.ip || "?"} ` +
+      `attemptedRole=${attemptedRole || "none"} fields=[${flaggedFields.join(",")}]`
+    );
+  }
+};
+
+/* Maps multipart field names -> verificationDocs.docType */
+const MEDIATOR_DOC_FIELDS = {
+  qualificationDegree:  "qualification_degree",
+  certification:        "mediation_certification",
+  legalLicense:          "legal_license",
+  govtId:               "govt_id",
+  barCouncilRegistration: "bar_council_registration",
+  policeVerification:    "police_verification",
+};
 
 /* ================= SIGNUP ================= */
 export const signup = async (req, res) => {
   try {
-    const { name, email, phone, password, role } = req.body;
+    const { name, email, phone, password, confirmPassword } = req.body;
+    flagPrivilegeEscalationAttempt(req, "POST /auth/signup");
 
     // Validation
-    if (!name || !email || !password) {
-      return res.status(400).json({ 
-        message: "Name, email and password are required" 
+    if (!name || !email || !password || !confirmPassword) {
+      return res.status(400).json({
+        message: "Name, email, password and confirmPassword are required"
+      });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters"
+      });
+    }
+    // Never trust the password-match check done in the browser alone —
+    // re-verify it server-side so a direct API call can't create an
+    // account with mismatched password/confirmPassword.
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        message: "Passwords do not match"
       });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ 
-        message: "User already exists with this email" 
+      return res.status(400).json({
+        message: "User already exists with this email"
       });
     }
 
-    // Create new user
+    // Create new user — role is always "user"; public signup can never grant
+    // elevated roles. Mediator accounts are only created via /auth/mediator-signup,
+    // and admin/sub-admin accounts only via authenticated admin-only endpoints.
     const newUser = await User.create({
       name,
       email,
       phone: phone || "",
       password,
-      role: role || "user",
-      verified: true // Auto-verify or set to false if you want OTP verification
+      role: "user",
+      verified: true
     });
 
     // Generate token
@@ -55,10 +99,101 @@ export const signup = async (req, res) => {
 
   } catch (error) {
     console.error("Signup Error:", error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       message: "Error during signup",
-      error: error.message 
+      error: error.message
     });
+  }
+};
+
+/* ================= MEDIATOR SIGNUP (APPLICATION) ================= */
+export const mediatorSignup = async (req, res) => {
+  try {
+    const {
+      name, email, phone, dob, password,
+      languages, pincode, city, state, country,
+      qualification, currentDesignation, organization, experience,
+      expertise, bio, certifyInfo, agreeTerms,
+    } = req.body;
+    // role and approvalStatus are hardcoded below regardless of req.body — flag any attempt to override them.
+    flagPrivilegeEscalationAttempt(req, "POST /auth/mediator-signup");
+
+    const expertiseAreas = Array.isArray(expertise) ? expertise : JSON.parse(expertise || "[]");
+    const languagesList   = Array.isArray(languages) ? languages : JSON.parse(languages || "[]");
+
+    if (!name || !email || !phone || !dob || !password) {
+      return res.status(400).json({ success: false, message: "Name, email, phone, date of birth and password are required" });
+    }
+    if (!pincode || !city) {
+      return res.status(400).json({ success: false, message: "Pincode and city are required" });
+    }
+    if (!qualification || !experience) {
+      return res.status(400).json({ success: false, message: "Highest qualification and years of experience are required" });
+    }
+    if (!expertiseAreas.length) {
+      return res.status(400).json({ success: false, message: "Select at least one area of expertise" });
+    }
+    if (certifyInfo !== "true" && certifyInfo !== true) {
+      return res.status(400).json({ success: false, message: "You must certify that the information provided is accurate" });
+    }
+    if (agreeTerms !== "true" && agreeTerms !== true) {
+      return res.status(400).json({ success: false, message: "You must agree to the Terms of Service and Privacy Policy" });
+    }
+
+    const requiredDocs = ["qualificationDegree", "certification", "legalLicense", "govtId"];
+    for (const field of requiredDocs) {
+      if (!req.files?.[field]?.[0]) {
+        return res.status(400).json({ success: false, message: `${field === "govtId" ? "Aadhaar/Passport/Driving License" : "Required document"} is missing` });
+      }
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: "An account already exists with this email" });
+    }
+
+    const newMediator = await User.create({
+      name, email, phone, dob, password,
+      role: "mediator",
+      approvalStatus: "pending",
+      languages: languagesList,
+      pincode, city, state: state || "", country: country || "India",
+      qualifications: qualification,
+      currentDesignation: currentDesignation || "",
+      organization: organization || "",
+      experience: String(experience),
+      expertiseAreas,
+      bio: bio || "",
+      verified: true,
+    });
+
+    /* Upload verification docs to NeevCloud, then attach to the mediator record */
+    const verificationDocs = [];
+    for (const [field, docType] of Object.entries(MEDIATOR_DOC_FIELDS)) {
+      const file = req.files?.[field]?.[0];
+      if (!file) continue;
+      const uploaded = await uploadToNeev(file, "mediator-applications", newMediator._id);
+      verificationDocs.push({ docType, fileUrl: uploaded.key, status: "pending", uploadedAt: new Date() });
+    }
+    newMediator.verificationDocs = verificationDocs;
+    await newMediator.save();
+
+    console.log("✅ Mediator application submitted:", email);
+
+    sendMediatorApplicationAdminEmail({
+      mediatorId: newMediator._id,
+      name, email, phone,
+      submittedAt: newMediator.createdAt,
+    }).catch(() => {});
+
+    return res.status(201).json({
+      success: true,
+      message: "Application submitted. Your application is under review.",
+      mediator: { id: newMediator._id, name: newMediator.name, email: newMediator.email, approvalStatus: newMediator.approvalStatus },
+    });
+  } catch (error) {
+    console.error("Mediator Signup Error:", error);
+    return res.status(500).json({ success: false, message: "Error submitting application", error: error.message });
   }
 };
 
@@ -95,6 +230,31 @@ export const login = async (req, res) => {
       });
     }
 
+    if (user.role === "mediator") {
+      if (user.approvalStatus === "pending") {
+        return res.status(403).json({
+          message: "Your mediator application is still under review.",
+          approvalStatus: "pending",
+        });
+      }
+      if (user.approvalStatus === "rejected") {
+        return res.status(403).json({
+          message: "Your mediator application was not approved.",
+          approvalStatus: "rejected",
+          approvalNote: user.approvalNote || "",
+        });
+      }
+      // approvalStatus is "approved" at this point — still gated behind the
+      // mediator-module launch flag until the portal officially goes live.
+      if (!isMediatorPortalLive()) {
+        return res.status(403).json({
+          message: "Your application has been approved. Mediator access will be enabled when the mediator portal launches.",
+          approvalStatus: "approved",
+          mediatorPortalLive: false,
+        });
+      }
+    }
+
     const token = generateToken(user);
 
     user.lastLoginAt = new Date();
@@ -122,7 +282,8 @@ export const login = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        verified: user.verified
+        verified: user.verified,
+        approvalStatus: user.approvalStatus
       }
     });
 
@@ -429,7 +590,8 @@ export const getCurrentUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        verified: user.verified
+        verified: user.verified,
+        approvalStatus: user.approvalStatus,
       }
     });
 

@@ -125,3 +125,43 @@
 @media (max-width: 980px) {
   .adp-tab-grid, .adp-security-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Change Password row + modal ── */
+.adp-security-row {
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; margin-top: 16px; padding: 13px 16px;
+  background: #f5f3ff; border-radius: 10px; border: none; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: background 0.2s, transform 0.15s;
+}
+.adp-security-row:hover { background: #ede9fe; transform: translateX(2px); }
+.adp-security-label { font-size: 14px; font-weight: 600; color: #111827; }
+.adp-security-arrow { font-size: 18px; color: #9ca3af; font-weight: 300; }
+
+.adp-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.adp-modal {
+  background: #fff; border-radius: 16px; width: 100%; max-width: 420px;
+  padding: 28px 28px 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+.adp-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.adp-modal-header h3 { font-size: 18px; font-weight: 700; color: #111827; margin: 0; }
+.adp-modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #9ca3af; line-height: 1; padding: 0; transition: color 0.2s; }
+.adp-modal-close:hover { color: #374151; }
+
+.adp-pw-form { display: flex; flex-direction: column; gap: 12px; }
+.adp-pw-form label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: -6px; }
+.adp-pw-form input {
+  padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  font-size: 14px; outline: none; transition: border-color 0.2s; font-family: 'Inter', sans-serif;
+}
+.adp-pw-form input:focus { border-color: #7c8cff; }
+.adp-pw-submit {
+  margin-top: 6px; padding: 13px; background: linear-gradient(135deg,#7c8cff,#5b21b6);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.2s;
+}
+.adp-pw-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.adp-pw-error { font-size: 13px; color: #dc2626; margin: 0; background: #fef2f2; padding: 10px 12px; border-radius: 8px; }
+.adp-pw-success { font-size: 15px; color: #16a34a; font-weight: 600; text-align: center; padding: 24px 0; margin: 0; }

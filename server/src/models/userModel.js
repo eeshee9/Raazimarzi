@@ -80,6 +80,8 @@ const userSchema = new mongoose.Schema(
     bio:            { type: String, default: "" },
     qualifications: { type: String, default: "" },
     experience:     { type: String, default: "" },
+    currentDesignation: { type: String, default: "" },
+    organization:       { type: String, default: "" },
     languages:      [{ type: String }],
     expertiseAreas: [{ type: String }],
     verificationDocs: [
