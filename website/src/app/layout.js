@@ -4,7 +4,7 @@ export const metadata = {
   description: 'Fast, affordable and confidential mediation for personal, consumer and commercial disputes in India.',
   icons: {
     icon: [
-      { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
+      { url: '/favicon.svg?v=3', type: 'image/svg+xml' },
       { url: '/favicon.ico',     sizes: 'any' },
     ],
     apple: '/apple-touch-icon.png',
