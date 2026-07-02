@@ -1,0 +1,47 @@
+name: API Health Monitor
+
+on:
+  schedule:
+    # Every 5 minutes — GitHub Actions minimum cron interval
+    - cron: "*/5 * * * *"
+  workflow_dispatch:   # allow manual trigger for testing
+
+jobs:
+  health-check:
+    name: Check /api/health
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping health endpoint
+        id: ping
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/health_body.json -w "%{http_code}" \
+            --max-time 15 \
+            https://raazimarzi.com/api/health)
+          echo "http_status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+          echo "body=$(cat /tmp/health_body.json)" >> $GITHUB_OUTPUT
+          echo "--- Response ---"
+          echo "Status: $HTTP_STATUS"
+          cat /tmp/health_body.json
+
+      - name: Assert status 200 and database Connected
+        run: |
+          STATUS="${{ steps.ping.outputs.http_status }}"
+          BODY="${{ steps.ping.outputs.body }}"
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ HEALTH CHECK FAILED: HTTP $STATUS"
+            exit 1
+          fi
+          if ! echo "$BODY" | grep -q '"database":"Connected"'; then
+            echo "❌ HEALTH CHECK FAILED: database not Connected"
+            echo "Body: $BODY"
+            exit 1
+          fi
+          echo "✅ Health check passed: HTTP $STATUS, database Connected"
+
+# GitHub notifies repository owners by email on workflow failure.
+# Configure additional alerting at:
+#   https://github.com/eagleeye-2022/Raazimarzi-V1/settings/notifications
+#
+# Alert recipients: mohit@eagleeyedigital.io, ishita.vishwakarma@eagleeyedigital.io
+# Add them as repo members with at least read access to receive failure emails.
