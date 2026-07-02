@@ -1,0 +1,37 @@
+name: Toggle Mediator Portal
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable:
+        description: 'Set ENABLE_MEDIATOR_PORTAL (true = open for pilot, false = close)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  toggle:
+    name: Update portal flag on VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH to VPS and update env flag
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/raazimarzi/server
+            # Remove any existing ENABLE_MEDIATOR_PORTAL line and append the new value
+            sed -i '/^ENABLE_MEDIATOR_PORTAL=/d' .env
+            echo "ENABLE_MEDIATOR_PORTAL=${{ github.event.inputs.enable }}" >> .env
+            pm2 restart backend
+            echo "✅ ENABLE_MEDIATOR_PORTAL=${{ github.event.inputs.enable }}"
+            echo "--- PM2 status ---"
+            pm2 list
+            echo "--- Health check ---"
+            sleep 3
+            curl -s http://localhost:5000/api/health
