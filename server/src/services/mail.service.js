@@ -639,4 +639,143 @@ export const sendMediatorRejectedEmail = async ({ name, email, reason }) => {
   });
 };
 
+/* ════════════════════════════════════════
+   RESOLUTION SUBMITTED — mediator submits to admin
+   Fires when mediator POSTs /mediator/cases/:id/resolution/submit
+════════════════════════════════════════ */
+export const sendResolutionSubmittedEmail = async ({ caseData, mediatorName, resolutionType, settlementTerms }) => {
+  const detailsHtml = `
+    <p><strong>Case ID:</strong> ${caseData.caseId}</p>
+    <p><strong>Case Title:</strong> ${caseData.caseTitle}</p>
+    <p><strong>Resolution Type:</strong> ${resolutionType || "Settlement"}</p>
+    <p><strong>Submitted By:</strong> ${mediatorName}</p>
+    <p><strong>Submitted On:</strong> ${new Date().toDateString()}</p>
+  `;
+  const termsSummary = settlementTerms
+    ? `<p><strong>Settlement Terms (excerpt):</strong><br/>${settlementTerms.substring(0, 400)}</p>`
+    : "";
+
+  return safeSend({
+    to:      process.env.ADMIN_EMAIL,
+    subject: `⚖️ Resolution Submitted | Case ${caseData.caseId}`,
+    html: meetingEmailHtml({
+      title:         "Resolution Submitted for Review",
+      headerColor:   "#7C3AED",
+      recipientName: "Admin",
+      body: `<p>Mediator <strong>${mediatorName}</strong> has submitted a resolution for case <strong>${caseData.caseId}</strong>. Please review and finalize closure.</p>${termsSummary}`,
+      meetingDetails: detailsHtml,
+      joinLink: "",
+    }),
+  });
+};
+
+/* ════════════════════════════════════════
+   AWARD GENERATED — notify parties on first PDF generation
+   Fires from pdfController.downloadAwardPDF (first generation only)
+════════════════════════════════════════ */
+export const sendAwardGeneratedEmails = async ({ caseData, awardRef, generatedBy }) => {
+  const detailsHtml = `
+    <p><strong>Case ID:</strong> ${caseData.caseId}</p>
+    <p><strong>Case Title:</strong> ${caseData.caseTitle}</p>
+    <p><strong>Award Type:</strong> ${caseData.awardType || "Settlement"}</p>
+    <p><strong>Award Reference:</strong> ${awardRef}</p>
+    <p><strong>Issued On:</strong> ${new Date().toDateString()}</p>
+  `;
+  const verifyUrl = `${process.env.FRONTEND_URL || ""}/pdf/verify/${awardRef}`;
+
+  const emails = [];
+
+  const claimantEmail = caseData.petitionerDetails?.email || caseData.claimant?.email;
+  const claimantName  = caseData.petitionerDetails?.fullName || caseData.claimant?.name || "Claimant";
+  if (claimantEmail) {
+    emails.push(safeSend({
+      to:      claimantEmail,
+      subject: `📄 Award Document Ready | Case ${caseData.caseId}`,
+      html: meetingEmailHtml({
+        title:         "Award Document Generated",
+        headerColor:   "#1d4ed8",
+        recipientName: claimantName,
+        body: `<p>The award document for your case has been generated. You can verify its authenticity using the award reference number below.</p>
+               <p><strong>Award Ref:</strong> <code>${awardRef}</code></p>
+               <p style="font-size:13px;">To verify: <a href="${verifyUrl}">${verifyUrl}</a></p>
+               <p style="font-size:12px;color:#888;">Contact your case manager to obtain a copy of the full award document.</p>`,
+        meetingDetails: detailsHtml,
+        joinLink: "",
+      }),
+    }));
+  }
+
+  const respondentEmail = caseData.respondent?.email || caseData.defendantDetails?.email;
+  const respondentName  = caseData.respondent?.name  || caseData.defendantDetails?.fullName || "Respondent";
+  if (respondentEmail) {
+    emails.push(safeSend({
+      to:      respondentEmail,
+      subject: `📄 Award Issued | Case ${caseData.caseId}`,
+      html: meetingEmailHtml({
+        title:         "Award Document Issued",
+        headerColor:   "#dc2626",
+        recipientName: respondentName,
+        body: `<p>An award has been issued in the case filed against you. Award reference: <strong>${awardRef}</strong></p>
+               <p style="font-size:13px;">Verify at: <a href="${verifyUrl}">${verifyUrl}</a></p>
+               <p style="font-size:12px;color:#888;">If you wish to challenge this outcome, consult a legal professional immediately.</p>`,
+        meetingDetails: detailsHtml,
+        joinLink: "",
+      }),
+    }));
+  }
+
+  await Promise.allSettled(emails);
+  console.log(`📧 Award generated notifications sent for case ${caseData.caseId}`);
+};
+
+/* ════════════════════════════════════════
+   CASE CLOSED — notify parties on formal closure
+   Fires from closureController
+════════════════════════════════════════ */
+export const sendCaseClosedEmails = async ({ caseData, closureReason, closedBy }) => {
+  const detailsHtml = `
+    <p><strong>Case ID:</strong> ${caseData.caseId}</p>
+    <p><strong>Case Title:</strong> ${caseData.caseTitle}</p>
+    <p><strong>Closure Reason:</strong> ${closureReason || "Case formally concluded"}</p>
+    <p><strong>Closed On:</strong> ${new Date().toDateString()}</p>
+    <p><strong>Closed By:</strong> ${closedBy || "RaaziMarzi Admin"}</p>
+  `;
+
+  const awardRef  = caseData.awardRef;
+  const certRef   = caseData.certificateRef;
+  const verifyBlock = awardRef
+    ? `<p><strong>Award Ref:</strong> <code>${awardRef}</code> — <a href="${process.env.FRONTEND_URL || ""}/pdf/verify/${awardRef}">Verify Award</a></p>`
+    : "";
+  const certBlock = certRef
+    ? `<p><strong>Certificate Ref:</strong> <code>${certRef}</code></p>`
+    : "";
+
+  const recipients = [
+    {
+      email: caseData.petitionerDetails?.email || caseData.claimant?.email,
+      name:  caseData.petitionerDetails?.fullName || caseData.claimant?.name || "Claimant",
+    },
+    {
+      email: caseData.respondent?.email || caseData.defendantDetails?.email,
+      name:  caseData.respondent?.name  || caseData.defendantDetails?.fullName || "Respondent",
+    },
+  ].filter(r => r.email);
+
+  await Promise.allSettled(recipients.map(r => safeSend({
+    to:      r.email,
+    subject: `✅ Case Formally Closed | ${caseData.caseId}`,
+    html: meetingEmailHtml({
+      title:         "Case Formally Closed",
+      headerColor:   "#16a34a",
+      recipientName: r.name,
+      body: `<p>Your case on the RaaziMarzi platform has been formally closed. All proceedings have concluded.</p>
+             ${verifyBlock}${certBlock}
+             <p style="font-size:12px;color:#888;">Please retain your case ID and award reference for your records. For enforcement assistance, consult a legal professional.</p>`,
+      meetingDetails: detailsHtml,
+      joinLink: "",
+    }),
+  })));
+  console.log(`📧 Case-closed notifications sent for case ${caseData.caseId}`);
+};
+
 export default getTransporter;

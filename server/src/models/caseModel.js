@@ -248,6 +248,89 @@ const caseSchema = new mongoose.Schema(
     /* ── Mediator Observations (private, not visible to parties) ── */
     mediatorObservations: { type: String, default: "" },
 
+    /* ── Award Reference + Metadata ── */
+    awardRef:          { type: String, default: null, index: true },
+    awardGeneratedAt:  { type: Date,   default: null },
+    awardGeneratedBy:  { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    awardVersion:      { type: Number, default: 0 },
+
+    /* ── Resolution Draft (rich sub-doc; persisted before status change) ── */
+    resolutionDraft: {
+      disputeSummary:     { type: String, default: "" },
+      issuesConsidered:   { type: String, default: "" },
+      settlementTerms:    { type: String, default: "" },
+      resolutionType: {
+        type:    String,
+        enum:    ["settlement", "award", "partial", "dismissed", "withdrawn", ""],
+        default: "",
+      },
+      remarks:             { type: String, default: "" },
+      partyConsentStatus: {
+        type:    String,
+        enum:    ["pending", "obtained", "waived", ""],
+        default: "",
+      },
+      status: {
+        type:    String,
+        enum:    ["draft", "submitted"],
+        default: "draft",
+      },
+      draftCreatedAt: { type: Date, default: null },
+      draftUpdatedAt: { type: Date, default: null },
+      submittedAt:    { type: Date, default: null },
+      submittedBy:    { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    },
+
+    /* ── Formal Closure Metadata ── */
+    closureMetadata: {
+      closedAt:      { type: Date,   default: null },
+      closedBy:      { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+      closureReason: { type: String, default: "" },
+      closureNotes:  { type: String, default: "" },
+      checklistSnapshot: {
+        isResolved:       { type: Boolean, default: false },
+        hasSummary:       { type: Boolean, default: false },
+        hasAwardDoc:      { type: Boolean, default: false },
+        partiesNotified:  { type: Boolean, default: false },
+      },
+    },
+
+    /* ── Locked state — set true on formal closure; blocks further edits ── */
+    isLocked: { type: Boolean, default: false },
+
+    /* ── Legal Certificate ── */
+    certificateRef:         { type: String, default: null, index: true },
+    certificateType: {
+      type:    String,
+      enum:    ["mediation-settlement", "closure", "participation", ""],
+      default: "",
+    },
+    certificateGeneratedAt: { type: Date,   default: null },
+    certificateGeneratedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    certificateUrl:         { type: String, default: "" },
+
+    /* ── Structured Consent / Signature Events ── */
+    signatureConsents: [
+      {
+        signerUserId:         { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        signerName:           { type: String },
+        signerEmail:          { type: String },
+        signedAt:             { type: Date },
+        consentText:          { type: String },
+        documentStage: {
+          type: String,
+          enum: ["filing", "resolution", "closure"],
+        },
+        ipAddress:            { type: String },
+        userAgent:            { type: String },
+        verificationMethod: {
+          type:    String,
+          enum:    ["text-declaration", "email-otp", "sms-otp"],
+          default: "text-declaration",
+        },
+      },
+    ],
+
     /* ── Embedded Documents / Evidence ── */
     documents: [documentSchema],
 

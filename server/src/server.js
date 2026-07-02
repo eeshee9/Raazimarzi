@@ -43,7 +43,8 @@ import chatNoteRoutes        from "./routes/chatNoteRoutes.js";
 import caseManagerRoutes from "./routes/caseManagerRoutes.js";
 import feedbackRoutes    from "./routes/feedbackRoutes.js";
 import pdfRoutes         from "./routes/pdfRoutes.js";
-import cmsRoutes         from "./routes/cmsRoutes.js";  
+import cmsRoutes         from "./routes/cmsRoutes.js";
+import consentRoutes     from "./routes/consentRoutes.js";
 
 const app = express();
 
@@ -204,7 +205,8 @@ app.use("/api/chat-notes",        chatNoteRoutes);
 app.use("/api/case-manager", caseManagerRoutes);
 app.use("/api/feedback",     feedbackRoutes);
 app.use("/api/pdf",          pdfRoutes);
-app.use("/api/cms",          cmsRoutes);          // ← NEW
+app.use("/api/cms",          cmsRoutes);
+app.use("/api/consent",      consentRoutes);
 
 /* ═══════════════════════════════════════════════════════════════
    ADMIN: Manual Cron Triggers
@@ -225,10 +227,38 @@ app.post(
 );
 
 /* ═══════════════════════════════════════════════════════════════
-   HEALTH CHECK
+   HEALTH CHECK  —  GET /health  (public, used by uptime monitors)
+   Returns 200 when healthy, 503 when degraded.
+   Inspect steps:
+     curl https://api.raazimarzi.com/health
+     pm2 logs backend --err --lines 200
+     cat server/logs/error.log | grep '"level":"error"'
 ═══════════════════════════════════════════════════════════════ */
+app.get("/health", async (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  // 0=disconnected 1=connected 2=connecting 3=disconnecting
+  const dbOk = dbState === 1;
+  const status = dbOk ? "ok" : "degraded";
+
+  const checks = {
+    database: dbOk ? "connected" : `state:${["disconnected","connected","connecting","disconnecting"][dbState] || dbState}`,
+    smtp:     process.env.SMTP_HOST     ? "configured" : "not-configured",
+    storage:  process.env.NEEV_ENDPOINT ? "configured" : "not-configured",
+    twilio:   process.env.TWILIO_ACCOUNT_SID ? "configured" : "not-configured",
+  };
+
+  return res.status(dbOk ? 200 : 503).json({
+    status,
+    version:     process.env.npm_package_version || "1.0.0",
+    environment: process.env.NODE_ENV || "production",
+    uptime:      Math.floor(process.uptime()),
+    timestamp:   new Date().toISOString(),
+    checks,
+  });
+});
+
 app.get("/", (req, res) => {
-  res.json({ 
+  res.json({
     message:     "RaaziMarzi API is running",
     environment: process.env.NODE_ENV,
     timestamp:   new Date().toISOString(),

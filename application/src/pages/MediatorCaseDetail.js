@@ -4,7 +4,7 @@ import {
   ArrowLeft, Calendar, Clock, FileText, User, Video,
   Download, AlertCircle, CheckCircle2, Loader2, Save,
   MessageSquare, ExternalLink, Phone, Mail, MapPin,
-  File, ChevronRight,
+  File, ChevronRight, Lock,
 } from "lucide-react";
 import MediatorLayout from "../components/MediatorLayout";
 import axiosInstance from "../api/axios";
@@ -319,10 +319,37 @@ const MediatorCaseDetail = () => {
                 <MessageSquare size={15} />
                 Message Admin
               </button>
-              <button className="mcd-btn-outline mcd-btn-ghost" disabled title="Coming soon">
-                <FileText size={15} />
-                Request Document
-              </button>
+
+              {/* Draft Resolution — available when case is active and not yet closed */}
+              {!["closed","Closed","withdrawn","Rejected","rejected"].includes(c.status) && !c.isLocked && (
+                <button
+                  className="mcd-btn-outline mcd-btn-purple"
+                  onClick={() => navigate(`/mediator/draft-resolution/${id}`)}
+                  title="Draft or edit the resolution for this case"
+                >
+                  <FileText size={15} />
+                  Draft Resolution
+                </button>
+              )}
+
+              {/* Propose Closure — only when resolved/awarded */}
+              {["resolved","Resolved","awarded"].includes(c.status) && !c.isLocked && (
+                <button
+                  className="mcd-btn-outline mcd-btn-green"
+                  onClick={() => navigate(`/mediator/close-case/${id}`)}
+                  title="Propose formal closure to admin"
+                >
+                  <CheckCircle2 size={15} />
+                  Propose Closure
+                </button>
+              )}
+
+              {/* Locked indicator */}
+              {c.isLocked && (
+                <span className="mcd-locked-badge">
+                  🔒 Case Closed
+                </span>
+              )}
             </div>
           </div>
         </div>

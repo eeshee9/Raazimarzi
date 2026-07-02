@@ -594,11 +594,12 @@ a { text-decoration: none; }
 
 .hiw-step-2 {
   left: 50%;
-  top: 25%;             /* matches hiw-step-1/3 so all three labels sit on one reading line */
+  top: 25%;
   transform: translateX(-50%);
   width: 280px;
-  text-align: left;
+  text-align: center;
 }
+.hiw-step-2 .hiw-step-heading { justify-content: center; }
 .hiw-step-2 p { max-width: 100%; }
 
 .hiw-step-3 {

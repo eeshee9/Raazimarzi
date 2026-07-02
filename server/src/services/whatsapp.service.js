@@ -156,6 +156,32 @@ export const sendBulkWA = async (recipients) => {
 };
 
 /* ════════════════════════════════════════════════════════════════
+   6. RESOLUTION / AWARD GENERATED — notify parties
+   Fires from pdfController.downloadAwardPDF (first generation only)
+════════════════════════════════════════════════════════════════ */
+export const sendResolutionWA = async ({ phone, name, caseId, caseTitle, awardRef, role }) => {
+  const verifyUrl = `${process.env.FRONTEND_URL || "https://raazimarzi.com"}/pdf/verify/${awardRef}`;
+
+  const roleNote = role === "claimant"
+    ? "The resolution has been finalised in your case."
+    : "An award has been issued in the case filed against you.";
+
+  const message = `⚖️ *Award Issued — RaaziMarzi*\n\nDear ${name || "Party"},\n\n${roleNote}\n\n📋 *Case ID:* ${caseId}\n📝 *Case:* ${caseTitle}\n🔖 *Award Reference:* ${awardRef}\n\n🔍 Verify this award at:\n${verifyUrl}\n\n_Retain this reference for your records. For enforcement assistance, consult a legal professional._\n\n_RaaziMarzi ODR Platform_`;
+
+  return safeSend({ to: phone, message });
+};
+
+/* ════════════════════════════════════════════════════════════════
+   7. CASE CLOSED — notify parties on formal closure
+   Fires from closureController
+════════════════════════════════════════════════════════════════ */
+export const sendCaseClosedWA = async ({ phone, name, caseId, caseTitle, closureReason }) => {
+  const message = `✅ *Case Formally Closed — RaaziMarzi*\n\nDear ${name || "Party"},\n\nYour case on RaaziMarzi has been formally closed. All proceedings have concluded.\n\n📋 *Case ID:* ${caseId}\n📝 *Case:* ${caseTitle}\n📌 *Reason:* ${closureReason || "Case formally concluded"}\n\nPlease retain your case ID and award reference for your records.\n\n_RaaziMarzi ODR Platform_`;
+
+  return safeSend({ to: phone, message });
+};
+
+/* ════════════════════════════════════════════════════════════════
    TEST — verify Twilio connection
 ════════════════════════════════════════════════════════════════ */
 export const testTwilio = async () => {

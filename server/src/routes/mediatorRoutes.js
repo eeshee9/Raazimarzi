@@ -5,6 +5,14 @@ import {
   getMyStats, getMyCases, getMyCaseById, saveObservations,
   resolveCase, addNote, getMyMeetings, getMeetingDetailById, requestHearing,
 } from "../controllers/mediatorController.js";
+import {
+  getResolutionDraft,
+  saveResolutionDraft,
+  submitResolution,
+} from "../controllers/mediatorResolutionController.js";
+import {
+  proposeClosureMediatorAction,
+} from "../controllers/closureController.js";
 import { getMediatorDocFolders } from "../controllers/mediatorDocController.js";
 import {
   getCaseNotesList,
@@ -47,10 +55,20 @@ router.get("/cases",                        ...isMediatorOrAdmin, getMyCases);
 router.get("/meetings",                     ...isMediatorOrAdmin, getMyMeetings);
 router.get("/meetings/:id",                 ...isMediatorOrAdmin, getMeetingDetailById);
 router.get("/cases/:id",                    ...isMediatorOrAdmin, getMyCaseById);
-router.patch("/cases/:id/observations",     ...isMediatorOrAdmin, saveObservations);
-router.patch("/cases/:id/resolve",          ...isMediatorOrAdmin, resolveCase);
-router.post("/cases/:id/note",              ...isMediatorOrAdmin, addNote);
-router.post("/cases/:id/request-hearing",   ...isMediatorOrAdmin, requestHearing);
+router.patch("/cases/:id/observations",        ...isMediatorOrAdmin, saveObservations);
+router.patch("/cases/:id/resolve",             ...isMediatorOrAdmin, resolveCase);
+router.post("/cases/:id/note",                 ...isMediatorOrAdmin, addNote);
+router.post("/cases/:id/request-hearing",      ...isMediatorOrAdmin, requestHearing);
+
+/* ── Resolution Draft & Submission ─────────────────────────────────────────── */
+// IMPORTANT: /resolution/draft and /resolution/submit must come BEFORE /resolution
+// to avoid Express treating "draft"/"submit" as sub-path params.
+router.get("/cases/:id/resolution",            ...isMediatorOrAdmin, getResolutionDraft);
+router.patch("/cases/:id/resolution/draft",    ...isMediatorOrAdmin, saveResolutionDraft);
+router.post("/cases/:id/resolution/submit",    ...isMediatorOrAdmin, submitResolution);
+
+/* ── Closure Proposal (mediator signals readiness; admin takes final action) ── */
+router.post("/cases/:id/propose-closure",      ...isMediatorOrAdmin, proposeClosureMediatorAction);
 
 /* ── Mediator Case Notes ─────────────────────────────────────────────────── */
 // IMPORTANT: /case-notes/entry/:noteId must come BEFORE /case-notes/:caseId

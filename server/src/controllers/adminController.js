@@ -494,6 +494,8 @@ export const reviewCase = async (req, res) => {
 
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
     if (caseData.adminStatus !== "pending-review")
       return res.status(400).json({ message: "Case already reviewed" });
 
@@ -558,6 +560,8 @@ export const declareExParte = async (req, res) => {
     const { reason } = req.body;
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
     if (caseData.respondent.inviteStatus === "accepted")
       return res.status(400).json({ message: "Respondent has already joined — cannot declare ex-parte" });
     if (caseData.isExParte)
@@ -582,6 +586,8 @@ export const assignCaseManager = async (req, res) => {
     if (!manager) return res.status(400).json({ message: "Invalid case manager" });
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
     caseData.assignedCaseManager = caseManagerId;
     caseData.assignedAt          = new Date();
     caseData.timeline.push({ action: "Case Manager Assigned", performedBy: req.user.id, note: `Assigned to ${manager.name}`, isSystem: false });
@@ -598,10 +604,12 @@ export const assignNeutral = async (req, res) => {
     const { neutralId, neutralType } = req.body;
     if (!["mediator","arbitrator"].includes(neutralType))
       return res.status(400).json({ message: "neutralType must be 'mediator' or 'arbitrator'" });
-    const neutral = await User.findOne({ _id: neutralId, role: neutralType });
-    if (!neutral) return res.status(400).json({ message: `Invalid ${neutralType}` });
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
+    const neutral = await User.findOne({ _id: neutralId, role: neutralType });
+    if (!neutral) return res.status(400).json({ message: `Invalid ${neutralType}` });
     caseData.assignedNeutral = neutralId;
     caseData.neutralType     = neutralType;
     if (neutralType === "mediator") caseData.assignedMediator = neutralId;
@@ -626,8 +634,13 @@ export const updateCaseStatus = async (req, res) => {
     const { status, note } = req.body;
     const validStatuses = ["Pending","pending-review","In Review","notice-sent","in-progress","Assigned","Hearing","hearing","mediation","arbitration","Resolved","resolved","awarded","Rejected","rejected","withdrawn","Closed","closed"];
     if (!validStatuses.includes(status)) return res.status(400).json({ message: "Invalid status" });
+    // Closure must go through the formal /cases/:id/close endpoint to enforce the checklist
+    if (["Closed","closed"].includes(status))
+      return res.status(400).json({ message: "Use POST /cases/:id/close to formally close a case with the required checklist" });
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
     const prev = caseData.status;
     caseData.status = status;
     if (["Resolved","resolved","awarded"].includes(status)) caseData.resolvedAt = new Date();
@@ -641,8 +654,11 @@ export const updateCasePriority = async (req, res) => {
   try {
     const { priority } = req.body;
     if (!["Low","Medium","High","Urgent"].includes(priority)) return res.status(400).json({ message: "Invalid priority" });
-    const caseData = await Case.findByIdAndUpdate(req.params.id, { priority }, { new:true });
+    const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
+    await Case.findByIdAndUpdate(req.params.id, { priority }, { new:true });
     return res.status(200).json({ success: true, case: caseData });
   } catch (error) { return res.status(500).json({ message: error.message }); }
 };
@@ -653,6 +669,8 @@ export const scheduleHearing = async (req, res) => {
     if (!hearingDate) return res.status(400).json({ message: "Hearing date required" });
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
     caseData.hearingDate  = new Date(hearingDate);
     caseData.hearingLink  = hearingLink  || "";
     caseData.hearingNotes = hearingNotes || "";

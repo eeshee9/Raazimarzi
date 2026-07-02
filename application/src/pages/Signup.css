@@ -40,3 +40,64 @@
   background: var(--primary);
   color: white;
 }
+
+/* ── Phone flex layout ── */
+.phone-field-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  height: 50px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  overflow: hidden;
+}
+.phone-field-wrap:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(91, 107, 248, 0.12);
+}
+.phone-field-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  flex-shrink: 0;
+}
+.phone-field-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--text-soft);
+}
+.phone-field-prefix {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-mid);
+  border-right: 1.5px solid var(--border);
+  padding: 0 10px 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.phone-field-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-dark);
+  padding: 0 14px;
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  min-width: 0;
+}
+.phone-field-input::placeholder {
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+@media (max-width: 767px) {
+  .mediator-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

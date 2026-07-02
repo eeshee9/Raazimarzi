@@ -123,7 +123,12 @@ function App() {
               <Route path="/mediator/profile"          element={<MediatorProfile />} />
               <Route path="/mediator/case-notes"            element={<MediatorNotes />} />
               <Route path="/mediator/case-notes/:caseId" element={<MediatorCaseNoteEditor />} />
-              {/* ── Legacy stub routes (kept for backward compat) ── */}
+              {/* ── Resolution + Closure (caseId-parameterised) ── */}
+              <Route path="/mediator/draft-resolution/:caseId" element={<MediatorDraftResolution />} />
+              <Route path="/mediator/close-case/:caseId"       element={<MediatorCloseCase />} />
+              {/* ── Legacy / fallback routes ── */}
+              <Route path="/mediator/draft-resolution" element={<MediatorDraftResolution />} />
+              <Route path="/mediator/close-case"       element={<MediatorCloseCase />} />
               <Route path="/mediator/payment"          element={<MediatorPayment />} />
               <Route path="/mediator/cases"            element={<MediatorCaseDetail />} />
               <Route path="/mediator/case-meetings"    element={<MediatorCaseMeetings />} />
@@ -131,8 +136,6 @@ function App() {
               <Route path="/mediator/schedule"         element={<MediatorSchedule />} />
               <Route path="/mediator/hearing-room"     element={<MediatorHearingRoom />} />
               <Route path="/mediator/notes"            element={<MediatorNotes />} />
-              <Route path="/mediator/draft-resolution" element={<MediatorDraftResolution />} />
-              <Route path="/mediator/close-case"       element={<MediatorCloseCase />} />
             </Route>
 
             {/* Case Manager Routes */}

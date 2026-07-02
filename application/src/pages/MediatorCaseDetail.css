@@ -177,6 +177,38 @@
   border-color: #E5E7EB;
   color: #9CA3AF;
 }
+.mcd-btn-purple {
+  background: #F5F3FF;
+  border-color: #C4B5FD;
+  color: #4F3CC9;
+}
+.mcd-btn-purple:hover {
+  background: #EDE9FE;
+  border-color: #A78BFA;
+}
+.mcd-btn-green {
+  background: #ECFDF5;
+  border-color: #6EE7B7;
+  color: #065F46;
+}
+.mcd-btn-green:hover {
+  background: #D1FAE5;
+  border-color: #34D399;
+}
+.mcd-locked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+}
 
 .mcd-btn-join {
   display: inline-flex;

@@ -10,6 +10,7 @@ import {
   updateCaseStatus, updateCasePriority, scheduleHearing, addTimelineNote,
   getDashboardStats, getAdminDashboard,
 } from "../controllers/adminController.js";
+import { getClosureChecklist, closeCase } from "../controllers/closureController.js";
 import { getAllContacts, deleteContact } from "../controllers/adminContactController.js";
 import {
   getAdminMediators, getAdminMediatorDetail, getMediatorAssignableCases,
@@ -87,5 +88,9 @@ router.delete("/sub-admins/:id",               ...adminOnly, deleteSubAdmin);
 
 /* ─── Platform-wide Activity Logs tab ─── */
 router.get("/activity-logs", ...adminOnly, getActivityLogs);
+
+/* ─── Case Closure ─── */
+router.get("/cases/:id/closure-checklist", ...adminOnly, getClosureChecklist);
+router.post("/cases/:id/close",            ...adminOnly, closeCase);
 
 export default router;

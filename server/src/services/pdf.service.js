@@ -85,7 +85,7 @@ const twoColRow = (doc, label, value, y, labelColor = COLORS.gray) => {
    MAIN: GENERATE AWARD PDF
    Returns a Buffer containing the PDF bytes
 ════════════════════════════════════════════════════════════ */
-export const generateAwardPDF = async (caseData, generatedBy) => {
+export const generateAwardPDF = async (caseData, generatedBy, externalAwardRef = null) => {
   return new Promise(async (resolve, reject) => {
     try {
       const doc    = new PDFDocument({ size: "A4", margin: 50, bufferPages: true });
@@ -95,7 +95,7 @@ export const generateAwardPDF = async (caseData, generatedBy) => {
       doc.on("end",   ()    => resolve(Buffer.concat(chunks)));
       doc.on("error", err   => reject(err));
 
-      const awardRef    = generateAwardRef(caseData.caseId);
+      const awardRef    = externalAwardRef || generateAwardRef(caseData.caseId);
       const issuedDate  = new Date();
       const pageWidth   = doc.page.width;
       const contentW    = pageWidth - 100;
@@ -364,8 +364,150 @@ export const generateAwardPDF = async (caseData, generatedBy) => {
    GENERATE SETTLEMENT AGREEMENT PDF
    Same structure but for mediation settlements
 ════════════════════════════════════════════════════════════ */
-export const generateSettlementPDF = async (caseData, generatedBy) => {
-  // Uses the same generator — just the awardType label changes
+export const generateSettlementPDF = async (caseData, generatedBy, externalAwardRef = null) => {
   caseData.awardType = caseData.awardType || "settlement";
-  return generateAwardPDF(caseData, generatedBy);
+  return generateAwardPDF(caseData, generatedBy, externalAwardRef);
+};
+
+/* ════════════════════════════════════════════════════════════
+   GENERATE SETTLEMENT CERTIFICATE PDF
+   Distinct from the award — certifies participation/outcome
+════════════════════════════════════════════════════════════ */
+export const generateCertificatePDF = async (caseData, generatedBy, certRef, certificateType) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const doc    = new PDFDocument({ size: "A4", margin: 60, bufferPages: true });
+      const chunks = [];
+      doc.on("data",  c => chunks.push(c));
+      doc.on("end",   () => resolve(Buffer.concat(chunks)));
+      doc.on("error", e  => reject(e));
+
+      const issuedDate = new Date();
+      const pageWidth  = doc.page.width;
+      const contentW   = pageWidth - 120;
+
+      const certTypeLabels = {
+        "mediation-settlement": "Mediation Settlement Certificate",
+        "closure":              "Case Closure Certificate",
+        "participation":        "Mediation Participation Certificate",
+      };
+      const certLabel = certTypeLabels[certificateType] || "Certificate";
+
+      const verifyUrl  = `${process.env.FRONTEND_URL || "https://raazimarzi.com"}/pdf/verify-cert/${certRef}`;
+      const qrDataUrl  = await QRCode.toDataURL(verifyUrl, { width: 100, margin: 1 });
+      const qrBuffer   = Buffer.from(qrDataUrl.split(",")[1], "base64");
+
+      /* ── Decorative border ── */
+      doc.rect(30, 30, pageWidth - 60, doc.page.height - 60)
+         .lineWidth(3).stroke(COLORS.primary);
+      doc.rect(36, 36, pageWidth - 72, doc.page.height - 72)
+         .lineWidth(1).stroke(COLORS.secondary);
+
+      /* ── Header ── */
+      let y = 70;
+      try {
+        doc.image(LOGO_PATH, (pageWidth - 80) / 2, y, { width: 80 });
+        y += 90;
+      } catch (_) { y += 10; }
+
+      doc.fillColor(COLORS.primary).fontSize(9).font("Helvetica")
+         .text("RAAZIMARZI ONLINE DISPUTE RESOLUTION", 60, y, { width: contentW, align: "center" });
+      y += 16;
+
+      doc.fillColor(COLORS.dark).fontSize(22).font("Helvetica-Bold")
+         .text(certLabel.toUpperCase(), 60, y, { width: contentW, align: "center" });
+      y += 32;
+
+      drawLine(doc, y, COLORS.secondary, 2);
+      y += 20;
+
+      /* ── Certificate body ── */
+      doc.fillColor(COLORS.dark).fontSize(11).font("Helvetica")
+         .text("This is to certify that the following dispute has been", 60, y, { width: contentW, align: "center" });
+      y += 18;
+
+      const outcomePhrases = {
+        "mediation-settlement": "successfully resolved through mediation and the parties have arrived at a mutual settlement.",
+        "closure":              "formally concluded and closed on the RaaziMarzi Online Dispute Resolution Platform.",
+        "participation":        "processed through mediation on the RaaziMarzi Online Dispute Resolution Platform.",
+      };
+      doc.fillColor(COLORS.primary).fontSize(11).font("Helvetica-Bold")
+         .text(outcomePhrases[certificateType] || "processed on the RaaziMarzi platform.", 60, y, { width: contentW, align: "center" });
+      y += 30;
+
+      /* ── Case details box ── */
+      const boxX = 80;
+      const boxW = contentW - 40;
+      doc.rect(boxX, y, boxW, 130).lineWidth(1).stroke(COLORS.border);
+      y += 16;
+
+      const detailRow = (label, value) => {
+        doc.fillColor(COLORS.gray).fontSize(9).font("Helvetica-Bold")
+           .text(label + ":", boxX + 12, y, { width: 160 });
+        doc.fillColor(COLORS.dark).fontSize(9).font("Helvetica")
+           .text(value || "N/A", boxX + 180, y, { width: boxW - 200 });
+        y += 18;
+      };
+
+      detailRow("Case Reference",    caseData.caseId);
+      detailRow("Case Title",        caseData.caseTitle);
+      detailRow("Claimant",          caseData.petitionerDetails?.fullName || caseData.claimant?.name || "N/A");
+      detailRow("Respondent",        caseData.defendantDetails?.fullName || caseData.respondent?.name || "N/A");
+      detailRow("Presiding Mediator",caseData.assignedMediator?.name || caseData.assignedNeutral?.name || "N/A");
+      detailRow("Date of Issue",     fmtDate(issuedDate));
+      y += 16;
+
+      /* ── Certificate reference ── */
+      drawLine(doc, y, COLORS.border);
+      y += 14;
+      doc.fillColor(COLORS.gray).fontSize(8).font("Helvetica")
+         .text("Certificate Reference Number:", 60, y, { width: contentW, align: "center" });
+      y += 14;
+      doc.fillColor(COLORS.primary).fontSize(13).font("Helvetica-Bold")
+         .text(certRef, 60, y, { width: contentW, align: "center" });
+      y += 26;
+
+      /* ── Disclosure ── */
+      doc.fillColor(COLORS.gray).fontSize(7.5).font("Helvetica")
+         .text(
+           "This certificate is issued for informational and record purposes. It does not constitute a legally enforceable award unless accompanied by the separate Award Document. " +
+           "This certificate is generated electronically and does not require a wet signature to be valid as a platform record. " +
+           "For verification of authenticity, scan the QR code or visit the URL below.",
+           60, y, { width: contentW, align: "center" }
+         );
+      y += 50;
+
+      /* ── Signature + QR row ── */
+      const midX  = pageWidth / 2;
+      const sigW  = 180;
+
+      /* Left: issuer */
+      doc.fillColor(COLORS.dark).fontSize(9).font("Helvetica-Bold")
+         .text(generatedBy?.name || "RaaziMarzi Admin", midX - sigW - 20, y, { width: sigW, align: "center" });
+      y += 14;
+      doc.fillColor(COLORS.gray).fontSize(8).font("Helvetica")
+         .text("___________________", midX - sigW - 20, y, { width: sigW, align: "center" });
+      y += 12;
+      doc.fillColor(COLORS.gray).fontSize(8).font("Helvetica")
+         .text("Authorised Signatory\nRaaziMarzi ODR Platform", midX - sigW - 20, y, { width: sigW, align: "center" });
+
+      /* Right: QR */
+      doc.image(qrBuffer, midX + 30, y - 40, { width: 70, height: 70 });
+      doc.fillColor(COLORS.gray).fontSize(7).font("Helvetica")
+         .text("Scan to verify", midX + 30, y + 32, { width: 70, align: "center" });
+
+      /* ── Footer ── */
+      const footerY = doc.page.height - 50;
+      drawLine(doc, footerY, COLORS.border);
+      doc.fillColor(COLORS.gray).fontSize(7).font("Helvetica")
+         .text(
+           `Certificate Ref: ${certRef}  |  Verify: ${verifyUrl}  |  RaaziMarzi ODR Platform`,
+           60, footerY + 8, { width: contentW, align: "center" }
+         );
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
 };

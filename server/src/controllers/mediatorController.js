@@ -330,6 +330,13 @@ export const saveObservations = async (req, res) => {
     if (observations === undefined || observations === null)
       return res.status(400).json({ message: "observations field is required" });
 
+    const caseObj = await Case.findOne(mediatorFilter(req.user.id, { _id: req.params.id }))
+      .select("isLocked mediatorObservations");
+    if (!caseObj)
+      return res.status(404).json({ message: "Case not found or not assigned to you" });
+    if (caseObj.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
+
     const updated = await Case.findOneAndUpdate(
       mediatorFilter(req.user.id, { _id: req.params.id }),
       { $set: { mediatorObservations: String(observations) } },
@@ -361,6 +368,9 @@ export const resolveCase = async (req, res) => {
     if (!caseData)
       return res.status(404).json({ message: "Case not found or not assigned to you" });
 
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
+
     const allowed = ["Assigned","Hearing","hearing","in-progress","mediation"];
     if (!allowed.includes(caseData.status))
       return res.status(400).json({ message: `Cannot resolve case with status: ${caseData.status}` });
@@ -390,6 +400,8 @@ export const addNote = async (req, res) => {
     const caseData = await Case.findOne(mediatorFilter(req.user.id, { _id: req.params.id }));
     if (!caseData)
       return res.status(404).json({ message: "Case not found or not assigned to you" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
 
     caseData.timeline.push({ action: "Note Added", performedBy: req.user.id, note, isSystem: false });
     await caseData.save();
@@ -497,6 +509,8 @@ export const requestHearing = async (req, res) => {
     const caseData = await Case.findOne(mediatorFilter(req.user.id, { _id: req.params.id }));
     if (!caseData)
       return res.status(404).json({ message: "Case not found or not assigned to you" });
+    if (caseData.isLocked)
+      return res.status(409).json({ message: "Case is locked (formally closed) and cannot be modified" });
 
     caseData.timeline.push({
       action:      "Hearing Requested by Mediator",

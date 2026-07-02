@@ -140,12 +140,12 @@ const Signup = () => {
 
                 <div className="form-group">
                   <label>Phone Number</label>
-                  <div className="input-wrap has-prefix has-prefix-icon">
-                    <span className="input-icon">
+                  <div className="phone-field-wrap">
+                    <span className="phone-field-icon">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.37 18a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2 3.18 2 2 0 0 1 3.96 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
                     </span>
-                    <span className="phone-prefix">+91 |</span>
-                    <input name="phone" placeholder="9876543210" value={form.phone} onChange={handleChange} />
+                    <span className="phone-field-prefix">+91</span>
+                    <input className="phone-field-input" name="phone" placeholder="9876543210" value={form.phone} onChange={handleChange} />
                   </div>
                 </div>
 
@@ -186,6 +186,14 @@ const Signup = () => {
               </form>
 
               <p className="auth-footer">Already have an account? <Link to="/login" className="auth-link">Sign In</Link></p>
+
+              <div className="mediator-cta">
+                <div>
+                  <p className="mediator-cta-title">Want to become a mediator?</p>
+                  <p className="mediator-cta-desc">Join our network of certified legal professionals.</p>
+                </div>
+                <Link to="/mediator-signup" className="mediator-cta-btn">Apply as Mediator</Link>
+              </div>
             </>
           )}
 

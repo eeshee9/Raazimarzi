@@ -4,17 +4,23 @@ import {
   downloadAwardPDF,
   previewAwardPDF,
   verifyAward,
+  generateCertificate,
+  verifyCertificate,
 } from "../controllers/pdfController.js";
 
 const router = express.Router();
 
 const adminOrNeutral = [protect, authorizeRoles(["admin","arbitrator","mediator"]), gateMediatorPortal];
 
-/* ── Generate + download PDF ── */
-router.get("/award/:caseId",         ...adminOrNeutral, downloadAwardPDF);  // GET /api/pdf/award/:caseId
-router.get("/award/:caseId/preview", ...adminOrNeutral, previewAwardPDF);   // GET /api/pdf/award/:caseId/preview
+/* ── Award PDF ── */
+router.get("/award/:caseId",          ...adminOrNeutral, downloadAwardPDF);   // GET  /api/pdf/award/:caseId
+router.get("/award/:caseId/preview",  ...adminOrNeutral, previewAwardPDF);    // GET  /api/pdf/award/:caseId/preview
 
-/* ── Public verify (QR code scan) — no auth needed ── */
-router.get("/verify/:awardRef", verifyAward);                               // GET /api/pdf/verify/:awardRef
+/* ── Certificate ── */
+router.post("/certificate/:caseId",   ...adminOrNeutral, generateCertificate);// POST /api/pdf/certificate/:caseId
+
+/* ── Public verification (no auth) — QR code scans ── */
+router.get("/verify/:awardRef",       verifyAward);                           // GET  /api/pdf/verify/:awardRef
+router.get("/verify-cert/:certRef",   verifyCertificate);                     // GET  /api/pdf/verify-cert/:certRef
 
 export default router;

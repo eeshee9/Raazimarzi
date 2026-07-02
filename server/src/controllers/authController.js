@@ -152,6 +152,20 @@ export const mediatorSignup = async (req, res) => {
       return res.status(400).json({ success: false, message: "An account already exists with this email" });
     }
 
+    /* Validate file types and sizes at controller level (belt + suspenders over multer) */
+    const ALLOWED_MIMES = ["application/pdf","image/jpeg","image/jpg","image/png","image/webp","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+    for (const field of Object.keys(MEDIATOR_DOC_FIELDS)) {
+      const file = req.files?.[field]?.[0];
+      if (!file) continue;
+      if (!ALLOWED_MIMES.includes(file.mimetype)) {
+        return res.status(400).json({ success: false, message: `Invalid file type for ${field}. Allowed: PDF, JPG, PNG, WEBP, DOC, DOCX` });
+      }
+      if (file.size > MAX_BYTES) {
+        return res.status(400).json({ success: false, message: `File too large for ${field} (max 10 MB). Received: ${(file.size / 1048576).toFixed(1)} MB` });
+      }
+    }
+
     const newMediator = await User.create({
       name, email, phone, dob, password,
       role: "mediator",
@@ -167,14 +181,27 @@ export const mediatorSignup = async (req, res) => {
       verified: true,
     });
 
-    /* Upload verification docs to NeevCloud, then attach to the mediator record */
+    /* Upload verification docs to NeevCloud — roll back user if any upload fails */
     const verificationDocs = [];
-    for (const [field, docType] of Object.entries(MEDIATOR_DOC_FIELDS)) {
-      const file = req.files?.[field]?.[0];
-      if (!file) continue;
-      const uploaded = await uploadToNeev(file, "mediator-applications", newMediator._id);
-      verificationDocs.push({ docType, fileUrl: uploaded.key, status: "pending", uploadedAt: new Date() });
+    try {
+      for (const [field, docType] of Object.entries(MEDIATOR_DOC_FIELDS)) {
+        const file = req.files?.[field]?.[0];
+        if (!file) continue;
+        const uploaded = await uploadToNeev(file, "mediator-applications", newMediator._id);
+        verificationDocs.push({ docType, fileUrl: uploaded.key, status: "pending", uploadedAt: new Date() });
+      }
+    } catch (uploadErr) {
+      /* Rollback: delete the user we just created so they can retry cleanly */
+      await User.findByIdAndDelete(newMediator._id).catch(() => {});
+      console.error("❌ Mediator doc upload failed (user rolled back):", uploadErr.message);
+      return res.status(502).json({
+        success:  false,
+        message:  "Document upload failed due to a storage error. Your application was not saved — please try again. If this persists, contact support.",
+        retryable: true,
+        supportEmail: process.env.SUPPORT_EMAIL || "support@raazimarzi.com",
+      });
     }
+
     newMediator.verificationDocs = verificationDocs;
     await newMediator.save();
 
@@ -188,12 +215,21 @@ export const mediatorSignup = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Application submitted. Your application is under review.",
+      message: "Application submitted. Your application is under review. You will receive an email once it has been reviewed.",
       mediator: { id: newMediator._id, name: newMediator.name, email: newMediator.email, approvalStatus: newMediator.approvalStatus },
+      nextSteps: [
+        "Admin will review your documents within 3–5 business days.",
+        "You will receive an email notification when your status changes.",
+        "You can check your application status by logging in with your registered email.",
+      ],
     });
   } catch (error) {
-    console.error("Mediator Signup Error:", error);
-    return res.status(500).json({ success: false, message: "Error submitting application", error: error.message });
+    console.error("❌ Mediator Signup Error:", error);
+    /* Friendly messages for known Mongoose validation errors */
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: "An account already exists with this email address" });
+    }
+    return res.status(500).json({ success: false, message: "Error submitting application. Please try again or contact support.", retryable: true });
   }
 };
 

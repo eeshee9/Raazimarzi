@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --env-file=tests/.env.test --test --test-concurrency=1 tests/closure.test.js tests/resolution.test.js tests/awardRef.test.js tests/cert.test.js tests/consent.test.js tests/routeAuth.test.js tests/notifications.test.js",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"
   },
@@ -36,6 +36,8 @@
     "twilio": "^5.13.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "mongodb-memory-server": "^11.2.0",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.2.2"
   }
 }
