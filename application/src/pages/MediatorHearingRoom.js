@@ -1,22 +1,22 @@
-// src/pages/MediatorChats.js
+// src/pages/MediatorHearingRoom.js
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { Video } from "lucide-react";
 import MediatorLayout from "../components/MediatorLayout";
 import "./MediatorStub.css";
 
-const MediatorChats = () => {
+const MediatorHearingRoom = () => {
   const navigate = useNavigate();
   return (
     <MediatorLayout>
       <div className="medstub-page">
         <div className="medstub-card">
-          <div className="medstub-icon-wrap"><MessageSquare size={32} /></div>
-          <h2>Messages</h2>
+          <div className="medstub-icon-wrap"><Video size={32} /></div>
+          <h2>Hearing Room</h2>
           <span className="medstub-badge">Coming Next</span>
           <p>
-            Communicate with parties, case managers, and the platform team through
-            case-linked conversations secured for your role.
+            Join or manage virtual and in-person hearing sessions, view meeting details,
+            and access recordings from this room.
           </p>
           <button className="medstub-back-btn" onClick={() => navigate("/mediator/dashboard")}>
             Back to Dashboard
@@ -27,4 +27,4 @@ const MediatorChats = () => {
   );
 };
 
-export default MediatorChats;
+export default MediatorHearingRoom;

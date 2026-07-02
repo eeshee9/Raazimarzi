@@ -1,0 +1,755 @@
+/* ════════════════════════════════════════════════════════════════
+   MediatorMessages.css — 2-panel messaging layout
+════════════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ───────────────────────────────────────────── */
+.mm-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mm-page-header {
+  flex-shrink: 0;
+  padding: 24px 28px 16px;
+}
+
+.mm-page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+}
+
+.mm-page-sub {
+  font-size: 13.5px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Body: left + right panels ──────────────────────────────── */
+.mm-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  margin: 0 28px 20px;
+  gap: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+/* ── Left panel ─────────────────────────────────────────────── */
+.mm-left {
+  width: 320px;
+  min-width: 260px;
+  flex-shrink: 0;
+  border-right: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mm-left-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mm-left-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.mm-refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.mm-refresh-btn:hover {
+  color: #6b21a8;
+}
+
+/* ── Conversation list ──────────────────────────────────────── */
+.mm-conv-list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.mm-conv-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mm-conv-list::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+/* ── Conversation row ───────────────────────────────────────── */
+.mm-conv-row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+  padding: 0;
+  transition: background 0.12s;
+  position: relative;
+}
+
+.mm-conv-row:hover {
+  background: #faf5ff;
+}
+
+.mm-conv-row--active {
+  background: #f5f3ff;
+}
+
+.mm-conv-row-left-bar {
+  width: 4px;
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 0.12s;
+  border-radius: 0 2px 2px 0;
+}
+
+.mm-conv-row--active .mm-conv-row-left-bar {
+  background: #7c3aed;
+}
+
+.mm-conv-row-body {
+  flex: 1;
+  padding: 12px 14px 12px 10px;
+  overflow: hidden;
+}
+
+.mm-conv-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.mm-conv-row-ref {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #7c3aed;
+}
+
+.mm-conv-row-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+
+.mm-conv-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.mm-conv-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mm-conv-row-preview {
+  font-size: 12px;
+  color: #6b7280;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mm-conv-row-ts {
+  font-size: 11px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.mm-conv-row-unread {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ── List states ────────────────────────────────────────────── */
+.mm-list-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  color: #9ca3af;
+  font-size: 13px;
+  text-align: center;
+}
+
+.mm-list-state--error {
+  color: #dc2626;
+}
+
+.mm-list-state--empty {
+  color: #9ca3af;
+}
+
+/* ── Right panel ────────────────────────────────────────────── */
+.mm-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── Empty state when no conv selected ─────────────────────── */
+.mm-empty-thread {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #d1d5db;
+  font-size: 14px;
+}
+
+/* ── Thread header ──────────────────────────────────────────── */
+.mm-thread-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.mm-thread-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mm-thread-header-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.mm-thread-header-ref {
+  font-size: 12px;
+  color: #7c3aed;
+  font-weight: 500;
+}
+
+/* ── Thread body (messages) ─────────────────────────────────── */
+.mm-thread-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.mm-thread-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mm-thread-body::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.mm-thread-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #9ca3af;
+  font-size: 13px;
+  height: 100%;
+}
+
+.mm-thread-state--error {
+  color: #dc2626;
+}
+
+/* ── Date separator ─────────────────────────────────────────── */
+.mm-date-sep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.mm-date-sep span {
+  font-size: 11.5px;
+  color: #9ca3af;
+  background: #f3f4f6;
+  border-radius: 12px;
+  padding: 3px 12px;
+  font-weight: 500;
+}
+
+/* ── Avatar ─────────────────────────────────────────────────── */
+.mm-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.mm-avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7c3aed, #9f67fa);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mm-msg-avatar {
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
+
+/* ── Message bubble ─────────────────────────────────────────── */
+.mm-msg-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 72%;
+  margin-bottom: 6px;
+}
+
+.mm-msg-wrap--mine {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.mm-msg-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mm-msg-content--mine {
+  align-items: flex-end;
+}
+
+.mm-msg-sender-name {
+  font-size: 11.5px;
+  color: #7c3aed;
+  font-weight: 600;
+  padding-left: 2px;
+}
+
+.mm-msg-bubble {
+  background: #f3f4f6;
+  color: #111827;
+  border-radius: 14px 14px 14px 3px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.mm-msg-bubble--mine {
+  background: #7c3aed;
+  color: #fff;
+  border-radius: 14px 14px 3px 14px;
+}
+
+.mm-msg-bubble--deleted {
+  color: #9ca3af;
+  font-style: italic;
+  background: #f9fafb;
+  border: 1px dashed #e5e7eb;
+}
+
+.mm-msg-time {
+  font-size: 10.5px;
+  color: #9ca3af;
+  padding: 0 4px;
+}
+
+/* ── Attachment ─────────────────────────────────────────────── */
+.mm-attach-image-link img.mm-attach-image {
+  max-width: 220px;
+  max-height: 180px;
+  border-radius: 10px;
+  display: block;
+  object-fit: cover;
+}
+
+.mm-attach-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  max-width: 260px;
+}
+
+.mm-msg-bubble--mine .mm-attach-file,
+.mm-msg-content--mine .mm-attach-file {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.mm-attach-file-icon {
+  color: #7c3aed;
+  flex-shrink: 0;
+}
+
+.mm-attach-file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mm-attach-file-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mm-attach-file-size {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.mm-attach-view-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7c3aed;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid #ddd6fe;
+  border-radius: 5px;
+  padding: 3px 8px;
+  background: #faf5ff;
+  transition: background 0.12s;
+}
+
+.mm-attach-view-btn:hover {
+  background: #ede9fe;
+}
+
+/* ── Composer ───────────────────────────────────────────────── */
+.mm-composer {
+  flex-shrink: 0;
+  border-top: 1px solid #f0f0f0;
+  padding: 12px 16px;
+  background: #fff;
+}
+
+.mm-send-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #dc2626;
+  margin-bottom: 8px;
+}
+
+.mm-composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 6px 6px 6px 14px;
+}
+
+.mm-composer-attach {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.mm-composer-attach:hover {
+  color: #7c3aed;
+  background: #f3f0ff;
+}
+
+.mm-composer-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 13.5px;
+  color: #111827;
+  resize: none;
+  padding: 5px 0;
+  min-height: 22px;
+  max-height: 120px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.mm-composer-input::placeholder {
+  color: #9ca3af;
+}
+
+.mm-composer-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.mm-composer-send:hover {
+  background: #6d28d9;
+}
+
+.mm-composer-send--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Retry button ───────────────────────────────────────────── */
+.mm-retry-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7c3aed;
+  background: none;
+  border: 1px solid #ddd6fe;
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.mm-retry-btn:hover {
+  background: #f5f3ff;
+}
+
+/* ── Spinner ────────────────────────────────────────────────── */
+.mm-spin {
+  animation: mmSpin 0.8s linear infinite;
+}
+
+@keyframes mmSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Topbar search ──────────────────────────────────────────── */
+.mm-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  padding: 0 12px;
+  height: 38px;
+  width: 320px;
+  gap: 6px;
+}
+
+.mm-search-icon {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.mm-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #111827;
+  font-family: inherit;
+}
+
+.mm-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.mm-search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.mm-search-clear:hover {
+  color: #374151;
+}
+
+/* ── Suggestions dropdown ───────────────────────────────────── */
+.mm-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.mm-suggestion-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+
+.mm-suggestion-row:last-child {
+  border-bottom: none;
+}
+
+.mm-suggestion-row:hover {
+  background: #f5f3ff;
+}
+
+.mm-sug-case {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #7c3aed;
+  min-width: 60px;
+}
+
+.mm-sug-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #111827;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mm-sug-type {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: capitalize;
+}
+
+.mm-sug-party {
+  font-size: 11.5px;
+  color: #6b7280;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .mm-body {
+    margin: 0 12px 16px;
+  }
+
+  .mm-left {
+    width: 260px;
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 680px) {
+  .mm-body {
+    flex-direction: column;
+    margin: 0 8px 12px;
+    border-radius: 10px;
+  }
+
+  .mm-left {
+    width: 100%;
+    max-height: 300px;
+    border-right: none;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .mm-right {
+    min-height: 400px;
+  }
+
+  .mm-search-wrap {
+    width: 200px;
+  }
+
+  .mm-page-header {
+    padding: 16px 16px 12px;
+  }
+}

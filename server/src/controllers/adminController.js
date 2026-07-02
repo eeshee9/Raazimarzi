@@ -4,6 +4,7 @@ import Meeting       from "../models/meetingModel.js";
 import Feedback      from "../models/feedbackModel.js";
 import Transaction   from "../models/transactionModel.js";
 import SupportTicket from "../models/supportTicketModel.js";
+import CaseNote      from "../models/caseNoteModel.js";
 import { sendRespondentNotice }   from "../services/mail.service.js";
 import { sendRespondentNoticeWA } from "../services/whatsapp.service.js";
 
@@ -464,13 +465,19 @@ export const getAllCases = async (req, res) => {
 
 export const getCaseById = async (req, res) => {
   try {
-    const caseData = await Case.findById(req.params.id)
-      .populate("createdBy","name email").populate("claimant","name email avatar phone")
-      .populate("respondent.userId","name email avatar phone").populate("assignedCaseManager","name email avatar")
-      .populate("assignedNeutral","name email avatar role").populate("reviewedBy","name email")
-      .populate("timeline.performedBy","name role");
+    const [caseData, caseNotes] = await Promise.all([
+      Case.findById(req.params.id)
+        .populate("createdBy","name email").populate("claimant","name email avatar phone")
+        .populate("respondent.userId","name email avatar phone").populate("assignedCaseManager","name email avatar")
+        .populate("assignedNeutral","name email avatar role").populate("reviewedBy","name email")
+        .populate("timeline.performedBy","name role"),
+      CaseNote.find({ caseId: req.params.id })
+        .populate("authorId","name avatar role")
+        .sort({ createdAt: -1 })
+        .lean(),
+    ]);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
-    return res.status(200).json({ success: true, case: caseData });
+    return res.status(200).json({ success: true, case: caseData, caseNotes });
   } catch (error) { return res.status(500).json({ message: error.message }); }
 };
 

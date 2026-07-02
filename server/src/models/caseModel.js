@@ -245,6 +245,9 @@ const caseSchema = new mongoose.Schema(
     filingFee:     { type: Number,  default: 0 },
     filingFeePaid: { type: Boolean, default: false },
 
+    /* ── Mediator Observations (private, not visible to parties) ── */
+    mediatorObservations: { type: String, default: "" },
+
     /* ── Embedded Documents / Evidence ── */
     documents: [documentSchema],
 

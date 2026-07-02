@@ -1,22 +1,22 @@
-// src/pages/MediatorChats.js
+// src/pages/MediatorPayment.js
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import MediatorLayout from "../components/MediatorLayout";
 import "./MediatorStub.css";
 
-const MediatorChats = () => {
+const MediatorPayment = () => {
   const navigate = useNavigate();
   return (
     <MediatorLayout>
       <div className="medstub-page">
         <div className="medstub-card">
-          <div className="medstub-icon-wrap"><MessageSquare size={32} /></div>
-          <h2>Messages</h2>
+          <div className="medstub-icon-wrap"><CreditCard size={32} /></div>
+          <h2>Payment</h2>
           <span className="medstub-badge">Coming Next</span>
           <p>
-            Communicate with parties, case managers, and the platform team through
-            case-linked conversations secured for your role.
+            View your earnings, invoices, and payment history for completed mediations.
+            Track fees and manage your payout preferences from here.
           </p>
           <button className="medstub-back-btn" onClick={() => navigate("/mediator/dashboard")}>
             Back to Dashboard
@@ -27,4 +27,4 @@ const MediatorChats = () => {
   );
 };
 
-export default MediatorChats;
+export default MediatorPayment;

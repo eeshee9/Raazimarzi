@@ -1,0 +1,271 @@
+/* ============================================================
+   MediatorSidebar.css — White sidebar, blue active state
+   ============================================================ */
+
+/* ── Desktop sidebar ── */
+.msb-sidebar {
+  width: 230px;
+  min-width: 230px;
+  height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0 20px 0;
+  transition: width 0.28s ease, min-width 0.28s ease;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+  border-right: 1px solid #E8EAED;
+  overflow: hidden;
+}
+
+.msb-sidebar.msb-collapsed {
+  width: 72px;
+  min-width: 72px;
+}
+
+/* ── Logo ── */
+.msb-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 16px 18px;
+  flex-shrink: 0;
+}
+.msb-logo-img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.msb-logo-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* ── Toggle ── */
+.msb-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 18px 10px 18px;
+  flex-shrink: 0;
+}
+.msb-toggle-center {
+  justify-content: center;
+  padding: 0 0 10px 0;
+}
+.msb-toggle-btn {
+  width: 34px;
+  height: 34px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748B;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.msb-toggle-btn:hover { background: #E2E8F0; color: #334155; }
+
+/* ── Navigation ── */
+.msb-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.msb-nav::-webkit-scrollbar { display: none; }
+
+.msb-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 13px;
+  height: 43px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #64748B;
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.msb-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+  opacity: 0.55;
+  transition: opacity 0.15s, filter 0.15s;
+}
+
+.msb-label {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.msb-item:hover {
+  background: #F8FAFC;
+  color: #1E293B;
+}
+.msb-item:hover .msb-icon { opacity: 0.85; }
+
+/* Active */
+.msb-item.msb-active {
+  background: #2563EB;
+  color: #ffffff;
+  font-weight: 600;
+}
+.msb-item.msb-active .msb-icon {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+
+/* Collapsed overrides */
+.msb-sidebar.msb-collapsed .msb-item {
+  justify-content: center;
+  padding: 0;
+}
+.msb-sidebar.msb-collapsed .msb-label { display: none; }
+.msb-sidebar.msb-collapsed .msb-icon { opacity: 0.6; }
+.msb-sidebar.msb-collapsed .msb-item.msb-active .msb-icon { opacity: 1; }
+.msb-sidebar.msb-collapsed .msb-logo-row { padding: 0 0 16px 0; justify-content: center; }
+
+/* ── Bottom actions ── */
+.msb-bottom {
+  padding: 10px 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.msb-support {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #2563EB;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.15s;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+.msb-support:hover { background: #DBEAFE; }
+
+.msb-logout {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 13px;
+  height: 43px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #EF4444;
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.msb-logout:hover { background: #FEF2F2; }
+
+.msb-logout-icon {
+  filter: invert(27%) sepia(80%) saturate(800%) hue-rotate(330deg) brightness(95%);
+  opacity: 1 !important;
+}
+
+.msb-logout-label { color: inherit; }
+
+.msb-sidebar.msb-collapsed .msb-logout {
+  justify-content: center;
+  padding: 0;
+}
+.msb-sidebar.msb-collapsed .msb-logout-label { display: none; }
+
+/* ── Mobile overlay ── */
+.msb-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  z-index: 900;
+}
+.msb-overlay.open { display: block; }
+
+/* ── Mobile drawer ── */
+.msb-drawer {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 901;
+  flex-direction: column;
+  padding: 20px 0 20px 0;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid #E8EAED;
+  overflow-y: auto;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+}
+.msb-drawer.open { transform: translateX(0); }
+
+.msb-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 16px 16px;
+  border-bottom: 1px solid #E8EAED;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+.msb-drawer-header .msb-logo-row { padding: 0; }
+
+.msb-close-btn {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #64748B;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.msb-close-btn:hover { background: #E2E8F0; color: #334155; }
+
+.msb-mob { border-radius: 10px !important; }
+
+@media (max-width: 768px) {
+  .msb-sidebar         { display: none; }
+  .msb-overlay,
+  .msb-drawer          { display: flex; }
+}

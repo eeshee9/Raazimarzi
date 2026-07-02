@@ -1,0 +1,725 @@
+/* MediatorDocuments.css — shared CSS for MediatorDocuments, MediatorCaseDocs, MediatorDocViewer */
+/* Prefix: mdd- */
+
+/* ─── Page shell ──────────────────────────────────────────────────────────── */
+.mdd-page {
+  padding: 28px 32px;
+  min-height: 100vh;
+  background: #f8f7ff;
+}
+
+.mdd-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.mdd-page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 4px;
+}
+
+.mdd-page-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.mdd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #7c3aed;
+  cursor: pointer;
+}
+
+.mdd-back-btn:hover { text-decoration: underline; }
+
+.mdd-refresh-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+}
+.mdd-refresh-btn:hover { background: #f3f4f6; color: #7c3aed; }
+
+/* ─── Filter bar ─────────────────────────────────────────────────────────── */
+.mdd-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.mdd-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mdd-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mdd-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mdd-select {
+  appearance: none;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.mdd-select:focus { outline: none; border-color: #7c3aed; }
+
+.mdd-select-icon {
+  position: absolute;
+  right: 10px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* ─── Active filters ─────────────────────────────────────────────────────── */
+.mdd-active-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.mdd-af-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.mdd-af-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ede9fe;
+  color: #6d28d9;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.mdd-af-chip:hover { background: #ddd6fe; }
+
+.mdd-af-clear {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #ef4444;
+  cursor: pointer;
+  font-weight: 500;
+}
+.mdd-af-clear:hover { text-decoration: underline; }
+
+/* ─── State helpers ──────────────────────────────────────────────────────── */
+.mdd-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+}
+
+.mdd-state--error { color: #dc2626; }
+.mdd-state--empty { color: #9ca3af; }
+.mdd-state--empty svg { color: #d1d5db; }
+
+.mdd-spin { animation: mdd-spin 0.8s linear infinite; }
+@keyframes mdd-spin { to { transform: rotate(360deg); } }
+
+.mdd-retry-btn {
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mdd-retry-btn:hover { background: #6d28d9; }
+
+/* ─── Folder grid ────────────────────────────────────────────────────────── */
+.mdd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.mdd-folder-card {
+  background: #fff;
+  border: 1px solid #e9e3ff;
+  border-radius: 14px;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+.mdd-folder-card:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.12);
+  transform: translateY(-2px);
+}
+
+.mdd-folder-illus {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.mdd-folder-icon-wrap {
+  background: #ede9fe;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mdd-folder-icon { color: #7c3aed; }
+
+.mdd-folder-info { width: 100%; }
+
+.mdd-folder-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e1b4b;
+  margin: 0 0 6px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.mdd-folder-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.mdd-folder-id {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.mdd-folder-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mdd-folder-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.mdd-folder-files {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.mdd-folder-updated {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #9ca3af;
+}
+
+/* ─── Case header (MediatorCaseDocs) ─────────────────────────────────────── */
+.mdd-case-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #e9e3ff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.mdd-case-header-icon {
+  background: #ede9fe;
+  border-radius: 12px;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.mdd-case-header-info { flex: 1; min-width: 0; }
+
+.mdd-case-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 8px;
+}
+
+.mdd-case-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mdd-case-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mdd-zip-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+  cursor: not-allowed;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── Document filter bar ────────────────────────────────────────────────── */
+.mdd-doc-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.mdd-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.mdd-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.mdd-search-input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px 8px 32px;
+  font-size: 13px;
+  color: #374151;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.mdd-search-input:focus { outline: none; border-color: #7c3aed; }
+
+/* ─── Document table ─────────────────────────────────────────────────────── */
+.mdd-table-wrap {
+  background: #fff;
+  border: 1px solid #e9e3ff;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.mdd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.mdd-table thead tr {
+  background: #f5f3ff;
+}
+
+.mdd-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mdd-table-row {
+  border-top: 1px solid #f0eeff;
+  transition: background 0.1s;
+}
+.mdd-table-row:hover { background: #faf8ff; }
+
+.mdd-table td {
+  padding: 13px 16px;
+  vertical-align: middle;
+}
+
+.mdd-td-name {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 260px;
+}
+
+.mdd-td-file-icon { color: #9ca3af; flex-shrink: 0; margin-top: 2px; }
+
+.mdd-td-title {
+  font-weight: 500;
+  color: #1e1b4b;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.mdd-td-orig {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+  word-break: break-word;
+}
+
+.mdd-type-badge {
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.mdd-td-uploader {
+  display: flex !important;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mdd-uploader-name {
+  font-weight: 500;
+  color: #374151;
+}
+
+.mdd-uploader-role {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: capitalize;
+}
+
+.mdd-td-date {
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.mdd-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mdd-action-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.mdd-action-btn:hover { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+.mdd-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Document viewer ────────────────────────────────────────────────────── */
+.mdd-viewer-page { padding-bottom: 40px; }
+
+.mdd-viewer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #e9e3ff;
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 18px;
+}
+
+.mdd-viewer-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mdd-viewer-file-icon { color: #7c3aed; flex-shrink: 0; margin-top: 2px; }
+
+.mdd-viewer-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 6px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.mdd-viewer-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mdd-viewer-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Viewer body */
+.mdd-viewer-body {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+/* Toolbar */
+.mdd-viewer-main {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e9e3ff;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mdd-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f5f3ff;
+  border-bottom: 1px solid #e9e3ff;
+}
+
+.mdd-toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.1s, color 0.1s;
+}
+.mdd-toolbar-btn:hover { border-color: #7c3aed; color: #7c3aed; }
+.mdd-toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.mdd-toolbar-download {
+  margin-left: auto;
+  background: #7c3aed;
+  color: #fff;
+  border-color: #7c3aed;
+}
+.mdd-toolbar-download:hover { background: #6d28d9; color: #fff; }
+
+.mdd-zoom-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  min-width: 36px;
+  text-align: center;
+}
+
+/* Preview area */
+.mdd-preview-wrap {
+  flex: 1;
+  min-height: 500px;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  background: #f0eeff;
+}
+
+.mdd-preview-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  display: block;
+}
+
+.mdd-preview-iframe {
+  width: 100%;
+  height: 700px;
+  border: none;
+  border-radius: 6px;
+}
+
+.mdd-preview-unavail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.mdd-preview-unavail svg { color: #d1d5db; }
+
+/* Right panel */
+.mdd-viewer-panel {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mdd-panel-section {
+  background: #fff;
+  border: 1px solid #e9e3ff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.mdd-panel-section--warn { border-color: #fecaca; }
+
+.mdd-panel-heading {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+.mdd-panel-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.mdd-panel-note {
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mdd-panel-rejection {
+  font-size: 13px;
+  color: #dc2626;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mdd-audit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.mdd-audit-label {
+  color: #9ca3af;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.mdd-audit-val {
+  color: #374151;
+  font-weight: 500;
+  text-align: right;
+}
+
+.mdd-audit-val--sm {
+  font-size: 11px;
+  word-break: break-all;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .mdd-page { padding: 16px; }
+  .mdd-viewer-body { flex-direction: column; }
+  .mdd-viewer-panel { width: 100%; }
+  .mdd-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}

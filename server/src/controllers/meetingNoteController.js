@@ -1,13 +1,24 @@
 import MeetingNote from "../models/meetingNoteModel.js";
 import Meeting     from "../models/meetingModel.js";
+import Case        from "../models/caseModel.js";
 
-/* ── Permission check ── */
+/* ── Permission check ──
+   Checks the meeting's own organizer/mediator/participants first.
+   Falls back to the case's assignedNeutral/assignedMediator so that a mediator
+   assigned at the case level can write notes even when admin creates the meeting
+   without explicitly passing mediatorId. */
 const canAccessMeeting = async (userId, meetingId) => {
-  const m = await Meeting.findById(meetingId).select("organizer mediator participants");
+  const m = await Meeting.findById(meetingId).select("organizer mediator participants caseId");
   if (!m) return false;
   if (m.organizer?.toString() === userId.toString()) return true;
   if (m.mediator?.toString()  === userId.toString()) return true;
-  return m.participants.some((p) => p.user?.toString() === userId.toString());
+  if (m.participants.some((p) => p.user?.toString() === userId.toString())) return true;
+  if (m.caseId) {
+    const c = await Case.findById(m.caseId).select("assignedNeutral assignedMediator").lean();
+    if (c?.assignedNeutral?.toString()  === userId.toString()) return true;
+    if (c?.assignedMediator?.toString() === userId.toString()) return true;
+  }
+  return false;
 };
 
 /* ══════════════════════════════════════════════════════════════

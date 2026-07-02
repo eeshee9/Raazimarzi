@@ -62,14 +62,14 @@ curl http://localhost:5000/api/health
 ## Restarting on Failure
 
 ```bash
-pm2 restart raazimarzi-api
+pm2 restart backend
 # or, if PM2 is not running:
 pm2 start ecosystem.config.cjs
 ```
 
 View logs:
 ```bash
-pm2 logs raazimarzi-api --lines 100
+pm2 logs backend --lines 100
 # or directly:
 tail -f server/logs/error.log
 ```
@@ -78,7 +78,7 @@ tail -f server/logs/error.log
 
 ```bash
 # 1. Stop the server
-pm2 stop raazimarzi-api
+pm2 stop backend
 
 # 2. Revert to previous commit
 git revert HEAD         # creates a new revert commit (safe)
@@ -98,7 +98,7 @@ The mediator portal access is controlled by `ENABLE_MEDIATOR_PORTAL` in `.env`.
 
 **To enable the mediator portal:**
 1. Set `ENABLE_MEDIATOR_PORTAL=true` in `.env`
-2. Restart the server: `pm2 restart raazimarzi-api`
+2. Restart the server: `pm2 restart backend`
 
 This flag is checked at request time (not cached), so a restart is required.
 
@@ -123,7 +123,7 @@ Secondary / backup monitoring (optional upgrade):
 
 The auth rate limiter is in-memory. If a user is locked out and cannot wait 15 minutes:
 ```bash
-pm2 restart raazimarzi-api   # resets all in-memory limiters
+pm2 restart backend   # resets all in-memory limiters
 ```
 
 For production scale, switch `authLimiter` to a Redis-backed store (`rate-limit-redis`).

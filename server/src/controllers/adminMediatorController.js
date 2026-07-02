@@ -1,6 +1,7 @@
 import Case from "../models/caseModel.js";
 import User from "../models/userModel.js";
 import { sendMediatorApprovedEmail, sendMediatorRejectedEmail } from "../services/mail.service.js";
+import { getPresignedUrl } from "../utils/storageProvider.js";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const ACTIVE_STATUSES = [
@@ -146,9 +147,22 @@ export const getAdminMediatorDetail = async (req, res) => {
         .lean(),
     ]);
 
+    // Generate presigned URLs for verification docs so admin UI can view/download them
+    const verificationDocs = await Promise.all(
+      (mediator.verificationDocs || []).map(async (doc) => {
+        if (!doc.fileUrl) return doc;
+        try {
+          const signedUrl = await getPresignedUrl(doc.fileUrl, 600);
+          return { ...doc, fileUrl: signedUrl };
+        } catch {
+          return doc; // return raw key if signing fails; frontend hides broken link gracefully
+        }
+      })
+    );
+
     return res.status(200).json({
       success:  true,
-      mediator: { ...mediator, displayId: makeMediatorId(mid) },
+      mediator: { ...mediator, displayId: makeMediatorId(mid), verificationDocs },
       stats:    {
         totalCases,
         activeCases,

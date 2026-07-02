@@ -47,8 +47,23 @@ import CaseManagerCaseMeetings from "./pages/CaseManagerCaseMeetings";
 import CaseManagerChats from "./pages/CaseManagerChats";
 import MediatorDashboard from "./pages/MediatorDashboard";
 import MediatorMyCases from "./pages/MediatorMyCases";
+import MediatorMeetings from "./pages/MediatorMeetings";
+import MediatorMessages from "./pages/MediatorMessages";
+import MediatorDocuments from "./pages/MediatorDocuments";
+import MediatorCaseDocs from "./pages/MediatorCaseDocs";
+import MediatorDocViewer from "./pages/MediatorDocViewer";
+import MediatorPayment from "./pages/MediatorPayment";
+import MediatorCaseDetail from "./pages/MediatorCaseDetail";
+import MediatorProfile from "./pages/MediatorProfile";
 import MediatorCaseMeetings from "./pages/MediatorCaseMeetings";
+import MediatorMeetingRoom from "./pages/MediatorMeetingRoom";
 import MediatorChats from "./pages/MediatorChats";
+import MediatorSchedule from "./pages/MediatorSchedule";
+import MediatorHearingRoom from "./pages/MediatorHearingRoom";
+import MediatorNotes from "./pages/MediatorNotes";
+import MediatorDraftResolution from "./pages/MediatorDraftResolution";
+import MediatorCloseCase from "./pages/MediatorCloseCase";
+import MediatorCaseNoteEditor from "./pages/MediatorCaseNoteEditor";
 import MediatorLogin from "./pages/MediatorLogin";
 import MediatorSignup from "./pages/MediatorSignup";
 import MediatorTerms from "./pages/MediatorTerms";
@@ -95,10 +110,29 @@ function App() {
 
             {/* Mediator Routes — protected (token + role=mediator required) */}
             <Route element={<ProtectedRoute allowedRoles={["mediator"]} />}>
-              <Route path="/mediator/dashboard" element={<MediatorDashboard />} />
-              <Route path="/mediator/case-meetings" element={<MediatorCaseMeetings />} />
-              <Route path="/mediator/chats" element={<MediatorChats />} />
-              <Route path="/mediator/my-cases" element={<MediatorMyCases />} />
+              {/* ── New design routes ── */}
+              <Route path="/mediator/dashboard"        element={<MediatorDashboard />} />
+              <Route path="/mediator/my-cases"         element={<MediatorMyCases />} />
+              <Route path="/mediator/meetings"         element={<MediatorMeetings />} />
+              <Route path="/mediator/meetings/:id"    element={<MediatorMeetingRoom />} />
+              <Route path="/mediator/messages"         element={<MediatorMessages />} />
+              <Route path="/mediator/documents"                      element={<MediatorDocuments />} />
+              <Route path="/mediator/documents/case/:caseId"    element={<MediatorCaseDocs />} />
+              <Route path="/mediator/documents/file/:documentId" element={<MediatorDocViewer />} />
+              <Route path="/mediator/cases/:id"        element={<MediatorCaseDetail />} />
+              <Route path="/mediator/profile"          element={<MediatorProfile />} />
+              <Route path="/mediator/case-notes"            element={<MediatorNotes />} />
+              <Route path="/mediator/case-notes/:caseId" element={<MediatorCaseNoteEditor />} />
+              {/* ── Legacy stub routes (kept for backward compat) ── */}
+              <Route path="/mediator/payment"          element={<MediatorPayment />} />
+              <Route path="/mediator/cases"            element={<MediatorCaseDetail />} />
+              <Route path="/mediator/case-meetings"    element={<MediatorCaseMeetings />} />
+              <Route path="/mediator/chats"            element={<MediatorChats />} />
+              <Route path="/mediator/schedule"         element={<MediatorSchedule />} />
+              <Route path="/mediator/hearing-room"     element={<MediatorHearingRoom />} />
+              <Route path="/mediator/notes"            element={<MediatorNotes />} />
+              <Route path="/mediator/draft-resolution" element={<MediatorDraftResolution />} />
+              <Route path="/mediator/close-case"       element={<MediatorCloseCase />} />
             </Route>
 
             {/* Case Manager Routes */}

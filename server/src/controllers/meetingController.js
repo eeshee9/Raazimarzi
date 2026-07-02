@@ -363,7 +363,7 @@ export const startMeeting = async (req, res) => {
 ══════════════════════════════════════════════════════ */
 export const rescheduleMeeting = async (req, res) => {
   try {
-    const { newDate, newStartTime, newEndTime, reason } = req.body;
+    const { newDate, newStartTime, newEndTime, reason } = req.body || {};
 
     if (!newDate || !newStartTime || !newEndTime)
       return res.status(400).json({
@@ -436,7 +436,7 @@ export const rescheduleMeeting = async (req, res) => {
 ══════════════════════════════════════════════════════ */
 export const cancelMeeting = async (req, res) => {
   try {
-    const { reason } = req.body;
+    const { reason } = req.body || {};
 
     const meeting = await Meeting.findById(req.params.id)
       .populate("organizer", "name email")
@@ -485,7 +485,7 @@ export const cancelMeeting = async (req, res) => {
 ══════════════════════════════════════════════════════ */
 export const completeMeeting = async (req, res) => {
   try {
-    const { summary, agreementReached, nextSteps, meetingNotes } = req.body;
+    const { summary, agreementReached, nextSteps, meetingNotes } = req.body || {};
 
     const meeting = await Meeting.findById(req.params.id);
     if (!meeting)

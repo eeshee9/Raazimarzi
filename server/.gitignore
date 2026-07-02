@@ -28,3 +28,10 @@ out/
 build/
 dist/
 node_modules
+
+# Runtime upload directory
+src/uploads/
+
+# Local test / debug / UAT scripts — never deploy to production
+*.mjs
+admin_u

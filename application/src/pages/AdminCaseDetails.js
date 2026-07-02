@@ -5,6 +5,7 @@ import {
   FaBell, FaChevronRight, FaVideo,
   FaFileAlt, FaImage, FaFilePdf, FaDownload, FaEye,
   FaCheckCircle, FaClock, FaFileUpload, FaUserPlus, FaSync,
+  FaStickyNote,
 } from "react-icons/fa";
 import api from "../api/axios";
 import AdminSidebar from "../components/AdminSidebar";
@@ -60,6 +61,7 @@ const AdminCaseDetails = () => {
 
   const [caseData,          setCaseData]         = useState(null);
   const [meetings,          setMeetings]          = useState([]);
+  const [caseNotes,         setCaseNotes]         = useState([]);
   const [loading,           setLoading]           = useState(true);
   const [fetchError,        setFetchError]        = useState("");
   const [adminName,         setAdminName]         = useState("Admin");
@@ -78,6 +80,7 @@ const AdminCaseDetails = () => {
       ]);
       if (caseRes.status === "fulfilled") {
         setCaseData(caseRes.value.data.case || caseRes.value.data);
+        setCaseNotes(caseRes.value.data.caseNotes || []);
       } else {
         setFetchError("Could not load case details. Check your connection and try again.");
       }
@@ -361,6 +364,32 @@ const AdminCaseDetails = () => {
                     <span className="acd-field__value">{facts.date || "—"}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Mediator Notes */}
+              <div className="acd-card">
+                <div className="acd-card__header">
+                  <FaStickyNote className="acd-card__header-icon" />
+                  <h3 className="acd-card__title">Mediator Notes</h3>
+                </div>
+                {caseNotes.length === 0 ? (
+                  <p className="acd-empty-msg">No mediator notes for this case yet.</p>
+                ) : (
+                  <div className="acd-notes-list">
+                    {caseNotes.map((note, idx) => (
+                      <div key={note._id || idx} className="acd-note">
+                        <div className="acd-note__header">
+                          <span className="acd-note__category">{note.category || "General"}</span>
+                          <span className="acd-note__date">{fmtDate(note.createdAt)}</span>
+                        </div>
+                        <p className="acd-note__content">{note.content}</p>
+                        {note.authorId?.name && (
+                          <div className="acd-note__author">— {note.authorId.name}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Legal Documents */}
