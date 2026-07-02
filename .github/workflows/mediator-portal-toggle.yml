@@ -17,21 +17,39 @@ jobs:
     name: Update portal flag on VPS
     runs-on: ubuntu-latest
     steps:
-      - name: SSH to VPS and update env flag
+      - name: SSH to VPS and update env flag + storage config
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: ENABLE_MEDIATOR_PORTAL,NEEV_ENDPOINT,NEEV_REGION,NEEV_BUCKET,NEEV_ACCESS_KEY,NEEV_SECRET_KEY
           script: |
             cd /var/www/raazimarzi/server
-            # Remove any existing ENABLE_MEDIATOR_PORTAL line and append the new value
+
+            # ── Mediator portal flag ───────────────────────────────────────
             sed -i '/^ENABLE_MEDIATOR_PORTAL=/d' .env
-            echo "ENABLE_MEDIATOR_PORTAL=${{ github.event.inputs.enable }}" >> .env
+            echo "ENABLE_MEDIATOR_PORTAL=${ENABLE_MEDIATOR_PORTAL}" >> .env
+
+            # ── NEEV storage (inject if missing) ──────────────────────────
+            grep -q '^NEEV_ENDPOINT=' .env    || echo "NEEV_ENDPOINT=${NEEV_ENDPOINT}"    >> .env
+            grep -q '^NEEV_REGION='   .env    || echo "NEEV_REGION=${NEEV_REGION}"        >> .env
+            grep -q '^NEEV_BUCKET='   .env    || echo "NEEV_BUCKET=${NEEV_BUCKET}"        >> .env
+            grep -q '^NEEV_ACCESS_KEY=' .env  || echo "NEEV_ACCESS_KEY=${NEEV_ACCESS_KEY}" >> .env
+            grep -q '^NEEV_SECRET_KEY=' .env  || echo "NEEV_SECRET_KEY=${NEEV_SECRET_KEY}" >> .env
+
             pm2 restart backend
-            echo "✅ ENABLE_MEDIATOR_PORTAL=${{ github.event.inputs.enable }}"
+            echo "✅ ENABLE_MEDIATOR_PORTAL=${ENABLE_MEDIATOR_PORTAL}"
+            echo "✅ NEEV_BUCKET=$(grep '^NEEV_BUCKET=' .env | cut -d= -f2)"
             echo "--- PM2 status ---"
             pm2 list
-            echo "--- Health check ---"
-            sleep 3
+            echo "--- Health check (3s delay for startup) ---"
+            sleep 4
             curl -s http://localhost:5000/api/health
+        env:
+          ENABLE_MEDIATOR_PORTAL: ${{ github.event.inputs.enable }}
+          NEEV_ENDPOINT: ${{ secrets.NEEV_ENDPOINT }}
+          NEEV_REGION: ${{ secrets.NEEV_REGION }}
+          NEEV_BUCKET: ${{ secrets.NEEV_BUCKET }}
+          NEEV_ACCESS_KEY: ${{ secrets.NEEV_ACCESS_KEY }}
+          NEEV_SECRET_KEY: ${{ secrets.NEEV_SECRET_KEY }}
