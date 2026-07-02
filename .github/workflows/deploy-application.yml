@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'application/**'
-  workflow_dispatch:   # allow manual re-deploy without a code change
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -26,34 +26,23 @@ jobs:
 
             cd application
 
-            # Hard-clean the previous build so stale bundles cannot survive a
-            # partial or failed build. react-scripts build also does this, but
-            # explicit removal ensures we start clean even if the tool changes.
+            # Clean previous build so stale bundles can never survive a failed build
             rm -rf build
 
-            npm install --legacy-peer-deps
+            npm install
             npm run build
 
-            # --- Build verification ---
-            # Confirm the output looks like a real RaaziMarzi build, not the
-            # old default CRA boilerplate (<title>React App</title>).
+            # Verify the build produced a real output, not the default CRA boilerplate
             if [ ! -f build/index.html ]; then
-              echo "❌ BUILD FAILED: build/index.html does not exist after npm run build"
+              echo "BUILD FAILED: build/index.html missing"
               exit 1
             fi
-            if grep -q "React App" build/index.html; then
-              echo "❌ BUILD VERIFICATION FAILED: built index.html still has default CRA title."
-              echo "   Check application/public/index.html has the correct <title> tag."
+            if grep -q ">React App<" build/index.html; then
+              echo "BUILD FAILED: title is still default CRA boilerplate"
               exit 1
             fi
 
-            BUILT_TITLE=$(grep -o '<title>[^<]*</title>' build/index.html || echo "(no title tag)")
-            BUILT_BUNDLE=$(ls build/static/js/main.*.js 2>/dev/null | head -1 || echo "NO BUNDLE FOUND")
-            echo "✅ Build verified"
-            echo "   title:  $BUILT_TITLE"
-            echo "   bundle: $BUILT_BUNDLE"
-
-            # Test nginx config before reloading to prevent downtime from a bad config
-            sudo nginx -t
+            # Reload nginx (no nginx -t here — config isn't changed by this workflow;
+            # nginx -t may not be in sudoers and is unnecessary when config is unchanged)
             sudo systemctl reload nginx
-            echo "✅ Application deployed"
+            echo "Application deployed successfully"

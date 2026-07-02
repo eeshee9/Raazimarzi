@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'website/**'
-  workflow_dispatch:   # allow manual re-deploy without a code change
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -28,14 +28,23 @@ jobs:
             npm install
             npm run build
 
-            # Next.js standalone requires manual copy of static chunks and public assets
+            # Copy static chunks into standalone output (Next.js standalone requirement)
             cp -r .next/static .next/standalone/.next/static
-            cp -r public .next/standalone/public
 
-            # website/public does not contain favicon.ico (binary, not committed).
-            # application/public/favicon.ico is tracked in git and always present
-            # after git reset. Copy it so /favicon.ico resolves on the website too.
+            # Always wipe and recreate standalone/public so repeated deploys never
+            # create the nested-directory bug (cp -r src dst when dst exists copies
+            # src INTO dst instead of replacing its contents).
+            rm -rf .next/standalone/public
+            mkdir -p .next/standalone/public
+            cp -r public/. .next/standalone/public/
+
+            # website/public/favicon.ico is not committed (binary).
+            # application/public/favicon.ico is tracked and always present after git reset.
             cp /var/www/raazimarzi/application/public/favicon.ico .next/standalone/public/favicon.ico
 
-            pm2 restart website || pm2 start .next/standalone/server.js --name website
-            echo "✅ Website deployed"
+            # Reload (zero-downtime) if pm2 process exists, otherwise start fresh
+            pm2 reload website 2>/dev/null \
+              || pm2 start /var/www/raazimarzi/website/.next/standalone/server.js \
+                   --name website \
+                   --cwd /var/www/raazimarzi/website
+            echo "Website deployed successfully"
