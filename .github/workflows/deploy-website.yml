@@ -40,9 +40,11 @@ jobs:
             mkdir -p .next/standalone/public
             cp -r public/. .next/standalone/public/
 
-            # website/public/favicon.ico is not committed (binary).
-            # application/public/favicon.ico is tracked and always present after git reset.
-            cp /var/www/raazimarzi/application/public/favicon.ico .next/standalone/public/favicon.ico
+            # All favicon assets live in application/public (committed).
+            # website/public contains no favicons — copy all three from application.
+            cp /var/www/raazimarzi/application/public/favicon.ico        .next/standalone/public/favicon.ico
+            cp /var/www/raazimarzi/application/public/favicon.svg        .next/standalone/public/favicon.svg
+            cp /var/www/raazimarzi/application/public/apple-touch-icon.png .next/standalone/public/apple-touch-icon.png
 
             # Inject stable Server Action encryption key so the encryption does not
             # rotate on every PM2 reload. Without this, each restart generates a new

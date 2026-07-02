@@ -30,7 +30,11 @@ jobs:
             rm -rf build
 
             npm install
-            npm run build
+
+            # GENERATE_SOURCEMAP=false cuts peak memory from ~3 GB to ~800 MB.
+            # Without it, react-scripts 5 + react@19 exhausts RAM on small VPS
+            # instances — the build process is killed mid-way, no build/ is produced.
+            GENERATE_SOURCEMAP=false npm run build
 
             # Verify the build produced a real output, not the default CRA boilerplate
             if [ ! -f build/index.html ]; then
