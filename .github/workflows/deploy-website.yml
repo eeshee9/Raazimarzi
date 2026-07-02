@@ -28,7 +28,9 @@ jobs:
             npm install
             npm run build
 
-            # Copy static chunks into standalone output (Next.js standalone requirement)
+            # Wipe before copy — guards against nested-dir bug if the directory
+            # somehow persists; next build recreates .next/ fresh, but rm is defensive
+            rm -rf .next/standalone/.next/static
             cp -r .next/static .next/standalone/.next/static
 
             # Always wipe and recreate standalone/public so repeated deploys never
@@ -42,9 +44,18 @@ jobs:
             # application/public/favicon.ico is tracked and always present after git reset.
             cp /var/www/raazimarzi/application/public/favicon.ico .next/standalone/public/favicon.ico
 
-            # Reload (zero-downtime) if pm2 process exists, otherwise start fresh
-            pm2 reload website 2>/dev/null \
+            # Inject stable Server Action encryption key so the encryption does not
+            # rotate on every PM2 reload. Without this, each restart generates a new
+            # random key; browsers with cached pages then send action IDs encrypted
+            # with the old key and get "Failed to find Server Action" errors.
+            # Secret must be 64 hex chars — generate with: openssl rand -hex 32
+            ACTIONS_KEY="${{ secrets.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY }}"
+            [ -n "$ACTIONS_KEY" ] && export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="$ACTIONS_KEY"
+
+            # Reload with updated env so the key reaches the live process
+            pm2 reload website --update-env 2>/dev/null \
               || pm2 start /var/www/raazimarzi/website/.next/standalone/server.js \
                    --name website \
                    --cwd /var/www/raazimarzi/website
+            pm2 save 2>/dev/null || true
             echo "Website deployed successfully"
